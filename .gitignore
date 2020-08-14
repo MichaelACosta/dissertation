@@ -1,2 +1,12 @@
 .DS_Store
 *.txt
+*.aux 
+*.log 
+*.out 
+*.ps
+*.toc 
+*.dvi 
+*.lof 
+*.bbl 
+*.lot 
+*.blg
