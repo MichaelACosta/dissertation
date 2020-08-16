@@ -237,10 +237,83 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 Para solucionar o problema de qual transação continuará executando, quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
 
 
-
 \chapter{TinySTM}
+\label{chapter::tiny}
 
-...
+A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C e C++. Seu algoritmo é baseado em outros algoritmos de STM como o TL2~(\emph{Transactional Locking} 2)~\cite{tl2}. Ela é uma biblioteca utilizada para escrever aplicativos que usam memórias transacionais para sincronização, em substituição aos tradicionais \emph{locks}.
+
+\section{Sincronização e Versionamento}
+
+Na \emph{TinySTM} a sincronização é feita a partir de um \emph{array} de \emph{locks} compartilhado que gerencia o acesso concorrente à memória. Cada \emph{lock} é do tamanho de um endereço da arquitetura~\cite{TINY}, e bloqueia vários endereços de memória. O mapeamento é feito por meio de uma função \emph{hash}. A Figura~\ref{figurasincronisacaotinystm} apresenta as estruturas de dados utilizadas nesta implementação.
+
+\begin{figure}[!htp]
+\centering
+\includegraphics[height=8cm]{images/tinystm.png}
+\caption{Estruturas de dados utilizadas na \emph{tinySTM}. Fonte:~\cite{TINY}}
+\label{figurasincronisacaotinystm}
+\end{figure}
+
+O bit menos significativo é utilizado para indicar se o \emph{lock} está em uso. Se o bit menos significativo indicar que o \emph{lock} não está em uso, nos bits restantes são armazenados um número de versão que corresponde ao \emph{commit timestamp} da transação que escreveu por último em um dos locais de memória abrangidos pelo \emph{lock}.
+
+Se o bit menos significativo indica que o \emph{lock} está em uso, então nos bits restantes é armazenado um endereço que identifica a transação que está utilizando o dado~(isso utilizando o versionamento adiantado), ou uma entrada no \emph{write set} da transação que está utilizando o dado~(isso utilizando o versionamento atrasado). Em ambos os casos os endereços apontam para uma estrutura que é \emph{word-aligned} e seu bit menos significativo é sempre zero, por isso, o bit menos significativo pode ser utilizado como bit de bloqueio.
+
+Quando utilizado o versionamento atrasado, o endereço armazenado no \emph{lock} permite uma operação rápida para localizar as posições de memória atualizadas abrangidas pelo \emph{lock}, no caso de serem acessados novamente pela mesma transação. Em contraste, a TL2 deve verificar o acesso à memória se a transação atual ainda não escreveu neste endereço, o que pode ser caro quando \emph{write sets} são grandes. A leitura depois da escrita não é um problema quando é utilizado o versionamento adiantado porque a memória sempre contém o último valor escrito na memória pela transação ativa.
+
+A \emph{tinySTM} apresenta três estratégias de versionamento distintas que podem ser utilizadas, sendo que duas utilizam versionamento atrasado~(write-back) e uma utiliza versionamento adiantado~(write-through), estas são:
+
+\begin{itemize}
+ \item \textbf{Write\_Back\_ETL}: esta estratégia implementa o versionamento atrasado com \emph{encounter-time locking}, isso é, o \emph{lock} é adquirido após ocorrer uma operação de escrita e atualiza o \emph{buffer}. O valor é escrito na memória no momento do \emph{commit} da transação;
+
+ \item \textbf{Write\_Back\_CTL}: esta estratégia implementa o versionamento atrasado com \emph{commit-time locking},isto é, ele adquire o \emph{lock} antes de ocorrer o um \emph{commit} e atualizar o \emph{buffer}. Assim como no \emph{Write-Back-ETL} o valor é escrito na memória no momento do \emph{commit} da transação;
+
+ \item \textbf{Write\_Through}: esta estratégia implementa o versionamento adiantado com \emph{encounter-time locking}, isto é, o valor é escrito direto na memória e mantém um \emph{undo log}, caso ocorra um \emph{abort} na transação é possível restaurar o valor anterior na memória.
+\end{itemize}
+
+A \emph{TinySTM} utiliza \emph{Write\_Back\_ETL} como sua estratégia de versionamento padrão.
+
+\section{Escritas}
+
+Quando ocorre uma escrita em um local da memória, a transação primeiro identifica o \emph{lock} correspondente ao endereço de memória e lê o valor. Se o \emph{lock} está em uso a transação verifica se é a proprietária do \emph{lock} utilizando o endereço armazenado nos restantes bits de entrada. Caso a transação seja a proprietária então ela simplesmente escreve o novo valor e retorna. Caso contrário, a transação pode esperar por algum tempo ou abortar imediatamente. A \emph{TinySTM} utiliza a última opção como padrão em sua implementação.
+
+Se o \emph{lock} não está em uso, a transação tenta adquiri-lo para escrever o novo valor na entrada utilizando uma operação atômica \emph{compare-and-swap}. A falha indica que outra transação adquiriu o \emph{lock} nesse meio tempo, então a transação é reiniciada.
+
+
+\section{Leituras}
+
+Quando ocorre uma leitura na memória, a transação deve verificar se o \emph{lock} está em uso ou se  o valor já foi atualizado concorrentemente por outra transação. Para esse fim, a transação lê o \emph{lock} correspondente ao endereço de memória. Se o \emph{lock} não tem proprietário e o valor~(número de versão) não foi modificado entre duas leituras, então o valor é consistente.
+
+\section{Gerenciamento de Memória}
+
+A \emph{TinySTM} utiliza um gerenciador de memória que possibilita qualquer código transacional utilizar memória dinâmica. As transações mantém o endereço da memória alocada ou liberada. A alocação de memória é automaticamente desfeita quando a transação é abortada, já a liberação não pode ser desfeita antes do \emph{commit}. Contudo uma transação pode somente liberar memória depois de adquirir todos os \emph{locks}, assim, um \emph{free} é semanticamente equivalente a uma atualização.
+
+\section{Gerenciador de Contenção}
+
+A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, estas são:
+
+\begin{itemize}
+ \item \textbf{CM\_Suicide}: nesta estratégia a transação que detecta o conflito é abortada imediatamente;
+
+ \item \textbf{CM\_Delay}: esta estratégia assemelhasse a \emph{CM\_Suicide}, porem, espera até que a transação que gerou o \emph{abort} tenha liberado o \emph{lock}, então reinicia a transação. Isto porque por intuição a transação a transação que foi abortada irá tentar adquirir o mesmo \emph{lock} novamente, provavelmente falhando em mais de uma tentativa. Está estratégia aumenta as chances de que a transação tenha sucesso sem gerar um grande número de \emph{aborts}, melhorando o tempo de execução do processador;
+
+ \item \textbf{CM\_Backoff}: também parecida com a \emph{CM\_Suicide}, esta estratégia espera um tempo randômico para reiniciar a transação. Este tempo de espera é escolhido ao uniformemente ao acaso em um intervalo cujo tamanho aumenta exponencialmente a cada reinicialização;
+
+ \item \textbf{CM\_Modular}: esta estratégia implementa vários gerenciadores de contenção, que são alternados durante a execução. Os gerenciadores utilizados são:
+
+    \begin{itemize}
+       \item \textbf{Suicide}: a transação que descobriu o conflito é abortada;
+
+       \item \textbf{Aggressive}: é o inverso da \emph{Suicide}, a transação abortada é a outra e não a que descobriu o conflito;
+
+       \item \textbf{Delay}: a mesma que a \emph{Suicide}, mas aguarda pela resolução do conflito para reiniciar a transação;
+
+       \item \textbf{Timestamp}: a transação mais nova é abortada.
+    \end{itemize}
+
+\end{itemize}
+
+A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de gerenciamento de contenção.
+
+
 
 \chapter{Escalonadores}
 
