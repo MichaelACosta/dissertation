@@ -381,7 +381,7 @@ Versão: \currversion^^J
       \textbf{\@unidade}\\%
       \@ifundefined{@nomecurso}{\textbf{\@programa}}{\textbf{Curso de \@nomecurso}}\\%
       \vskip 1cm%
-      \includegraphics[width=3cm]{ufpelw}
+      \includegraphics[width=3cm]{images/ufpelw}
       \vskip 1cm%
       \@documento\\%
       \vskip 1cm%
@@ -710,7 +710,7 @@ Versão: \currversion^^J
 \begin{minipage}{1.8cm}
 \rotatebox{90}{~\parbox{12cm}{%
 \begin{minipage}[c]{1cm}
-\includegraphics[width=\columnwidth]{ufpelw}
+\includegraphics[width=\columnwidth]{images/ufpelw}
 \end{minipage}\hfill
 \begin{minipage}[c]{10.5cm}
 \textbf{\@title} -- \@authora
@@ -725,7 +725,7 @@ Versão: \currversion^^J
 \MakeUppercase{\textbf{\@universidade}}\\%
 \@unidade\\%
 \@ifundefined{@nomecurso}{\@programa}{Curso de \@nomecurso}\\%
-\includegraphics[width=3cm]{ufpel}\\
+\includegraphics[width=3cm]{images/ufpel}\\
 \@documento%
 \end{center}
 }%
