@@ -317,7 +317,35 @@ A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de ge
 
 \chapter{Escalonadores}
 
-...
+O uso de escalonadores provem melhorias nas execuções de programas, pode-se utilizar escalonadores de tarefas para melhorar o desempenho de arquiteturas, como visto no trabalho \cite{Rodolfo:2014}, consegue-se utilizar um escalonador para reduzir a latência de acesso à memória pelo processador em arquiteturas \emph{NUMA}.
+
+Em STM o uso de escalonadores pode reduzir o número de conflitos gerados pelo aumento do paralelismo, em \cite{Nicacio2012} foi proposto um escalonador de transações dinâmico denominado \emph{LUTS}, este apresenta heurísticas de detecção de conflitos para que o escalonador de transações evite \emph{aborts} no decorrer de sua execução.
+
+%\section{Heurísticas}
+
+%Existem muitas heurísticas diferentes para prever conflitos, estas podem servir como base para o escalonamento de transações. Nesta seção será apresentado alguns trabalhos com heurísticas distintas.
+
+Escalonadores fornecem diferentes abordagens para cada problema proposto, estas distintas abordagens permitem aos desenvolvedores explorar heurísticas de escalonamento que se adaptam a arquitetura utilizada propiciando uma solução mais eficiente. Para este trabalho foram estudados algumas heurísticas que serviram como base para o escalonamento de transações, estes trabalhos são:
+
+\subsection{ATS}
+
+\emph{Adaptive Transaction Scheduling}~(ATS)~\cite{ats2008} apresenta uma lista global onde é inserida todas transações conflitantes, assim o escalonador garante que será executada apenas uma transação por vez.
+
+\subsection{Blake}
+
+\emph{Blake}~\cite{blake2009} apresenta um escalonador proativo com gerenciamento de conflito, esta previsão ocorre através do armazenamento de um valor de confiança que indica a probabilidade de ocorrência do conflito, assim, o escalonador utiliza do valor de confiança para decidir entre executar a transação, esperar ou executar outra transação.
+
+\subsection{CAR-STM}
+
+\emph{CAR-STM}~\cite{carstm2008} mantém uma fila e uma \emph{thread} para cada núcleo disponível na máquina, o escalonador seleciona uma das filas e insere a transação que esta prestes a iniciar, após isto, passa o controle para a \emph{thread} na qual esta fila pertence. A idéia principal é que durante o tempo de execução o escalonador insira as transações abortadas na fila da transação conflitante, assim, reduzindo o número de \emph{aborts} através da serialização destas transações.
+
+\subsection{LUTS}
+
+\emph{LUTS} apresenta um escalonador de transações em nível de usuário, este apresenta uma heurística proativa que usa o escalonador para evitar o início de transações conflitantes, escolhendo na fila de tarefas uma transação menos suscetível ao conflito.
+
+\subsection{Shirink}
+
+\emph{Shirink}~\cite{shirink2009} é uma técnica de detecção de conflitos, este evita inicializar transações com maiores chances de \emph{abort}. Esta previsão toma como base os acessos realizados anteriormente pelas transações, porém a técnica é ativada depois que um determinado número de \emph{aborts} ocorram, assim, evitando \emph{overhead} de execução.
 
 \chapter{Arquiteturas}
 \label{chapter::arquiteturas}
