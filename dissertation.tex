@@ -327,6 +327,55 @@ Em STM o uso de escalonadores pode reduzir o número de conflitos gerados pelo a
 
 Escalonadores fornecem diferentes abordagens para cada problema proposto, estas distintas abordagens permitem aos desenvolvedores explorar heurísticas de escalonamento que se adaptam a arquitetura utilizada propiciando uma solução mais eficiente. Para este trabalho foram estudados algumas heurísticas que serviram como base para o escalonamento de transações, estes trabalhos são:
 
+\section{Categorias}
+
+Di zando apresenta uma categorização dos escalonadores de STM, onde ele classifica os algoritmos de acordo com as heurísticas apresentadas por eles.
+
+Está classificação é dividica por Baseada em Heurística e Baseado em Modelo.
+
+\begin{itemize}
+	\item Baseado em Heurística:
+	\begin{itemize}
+	    \item Feedback;
+	    \item Predição;
+	    \item Reativo; e
+	    \item Heurística Mista.
+	\end{itemize}
+	\item Baseado em Modelo:
+	\begin{itemize}
+	    \item Aprendizado de Máquina;
+	    \item Modelo Analítico; e
+	    \item Modelo Misto.
+	\end{itemize}
+\end{itemize}
+
+A tabela~\ref{tab:compare} apresenta a caracterização dos algoritmos revizados na bibliografia
+
+\begin{table}[]
+\footnotesize
+\centering
+\caption{Algoritmos e técnicas de escalonamento}
+\label{tab:compare}
+\begin{tabular}{l|l}
+\hline
+Escalonador & Técnica \\ \hline
+ATS & Feedback \\
+Probe & Feedback \\
+F2C2 & Feedback \\
+Shrink & Predição \\
+SCA & Predição \\
+CAR-STM & Reativo \\
+RelSTM & Reativo \\
+LUTS & Heurística Mista \\
+ProVIT & Heurística Mista \\
+SAC-STM & Aprendizado de Máquina \\
+CSR-STM & Modelo Analítico \\
+MCATS & Modelo Analítico \\
+AML & Modelo Misto \\
+\hline
+\end{tabular}
+\end{table}
+
 \subsection{ATS}
 
 \emph{Adaptive Transaction Scheduling}~(ATS)~\cite{ats2008} apresenta uma lista global onde é inserida todas transações conflitantes, assim o escalonador garante que será executada apenas uma transação por vez.
