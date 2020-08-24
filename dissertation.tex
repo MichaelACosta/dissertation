@@ -1,6 +1,6 @@
 \documentclass[diss,capa]{texufpel}
 
-%\usepackage{subfigure}
+\usepackage{subfigure}
 \usepackage{todo}
 \usepackage{xcolor, colortbl, color}
 \usepackage{tikz}
@@ -320,12 +320,62 @@ A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de ge
 ...
 
 \chapter{Arquiteturas}
+\label{chapter::arquiteturas}
 
-...
+Dependendo da localização física da memória em relação aos processadores, o tempo de acesso a uma posição de memória pode ser uniforme ou não. Surge então as arquiteturas denominadas de \emph{UMA~(Uniform Memory Access)} e \emph{NUMA~(Non Uniform Memory Access)} \cite{carissimi_2007}.
+
+Máquinas \emph{NUMA} tem a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o número de conflitos e o gargalo de acesso ao barramento. Sua arquitetura é feita para que os processadores não utilizem o mesmo barramento de acesso à memória como é feito em arquiteturas \emph{UMA}. %, a sua  principal característica é o tempo não uniforme de acesso à memória
+
+As arquiteturas \emph{NUMA} possuem múltiplos núcleos dispostos em conjuntos de processadores (Nodos), a memória é fisicamente composta por vários bancos de memória, podendo estar cada um deles vinculados a um Nodo e a um espaço de endereçamento compartilhado. Nesse caso, quando o processador acessa à memória que está vinculada a si, diz-se que houve um acesso local. Se o acesso for à memória de outro processador, diz-se que ocorreu um acesso remoto.
+
+Os acessos remotos são mais lentos que os acessos locais, uma vez que é necessário passar pela rede de interconexão para que se consiga chegar ao dado localizado na memória remota \cite{Rodolfo:2014}. A Figura~\ref{arquiteturas_config} ilustra de maneira genérica, \ref{uma_fig} uma máquina de arquitetura \emph{UMA} e \ref{numa_fig} uma máquina de arquitetura \emph{NUMA}. Pode-se observar que, na arquitetura \emph{UMA} representada na Figura~\ref{uma_fig}, as operações relacionadas à memória (leituras e escritas), independente da unidade de processamento \emph{(P0, P1, ..., Pn)} que estão partindo, possuem o mesmo tempo de acesso, pois todos acessam a memória utilizando o mesmo caminho.
+
+Já na Figura~\ref{numa_fig}, existem dois possíveis e distintos caminhos para acessar à memória, dependendo de qual unidade de processamento irá partir o acesso e da localização física da memória a ser acessada: (i) Acesso Local (\emph{P2} acessando à memória \emph{M2}) e (ii) Acesso Remoto (\emph{P2} acessando à memória \emph{M1}). Os tempos de acessos à memória local de um processador, tanto para leitura quanto para escrita de dados e instruções, são menores do que os tempos de acessos às memórias remotas. Neste tipo de arquitetura, os acessos a memória ocorrem de maneira não uniforme, essas assimetrias no acesso caracterizam este tipo de arquitetura.
+
+\begin{figure}[!htp]
+\centering
+\subfigure[Arquitetura UMA]{
+  \label{uma_fig}
+  \includegraphics[height=6cm]{images/UMA.png}
+}
+\subfigure[Arquitetura NUMA]{
+  \label{numa_fig}
+  \includegraphics[height=6cm]{images/NUMA.png}
+}
+\caption{Configuração das arquiteturas UMA e NUMA. Fonte:~\cite{Rodolfo:2014}}
+\label{arquiteturas_config}
+\end{figure}
+
+O custo não uniforme de acesso à memória é importante para o desempenho de uma aplicação, pois este pode oferecer desvantagens quando não forem avaliados. Uma forma bastante comum de medir a não uniformidade de acessos à memória nas arquiteturas assimétricas, é considerar a razão entre o acesso a uma posição de memória remota e um acesso a uma posição de memória local. Esta razão é denominada fator \emph{NUMA}, uma máquina pode apresentar diferentes valores para o fator \emph{NUMA}, dependendo de quais memórias serão acessadas pelos processadores. Portanto, para que uma aplicação execute de forma eficiente é desejável que os processos sejam escalonados próximos a faixa de endereçamento que eles acessam, assim reduzindo o fator \emph{NUMA}.
+
+É importante conhecer as características da arquitetura \emph{NUMA}, principalmente a latência de acesso às memórias remotas. Estas informações servem de subsidio ao desenvolvedor para que este consiga definir estratégias de escalonamento de tarefas mais eficientes para aplicações que executam neste tipo de arquitetura.
+
+
+\section{NUMA-Aware}
+
+Arquiteturas \emph{NUMA} apresentam boas características para aplicações com alto nível de paralelismo, porém, os programadores precisam ter cuidado ao escrever códigos para estas arquiteturas. Com isto surgiu o conceito de \emph{NUMA-Aware}, que aborda maneiras para que os programas utilizem com total eficiência os recursos da máquina.
+
+O conceito de \emph{NUMA-Aware} esta relacionado a melhorias em programas, como visto em \cite{mohamedin2016}, pode-se ter melhorias de desempenho a partir gerenciador de contenção que trata conflitos ocorridos entre nodos de forma diferente dos conflitos ocorridos em um único nodo. Também pode-se obter melhor desempenho das arquiteturas com um escalonador de tarefas, no qual o escalonador considera o endereço de memória que a tarefa acessará, assim reduzindo o tempo de leitura e escrita das tarefas executadas pelo programa \cite{blagodurov2010}.
+
 
 \section{HwLoc}
 
-...
+Para extrair o melhor desempenho de máquinas \emph{NUMA} é necessário conhecer a arquitetura que está sendo utilizada, para obter tais informações de maneira eficiente podemos utilizar o conjuntos de ferramentas \emph{HwLoc~(Hardware Locality)}.
+
+\emph{HwLoc} é um conjunto de ferramentas que possui sua API escrita em linguagem C, esta tem por finalidade obter o mapa hierárquico dos principais elementos presentes na arquitetura de uma máquina, como os níveis de memória \emph{cache}, nodos \emph{NUMA}, soquete, núcleos de processamento e dispositivos de \emph{I/O}.
+
+Esta ferramenta suporta uma variedade de sistemas operacionais e plataformas, além disto, pode agrupar as topologias de várias máquinas em uma única, com a finalidade de permitir que os aplicativos consigam ter uma visão geral da topologia de um conjunto de máquinas, como por exemplo em um \emph{cluster}.
+
+A topologia da máquina compreende todas as informações que podem ser coletadas sobre o \emph{hardware} em que a aplicação está sendo executada, como a localização física de um núcleo de processamento e suas interligações dentro de um determinado processador ou nó de processamento.
+
+As arquiteturas estão tornando-se cada vez mais complexas, com vários níveis de memória \emph{cache}, podendo conter blocos de \emph{cache} específicos (um para cada processador), blocos de \emph{cache} globais (um para todos os processadores) ou ainda alguns blocos de \emph{cache} parcialmente compartilhados (um bloco compartilhado entre alguns processadores).
+
+Estas informações da topologia da máquina precisam ser conhecidas durante a execução do programa para extrair o máximo de desempenho. O \emph{HwLoc} obtém as informações da topologia e as disponibiliza ao programador de diversas maneiras. A topologia da máquina pode ser armazenada em uma representação gráfica ou em outros formatos como texto, xml, pdf, entre outros. Pode ainda ser obtida em tempo de execução com o uso da interface que a ferramenta disponibiliza.
+
+Para obter o máximo possível de informações sobre o \emph{hardware} da máquina, a ferramenta \emph{HwLoc} foi estendida por \cite{Pilla_laercio2014}, para que fornecesse uma visão genérica e completa de qualquer arquitetura de computador. O modelo da arquitetura foi melhorado, passando a oferecer estatísticas de memória, como por exemplo os tempo de latência para buscar dados a partir de diferentes níveis de cache e memória compartilhada e também estatísticas das interconexões, como por exemplo a largura de banda para o tráfego dos dados. Em outras palavras, a ferramenta passou a fornecer informações da distância entre os núcleos de processamento da máquina com base nos tempos de latência nos acessos à memória e largura de banda para a transmissão de dados.
+
+Essas informações são geradas em forma de árvore, a qual é composta pela máquina na raiz e os processadores nas folhas, contendo todos os níveis de cache nos níveis intermediários. As principais vantagens da utilização deste modelo como descrição da topologia da máquina são: (i) modelo genérico, pode ser facilmente calculado por diferentes máquinas e bibliotecas de programação, (ii) agrega as diferentes características de máquinas \emph{multicore}. Além disso, as informações de hierarquia de \emph{cache} e latência de acesso a memória podem ser pré-computadas e armazenadas antes da execução da aplicação, o que reduz o \emph{overhead}, uma vez que elas não precisam ser calculadas novamente toda vez que uma aplicação for executada \cite{Pilla_laercio2014}.
+
 
 \chapter{Shrink}
 
