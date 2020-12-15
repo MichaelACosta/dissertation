@@ -536,6 +536,23 @@ Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malh
 \end{figure}
 
 
+\section{\textbf{Lstm}}
+
+O escalonador desenvolvido denominado Lstm é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
+
+A primeira etapa, inicialização do sistema, como o nome sugere ocorre no inicio da aplicação e é responsavel por identificar a arquitetura utilizada, montar as filas de execução e distribuir as threads entre estás filas.
+
+O escalonador lê a arquitetura utilizada para saber a quantidade de cores disponivel na arquitetura, se o número de thread solicitado pela aplicação for menor que o número de cores disponivel na arquitetura o escalonador cria uma fila de execução para cada thread solicitada.  Se o número de threads solicitados for maior que o número de cores da arquitetura, é criada uma fila de execução para cada core da arquitetura.
+
+Após as filas de execução serem criadas, o escalonador se encarrega de distribuir com base em uma heuristica esses threads recem criados entre as filas de execução. Temos duas heurísticas utilizadas para distribuição das threads entre as filas.
+
+A primeira heuristica de distribuição resumese a distribuir de forma ordenada uma thread para cada fila de execução, repetindo a distribuição caso haja mais threads do que filas...
+
+A segunda heuristica de distribuição resumese a distribuir de forma ordenada duas threads para cada fila de execução, repetindo a distribuição caso haja mais threads do que filas...
+
+
+
+
 \chapter{Conclusão}
 
 ...
