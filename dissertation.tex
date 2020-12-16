@@ -542,7 +542,7 @@ O escalonador desenvolvido denominado Lstm é dividido em três etapas. As etapa
 
 A primeira etapa, inicialização do sistema, como o nome sugere ocorre no inicio da aplicação e é responsavel por identificar a arquitetura utilizada, montar as filas de execução e distribuir as threads entre estás filas.
 
-O escalonador lê a arquitetura utilizada para saber a quantidade de cores disponivel na arquitetura, se o número de thread solicitado pela aplicação for menor que o número de cores disponivel na arquitetura o escalonador cria uma fila de execução para cada thread solicitada.  Se o número de threads solicitados for maior que o número de cores da arquitetura, é criada uma fila de execução para cada core da arquitetura.
+No inicio destá etapa o escalonador lê a arquitetura utilizada para saber a quantidade de cores disponivel na arquitetura, se o número de thread solicitado pela aplicação for menor que o número de cores disponivel na arquitetura o escalonador cria uma fila de execução para cada thread solicitada.  Se o número de threads solicitados for maior que o número de cores da arquitetura, é criada uma fila de execução para cada core da arquitetura.
 
 Após as filas de execução serem criadas, o escalonador se encarrega de distribuir com base em uma heuristica esses threads recem criados entre as filas de execução. Temos duas heurísticas utilizadas para distribuição das threads entre as filas.
 
@@ -550,7 +550,23 @@ A primeira heuristica de distribuição resumese a distribuir de forma ordenada 
 
 A segunda heuristica de distribuição resumese a distribuir de forma ordenada duas threads para cada fila de execução, repetindo a distribuição caso haja mais threads do que filas...
 
+Na segunda etapa a aplicação é realizada, cada thread pode ter n transações. Nessa etapa o escalonador utiliza os recursos desenvolvidos em STmap para coletar as informações sobre as transações executadas nessas threads.
 
+Aqui é montada a matriz de comunicação que indica o indice de leitura e escrita uma thread possui em relação as demais. Também coletamos as informações sobre o indice de commits e aborts realizados por thread e montamos a matriz com os ultimos endereços de memória acessados pelas threads.
+
+A terceira etapa só é executada se uma transação abortar. Nesta etapa avaliamos para qual fila a thread em execução pode ser migrada, e utilizamos uma heuristica para tomar a decisão de migrar a thread de sua fila de execução para outra fila.
+
+No momento do abort consultamos a matriz de comunicação previamente montada para descobrir com qual outra thread temos um maior número de leitura e escrita em comum. Após descobrir qual é esta thread utilizamos esse valor para descobrir qual sua fila de execução atual, é para esta fila que o escalonador poderá efetuar a migração.
+
+Caso a thread atual não esteja na mesma fila que a outra thread o escalonador avalia a possibilidade de migração desta thread. Para tomar a decisão de executar ou não a migração foi implementada duas heurísticas distintas. A primeira chamada latency tem como base avaliar a latencia de acesso à memória, a segunda denominada treshold avalia a relação entre commits e aborts existentes na thread em execução.
+
+Para realizar a heuristica latency primeiro consultamos a matriz com o endereço de memória do ultimo acesso em comum entre as duas threads e então consultamos a qual região de memória esse endereço pertence. Após isto é coletada a informação de qual nodo a fila que a thread esta executando pertence e qual nodo pertence a fila que receberá o thread.
+
+Se a latencia entre a fila atual e posição de memória for maior que a latencia entre a nova fila e a posição de memória o escalonador se encarrega de adormecer a thread atual e migrar ela para nova fila de execução.
+
+Para executar a heuristica treshold o escalonador avalia qual a diferença entre abort e commit existente na thread em execução. Caso o valor da diferença fique acima de um limiar estipulado o escalonador se encarrega de adormecer a thread em execução e migrala para nova fila.
+
+Após a heuristica ser executada e a migração ter sido realizada, o escalonador avalia se existe mais threads disponiveis para execução na fila de execução. Se a migração não for executada a execução da thread prosegue realizando um processo de abort padrão da biblioteca de stm.
 
 
 \chapter{Conclusão}
