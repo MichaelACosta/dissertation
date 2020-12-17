@@ -527,12 +527,21 @@ Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malh
 
 \chapter{Desenvolvimento}
 
-  ...
+Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LStm que identifica as características da arquitetura e do programa em tempo de execução.
 
+Este escalonador foi desenvolvido para biblioteca de STM TinyStm, com base no trabalho intitulado STMap \todo{citar}. O STMap fornece uma matriz de comunicação  das threads, esta matriz é montada em tempo de execução com base nas leituras e escritas realizadas.
 
-\section{\textbf{Lstm}}
+Essa matriz de comunicação é utilizada nas heurísticas do escalonador LStm junto com outros dados coletados pelo LStm. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
 
-O escalonador desenvolvido denominado Lstm é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
+\begin{figure}[htbp]
+  \centering \includegraphics[scale=.5]{images/lstm}
+\caption{Fluxo de execução da LStm} 
+\label{LStm}
+\end{figure}
+
+\section{\textbf{LStm}}
+
+O escalonador desenvolvido denominado LStm é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
 
 A primeira etapa, inicialização do sistema, como o nome sugere ocorre no inicio da aplicação e é responsável por identificar a arquitetura utilizada, montar as filas de execução e distribuir as threads entre estás filas.
 
@@ -540,8 +549,8 @@ No inicio desta etapa o escalonador lê a arquitetura utilizada para saber a qua
 
 \begin{figure}[htbp]
   \centering \includegraphics[scale=.5]{images/lstm1}
-\caption{Inicialização da Lstm} 
-\label{lstm1}
+\caption{Inicialização da LStm} 
+\label{LStm1}
 \end{figure}
 
 Após as filas de execução serem criadas, o escalonador se encarrega de distribuir com base em uma heurística esses threads recém criados entre as filas de execução. Temos duas heurísticas utilizadas para distribuição das threads entre as filas.
@@ -560,26 +569,19 @@ No momento do abort consultamos a matriz de comunicação previamente montada pa
 
 \begin{figure}[htbp]
   \centering \includegraphics[scale=.5]{images/lstm2}
-\caption{Migração de threads na Lstm} 
-\label{lstm2}
+\caption{Migração de threads na LStm} 
+\label{LStm2}
 \end{figure}
 
 Caso a thread atual não esteja na mesma fila que a outra thread o escalonador avalia a possibilidade de migração desta thread. Para tomar a decisão de executar ou não a migração foi implementada duas heurísticas distintas. A primeira chamada latency tem como base avaliar a latência de acesso à memória, a segunda denominada threshold avalia a relação entre commits e aborts existentes na thread em execução.
 
-Para realizar a heuristica latency primeiro consultamos a matriz com o endereço de memória do ultimo acesso em comum entre as duas threads e então consultamos a qual região de memória esse endereço pertence. Após isto é coletada a informação de qual nodo a fila que a thread esta executando pertence e qual nodo pertence a fila que receberá o thread.
+Para realizar a heurística latency primeiro consultamos a matriz com o endereço de memória do ultimo acesso em comum entre as duas threads e então consultamos a qual região de memória esse endereço pertence. Após isto é coletada a informação de qual nodo a fila que a thread esta executando pertence e qual nodo pertence a fila que receberá o thread.
 
 Se a latência entre a fila atual e posição de memória for maior que a latência entre a nova fila e a posição de memória o escalonador se encarrega de adormecer a thread atual e migrar ela para nova fila de execução.
 
 Para executar a heurística threshold o escalonador avalia qual a diferença entre abort e commit existente na thread em execução. Caso o valor da diferença fique acima de um limiar estipulado o escalonador se encarrega de adormecer a thread em execução e migrá-la para nova fila.
 
 Após a heurística ser executada e a migração ter sido realizada, o escalonador avalia se existe mais threads disponíveis para execução na fila de execução. Se a migração não for executada a thread realiza um processo de abort padrão da biblioteca de stm.
-
-\begin{figure}[htbp]
-  \centering \includegraphics[scale=.5]{images/lstm}
-\caption{Fluxo de execução da Lstm} 
-\label{lstm}
-\end{figure}
-
 
 \chapter{Conclusão}
 
