@@ -239,12 +239,12 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 Para solucionar o problema de qual transação continuará executando, quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
 
 
-\chapter{TinySTM}
+\section{TinySTM}
 \label{chapter::tiny}
 
 A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C e C++. Seu algoritmo é baseado em outros algoritmos de STM como o TL2~(\emph{Transactional Locking} 2)~\cite{tl2}. Ela é uma biblioteca utilizada para escrever aplicativos que usam memórias transacionais para sincronização, em substituição aos tradicionais \emph{locks}.
 
-\section{Sincronização e Versionamento}
+\subsection{Sincronização e Versionamento}
 
 Na \emph{TinySTM} a sincronização é feita a partir de um \emph{array} de \emph{locks} compartilhado que gerencia o acesso concorrente à memória. Cada \emph{lock} é do tamanho de um endereço da arquitetura~\cite{TINY}, e bloqueia vários endereços de memória. O mapeamento é feito por meio de uma função \emph{hash}. A Figura~\ref{figurasincronisacaotinystm} apresenta as estruturas de dados utilizadas nesta implementação.
 
@@ -273,22 +273,22 @@ A \emph{tinySTM} apresenta três estratégias de versionamento distintas que pod
 
 A \emph{TinySTM} utiliza \emph{Write\_Back\_ETL} como sua estratégia de versionamento padrão.
 
-\section{Escritas}
+\subsection{Escritas}
 
 Quando ocorre uma escrita em um local da memória, a transação primeiro identifica o \emph{lock} correspondente ao endereço de memória e lê o valor. Se o \emph{lock} está em uso a transação verifica se é a proprietária do \emph{lock} utilizando o endereço armazenado nos restantes bits de entrada. Caso a transação seja a proprietária então ela simplesmente escreve o novo valor e retorna. Caso contrário, a transação pode esperar por algum tempo ou abortar imediatamente. A \emph{TinySTM} utiliza a última opção como padrão em sua implementação.
 
 Se o \emph{lock} não está em uso, a transação tenta adquiri-lo para escrever o novo valor na entrada utilizando uma operação atômica \emph{compare-and-swap}. A falha indica que outra transação adquiriu o \emph{lock} nesse meio tempo, então a transação é reiniciada.
 
 
-\section{Leituras}
+\subsection{Leituras}
 
 Quando ocorre uma leitura na memória, a transação deve verificar se o \emph{lock} está em uso ou se  o valor já foi atualizado concorrentemente por outra transação. Para esse fim, a transação lê o \emph{lock} correspondente ao endereço de memória. Se o \emph{lock} não tem proprietário e o valor~(número de versão) não foi modificado entre duas leituras, então o valor é consistente.
 
-\section{Gerenciamento de Memória}
+\subsection{Gerenciamento de Memória}
 
 A \emph{TinySTM} utiliza um gerenciador de memória que possibilita qualquer código transacional utilizar memória dinâmica. As transações mantém o endereço da memória alocada ou liberada. A alocação de memória é automaticamente desfeita quando a transação é abortada, já a liberação não pode ser desfeita antes do \emph{commit}. Contudo uma transação pode somente liberar memória depois de adquirir todos os \emph{locks}, assim, um \emph{free} é semanticamente equivalente a uma atualização.
 
-\section{Gerenciador de Contenção}
+\subsection{Gerenciador de Contenção}
 
 A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, estas são:
 
