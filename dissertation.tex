@@ -455,8 +455,27 @@ AML & Modelo Misto \\
 
 \emph{Shirink}~\cite{shirink2009} é uma técnica de detecção de conflitos, este evita inicializar transações com maiores chances de \emph{abort}. Esta previsão toma como base os acessos realizados anteriormente pelas transações, porém a técnica é ativada depois que um determinado número de \emph{aborts} ocorram, assim, evitando \emph{overhead} de execução.
 
-\chapter{Arquiteturas}
-\label{chapter::arquiteturas}
+\subsection{STMap}
+
+...
+
+\chapter{LTMS - Lups Transactional Memory Schedule}
+
+...
+
+Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LTMS que identifica as características da arquitetura e do programa em tempo de execução.
+
+Este escalonador foi desenvolvido para biblioteca de STM TinyStm, com base no trabalho intitulado STMap \todo{citar}. O STMap fornece uma matriz de comunicação  das threads, esta matriz é montada em tempo de execução com base nas leituras e escritas realizadas.
+
+Essa matriz de comunicação é utilizada nas heurísticas do escalonador LTMS junto com outros dados coletados pelo LTMS. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
+
+\begin{figure}[htbp]
+  \centering \includegraphics[scale=.5]{images/lstm}
+\caption{Fluxo de execução da LTMS} 
+\label{LTMS}
+\end{figure}
+
+\section{Arquiteturas}
 
 Dependendo da localização física da memória em relação aos processadores, o tempo de acesso a uma posição de memória pode ser uniforme ou não. Surge então as arquiteturas denominadas de \emph{UMA~(Uniform Memory Access)} e \emph{NUMA~(Non Uniform Memory Access)} \cite{carissimi_2007}.
 
@@ -487,14 +506,14 @@ O custo não uniforme de acesso à memória é importante para o desempenho de u
 É importante conhecer as características da arquitetura \emph{NUMA}, principalmente a latência de acesso às memórias remotas. Estas informações servem de subsidio ao desenvolvedor para que este consiga definir estratégias de escalonamento de tarefas mais eficientes para aplicações que executam neste tipo de arquitetura.
 
 
-\section{NUMA-Aware}
+\subsection{NUMA-Aware}
 
 Arquiteturas \emph{NUMA} apresentam boas características para aplicações com alto nível de paralelismo, porém, os programadores precisam ter cuidado ao escrever códigos para estas arquiteturas. Com isto surgiu o conceito de \emph{NUMA-Aware}, que aborda maneiras para que os programas utilizem com total eficiência os recursos da máquina.
 
 O conceito de \emph{NUMA-Aware} esta relacionado a melhorias em programas, como visto em \cite{mohamedin2016}, pode-se ter melhorias de desempenho a partir gerenciador de contenção que trata conflitos ocorridos entre nodos de forma diferente dos conflitos ocorridos em um único nodo. Também pode-se obter melhor desempenho das arquiteturas com um escalonador de tarefas, no qual o escalonador considera o endereço de memória que a tarefa acessará, assim reduzindo o tempo de leitura e escrita das tarefas executadas pelo programa \cite{blagodurov2010}.
 
 
-\section{HwLoc}
+\subsection{HwLoc}
 
 Para extrair o melhor desempenho de máquinas \emph{NUMA} é necessário conhecer a arquitetura que está sendo utilizada, para obter tais informações de maneira eficiente podemos utilizar o conjuntos de ferramentas \emph{HwLoc~(Hardware Locality)}.
 
@@ -511,22 +530,6 @@ Estas informações da topologia da máquina precisam ser conhecidas durante a e
 Para obter o máximo possível de informações sobre o \emph{hardware} da máquina, a ferramenta \emph{HwLoc} foi estendida por \cite{Pilla_laercio2014}, para que fornecesse uma visão genérica e completa de qualquer arquitetura de computador. O modelo da arquitetura foi melhorado, passando a oferecer estatísticas de memória, como por exemplo os tempo de latência para buscar dados a partir de diferentes níveis de cache e memória compartilhada e também estatísticas das interconexões, como por exemplo a largura de banda para o tráfego dos dados. Em outras palavras, a ferramenta passou a fornecer informações da distância entre os núcleos de processamento da máquina com base nos tempos de latência nos acessos à memória e largura de banda para a transmissão de dados.
 
 Essas informações são geradas em forma de árvore, a qual é composta pela máquina na raiz e os processadores nas folhas, contendo todos os níveis de cache nos níveis intermediários. As principais vantagens da utilização deste modelo como descrição da topologia da máquina são: (i) modelo genérico, pode ser facilmente calculado por diferentes máquinas e bibliotecas de programação, (ii) agrega as diferentes características de máquinas \emph{multicore}. Além disso, as informações de hierarquia de \emph{cache} e latência de acesso a memória podem ser pré-computadas e armazenadas antes da execução da aplicação, o que reduz o \emph{overhead}, uma vez que elas não precisam ser calculadas novamente toda vez que uma aplicação for executada \cite{Pilla_laercio2014}.
-
-\chapter{LTMS - Lups Transactional Memory Schedule}
-
-...
-
-Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LTMS que identifica as características da arquitetura e do programa em tempo de execução.
-
-Este escalonador foi desenvolvido para biblioteca de STM TinyStm, com base no trabalho intitulado STMap \todo{citar}. O STMap fornece uma matriz de comunicação  das threads, esta matriz é montada em tempo de execução com base nas leituras e escritas realizadas.
-
-Essa matriz de comunicação é utilizada nas heurísticas do escalonador LTMS junto com outros dados coletados pelo LTMS. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
-
-\begin{figure}[htbp]
-  \centering \includegraphics[scale=.5]{images/lstm}
-\caption{Fluxo de execução da LTMS} 
-\label{LTMS}
-\end{figure}
 
 \section{\textbf{Conceitual}}
 
