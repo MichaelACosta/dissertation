@@ -505,31 +505,11 @@ O custo não uniforme de acesso à memória é importante para o desempenho de u
 
 É importante conhecer as características da arquitetura \emph{NUMA}, principalmente a latência de acesso às memórias remotas. Estas informações servem de subsidio ao desenvolvedor para que este consiga definir estratégias de escalonamento de tarefas mais eficientes para aplicações que executam neste tipo de arquitetura.
 
-
 \subsection{NUMA-Aware}
 
 Arquiteturas \emph{NUMA} apresentam boas características para aplicações com alto nível de paralelismo, porém, os programadores precisam ter cuidado ao escrever códigos para estas arquiteturas. Com isto surgiu o conceito de \emph{NUMA-Aware}, que aborda maneiras para que os programas utilizem com total eficiência os recursos da máquina.
 
 O conceito de \emph{NUMA-Aware} esta relacionado a melhorias em programas, como visto em \cite{mohamedin2016}, pode-se ter melhorias de desempenho a partir gerenciador de contenção que trata conflitos ocorridos entre nodos de forma diferente dos conflitos ocorridos em um único nodo. Também pode-se obter melhor desempenho das arquiteturas com um escalonador de tarefas, no qual o escalonador considera o endereço de memória que a tarefa acessará, assim reduzindo o tempo de leitura e escrita das tarefas executadas pelo programa \cite{blagodurov2010}.
-
-
-\subsection{HwLoc}
-
-Para extrair o melhor desempenho de máquinas \emph{NUMA} é necessário conhecer a arquitetura que está sendo utilizada, para obter tais informações de maneira eficiente podemos utilizar o conjuntos de ferramentas \emph{HwLoc~(Hardware Locality)}.
-
-\emph{HwLoc} é um conjunto de ferramentas que possui sua API escrita em linguagem C, esta tem por finalidade obter o mapa hierárquico dos principais elementos presentes na arquitetura de uma máquina, como os níveis de memória \emph{cache}, nodos \emph{NUMA}, soquete, núcleos de processamento e dispositivos de \emph{I/O}.
-
-Esta ferramenta suporta uma variedade de sistemas operacionais e plataformas, além disto, pode agrupar as topologias de várias máquinas em uma única, com a finalidade de permitir que os aplicativos consigam ter uma visão geral da topologia de um conjunto de máquinas, como por exemplo em um \emph{cluster}.
-
-A topologia da máquina compreende todas as informações que podem ser coletadas sobre o \emph{hardware} em que a aplicação está sendo executada, como a localização física de um núcleo de processamento e suas interligações dentro de um determinado processador ou nó de processamento.
-
-As arquiteturas estão tornando-se cada vez mais complexas, com vários níveis de memória \emph{cache}, podendo conter blocos de \emph{cache} específicos (um para cada processador), blocos de \emph{cache} globais (um para todos os processadores) ou ainda alguns blocos de \emph{cache} parcialmente compartilhados (um bloco compartilhado entre alguns processadores).
-
-Estas informações da topologia da máquina precisam ser conhecidas durante a execução do programa para extrair o máximo de desempenho. O \emph{HwLoc} obtém as informações da topologia e as disponibiliza ao programador de diversas maneiras. A topologia da máquina pode ser armazenada em uma representação gráfica ou em outros formatos como texto, xml, pdf, entre outros. Pode ainda ser obtida em tempo de execução com o uso da interface que a ferramenta disponibiliza.
-
-Para obter o máximo possível de informações sobre o \emph{hardware} da máquina, a ferramenta \emph{HwLoc} foi estendida por \cite{Pilla_laercio2014}, para que fornecesse uma visão genérica e completa de qualquer arquitetura de computador. O modelo da arquitetura foi melhorado, passando a oferecer estatísticas de memória, como por exemplo os tempo de latência para buscar dados a partir de diferentes níveis de cache e memória compartilhada e também estatísticas das interconexões, como por exemplo a largura de banda para o tráfego dos dados. Em outras palavras, a ferramenta passou a fornecer informações da distância entre os núcleos de processamento da máquina com base nos tempos de latência nos acessos à memória e largura de banda para a transmissão de dados.
-
-Essas informações são geradas em forma de árvore, a qual é composta pela máquina na raiz e os processadores nas folhas, contendo todos os níveis de cache nos níveis intermediários. As principais vantagens da utilização deste modelo como descrição da topologia da máquina são: (i) modelo genérico, pode ser facilmente calculado por diferentes máquinas e bibliotecas de programação, (ii) agrega as diferentes características de máquinas \emph{multicore}. Além disso, as informações de hierarquia de \emph{cache} e latência de acesso a memória podem ser pré-computadas e armazenadas antes da execução da aplicação, o que reduz o \emph{overhead}, uma vez que elas não precisam ser calculadas novamente toda vez que uma aplicação for executada \cite{Pilla_laercio2014}.
 
 \section{\textbf{Conceitual}}
 
