@@ -240,7 +240,6 @@ Para solucionar o problema de qual transação continuará executando, quando oc
 
 
 \section{TinySTM}
-\label{chapter::tiny}
 
 A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C e C++. Seu algoritmo é baseado em outros algoritmos de STM como o TL2~(\emph{Transactional Locking} 2)~\cite{tl2}. Ela é uma biblioteca utilizada para escrever aplicativos que usam memórias transacionais para sincronização, em substituição aos tradicionais \emph{locks}.
 
@@ -315,7 +314,65 @@ A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, e
 
 A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de gerenciamento de contenção.
 
+\section{STAMP}
 
+
+STAMP~\cite{STAMP} é um conjunto de \emph{benchmarks} criado para pesquisa de memórias transacionais, composto por oito \emph{benchmarks}. Apesar de desenvolvido para a STM~TL2, com algumas modificações disponíveis pode ser usado no \emph{TinySTM}.  A versão do STAMP utilizada será a 0.9.10. O conjunto de \emph{benchmarks} STAMP foi escolhido devido a ele implementar vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM além de ser o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM.
+
+
+Os \emph{benchmarks} implementados pelo STAMP são~\cite{STAMP}:
+\newline
+
+
+\subsection{Bayes}
+
+Esta aplicação implementa um algoritmo de aprendizado de redes Bayesianas, que é uma parte importante do aprendizado de máquina. Normalmente, nem as distribuições de probabilidades nem as dependências condicionais entre eles são conhecidas ou podem ser resolvidos por um ser humano, assim redes Bayesianas são frequentemente estudadas com os dados observados. O algoritmo específico implementa uma estratégia de \emph{hill-climbing} ou subida de encosta que usa buscas locais e globais, semelhante à técnica descrita em~\cite{bayesian}. Para estimativas eficientes de distribuição de probabilidade, utiliza-se uma \emph{adtree} ou árvore de decisão a partir de~\cite{Moore97}.
+
+
+\subsection{Genome}
+
+Este \emph{benchmark} implementa um programa de sequenciamento de genes que reconstrói a sequência de genes a partir de sequências maiores. O algoritmo usado para o sequenciamento de genes têm  três fases:
+
+\begin{enumerate}
+  \item [1.] Remove os segmentos duplicados utilizando uma \emph{hash};
+  \item [2.] Combina segmentos utilizando o algoritmo de pesquisa de sequência \emph{Rabin-Karp}~\cite{Karp87}; e
+  \item [3.] Constrói a sequência.
+  \newline
+\end{enumerate}
+
+
+\subsection{Intruder}
+
+Este \emph{benchmark} simula o Design 5 dos NIDS~(\emph{Network Intrusion Detection System}) descritos por Haagdorens em~\cite{Haagdorens05}. Pacotes de rede são processados paralelamente e passam por três fases: captação, remontagem e detecção. A estrutura de dados principal na fase de captura é uma simples fila, e a fase de remontagem utiliza um dicionário (implementado por uma árvore auto balanceada), que contém a lista de pacotes que pertencem à mesma seção. Ao avaliar seus cinco designs para um NIDS \emph{multithread}, Haagdorens afirma que a complexidade da fase de remontagem fez com que ele utilize a sincronização de grãos grosso nos designs~4 e~5. Assim, embora estes dois modelos tentam explorar níveis mais elevados de simultaneidade, a sincronização aproximada de grão resulta em um pior desempenho.
+
+
+\subsection{Kmeans}
+
+Este \emph{benchmark} foi tirado do \emph{NU-MineBench 2.0}~\cite{Pisharath05}. \emph{K-means} é um método baseado em partição~\cite{Bezdek81} e é sem dúvida a técnica de agrupamento mais utilizada. Este algoritmo é comumente usado para partição de itens de dados em subconjuntos relacionados. Cada \emph{thread} processa uma partição dos objetos iterativamente. A versão transacional adiciona uma transação para proteger o update do centro do \emph{cluster} que ocorre durante cada iteração.
+
+
+\subsection{Labyrinth}
+
+Dado um labirinto, este \emph{benchmark} encontra os caminhos de menor distância entre os pares de pontos inicial e final. O algoritmo de roteamento utilizado é o algoritmo Lee~\cite{Lee61}.
+
+Nesse algoritmo, o labirinto é representado como uma grade, em que cada ponto de grade pode conter ligações adjacentes, para os pontos da grade que não estão nas diagonais. O algoritmo busca um caminho mais curto entre os pontos de conexão através da realização de uma busca em largura e marca cada ponto da grade com a sua distância para o início. Esta fase de expansão acabará por chegar ao ponto final, se a conexão for possível. A segunda fase de rastreamento, em seguida, estabelece a ligação, seguindo todo o caminho diminuindo a distância. Este algoritmo é garantido para encontrar o caminho mais curto entre um ponto inicial e final, no entanto, quando vários caminhos são feitos, um caminho pode bloquear outro.
+
+
+\subsection{SSCA2}
+
+\emph{Scalable Synthetic Compact Applications 2}~(SSCA2)~\cite{Bader05} é composta por quatro \emph{kernels} que operam em um grande, dirigido e ponderado gráfico. Estes quatro \emph{kernels} gráficos são comumente usados em aplicações que vão desde a biologia computacional até a segurança. STAMP incide sobre um \emph{Kernel}, que constrói uma estrutura de dados eficiente utilizando matrizes de adjacência e matrizes auxiliares.
+
+
+\subsection{Vacation}
+
+Este \emph{benchmark} implementa um sistema de reserva de viagens alimentado por um banco de dados não-distribuído. A carga de trabalho é composto por vários segmentos de clientes que interagem com o banco de dados via gerenciador de transações do sistema.
+
+O banco de dados é composto por quatro tabelas: carros, quartos, voos e clientes. Os três primeiros têm relações com os campos que representam um número único de identificação, quantidade reservada, a quantidade total disponível, e preço. A tabela de clientes acompanha as reservas feitas por cada cliente e o preço total das reservas que eles fizeram. As tabelas são implementados como árvores rubro negras.
+
+
+\subsection{Yada}
+
+Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malha~\cite{Ruppert95}. A versão transacional é similar em design ao apresentado em~\cite{Kulkarni06}.
 
 \chapter{Escalonadores}
 
@@ -454,67 +511,6 @@ Estas informações da topologia da máquina precisam ser conhecidas durante a e
 Para obter o máximo possível de informações sobre o \emph{hardware} da máquina, a ferramenta \emph{HwLoc} foi estendida por \cite{Pilla_laercio2014}, para que fornecesse uma visão genérica e completa de qualquer arquitetura de computador. O modelo da arquitetura foi melhorado, passando a oferecer estatísticas de memória, como por exemplo os tempo de latência para buscar dados a partir de diferentes níveis de cache e memória compartilhada e também estatísticas das interconexões, como por exemplo a largura de banda para o tráfego dos dados. Em outras palavras, a ferramenta passou a fornecer informações da distância entre os núcleos de processamento da máquina com base nos tempos de latência nos acessos à memória e largura de banda para a transmissão de dados.
 
 Essas informações são geradas em forma de árvore, a qual é composta pela máquina na raiz e os processadores nas folhas, contendo todos os níveis de cache nos níveis intermediários. As principais vantagens da utilização deste modelo como descrição da topologia da máquina são: (i) modelo genérico, pode ser facilmente calculado por diferentes máquinas e bibliotecas de programação, (ii) agrega as diferentes características de máquinas \emph{multicore}. Além disso, as informações de hierarquia de \emph{cache} e latência de acesso a memória podem ser pré-computadas e armazenadas antes da execução da aplicação, o que reduz o \emph{overhead}, uma vez que elas não precisam ser calculadas novamente toda vez que uma aplicação for executada \cite{Pilla_laercio2014}.
-
-\chapter{STAMP}
-\label{chapter::benchmark}
-
-
-STAMP~\cite{STAMP} é um conjunto de \emph{benchmarks} criado para pesquisa de memórias transacionais, composto por oito \emph{benchmarks}. Apesar de desenvolvido para a STM~TL2, com algumas modificações disponíveis pode ser usado no \emph{TinySTM}.  A versão do STAMP utilizada será a 0.9.10. O conjunto de \emph{benchmarks} STAMP foi escolhido devido a ele implementar vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM além de ser o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM.
-
-
-Os \emph{benchmarks} implementados pelo STAMP são~\cite{STAMP}:
-\newline
-
-
-\section{\textbf{Bayes}}
-
-Esta aplicação implementa um algoritmo de aprendizado de redes Bayesianas, que é uma parte importante do aprendizado de máquina. Normalmente, nem as distribuições de probabilidades nem as dependências condicionais entre eles são conhecidas ou podem ser resolvidos por um ser humano, assim redes Bayesianas são frequentemente estudadas com os dados observados. O algoritmo específico implementa uma estratégia de \emph{hill-climbing} ou subida de encosta que usa buscas locais e globais, semelhante à técnica descrita em~\cite{bayesian}. Para estimativas eficientes de distribuição de probabilidade, utiliza-se uma \emph{adtree} ou árvore de decisão a partir de~\cite{Moore97}.
-
-
-\section{\textbf{Genome}}
-
-Este \emph{benchmark} implementa um programa de sequenciamento de genes que reconstrói a sequência de genes a partir de sequências maiores. O algoritmo usado para o sequenciamento de genes têm  três fases:
-
-\begin{enumerate}
-  \item [1.] Remove os segmentos duplicados utilizando uma \emph{hash};
-  \item [2.] Combina segmentos utilizando o algoritmo de pesquisa de sequência \emph{Rabin-Karp}~\cite{Karp87}; e
-  \item [3.] Constrói a sequência.
-  \newline
-\end{enumerate}
-
-
-\section{\textbf{Intruder}}
-
-Este \emph{benchmark} simula o Design 5 dos NIDS~(\emph{Network Intrusion Detection System}) descritos por Haagdorens em~\cite{Haagdorens05}. Pacotes de rede são processados paralelamente e passam por três fases: captação, remontagem e detecção. A estrutura de dados principal na fase de captura é uma simples fila, e a fase de remontagem utiliza um dicionário (implementado por uma árvore auto balanceada), que contém a lista de pacotes que pertencem à mesma seção. Ao avaliar seus cinco designs para um NIDS \emph{multithread}, Haagdorens afirma que a complexidade da fase de remontagem fez com que ele utilize a sincronização de grãos grosso nos designs~4 e~5. Assim, embora estes dois modelos tentam explorar níveis mais elevados de simultaneidade, a sincronização aproximada de grão resulta em um pior desempenho.
-
-
-\section{\textbf{Kmeans}}
-
-Este \emph{benchmark} foi tirado do \emph{NU-MineBench 2.0}~\cite{Pisharath05}. \emph{K-means} é um método baseado em partição~\cite{Bezdek81} e é sem dúvida a técnica de agrupamento mais utilizada. Este algoritmo é comumente usado para partição de itens de dados em subconjuntos relacionados. Cada \emph{thread} processa uma partição dos objetos iterativamente. A versão transacional adiciona uma transação para proteger o update do centro do \emph{cluster} que ocorre durante cada iteração.
-
-
-\section{\textbf{Labyrinth}}
-
-Dado um labirinto, este \emph{benchmark} encontra os caminhos de menor distância entre os pares de pontos inicial e final. O algoritmo de roteamento utilizado é o algoritmo Lee~\cite{Lee61}.
-
-Nesse algoritmo, o labirinto é representado como uma grade, em que cada ponto de grade pode conter ligações adjacentes, para os pontos da grade que não estão nas diagonais. O algoritmo busca um caminho mais curto entre os pontos de conexão através da realização de uma busca em largura e marca cada ponto da grade com a sua distância para o início. Esta fase de expansão acabará por chegar ao ponto final, se a conexão for possível. A segunda fase de rastreamento, em seguida, estabelece a ligação, seguindo todo o caminho diminuindo a distância. Este algoritmo é garantido para encontrar o caminho mais curto entre um ponto inicial e final, no entanto, quando vários caminhos são feitos, um caminho pode bloquear outro.
-
-
-\section{\textbf{SSCA2}}
-
-\emph{Scalable Synthetic Compact Applications 2}~(SSCA2)~\cite{Bader05} é composta por quatro \emph{kernels} que operam em um grande, dirigido e ponderado gráfico. Estes quatro \emph{kernels} gráficos são comumente usados em aplicações que vão desde a biologia computacional até a segurança. STAMP incide sobre um \emph{Kernel}, que constrói uma estrutura de dados eficiente utilizando matrizes de adjacência e matrizes auxiliares.
-
-
-\section{\textbf{Vacation}}
-
-Este \emph{benchmark} implementa um sistema de reserva de viagens alimentado por um banco de dados não-distribuído. A carga de trabalho é composto por vários segmentos de clientes que interagem com o banco de dados via gerenciador de transações do sistema.
-
-O banco de dados é composto por quatro tabelas: carros, quartos, voos e clientes. Os três primeiros têm relações com os campos que representam um número único de identificação, quantidade reservada, a quantidade total disponível, e preço. A tabela de clientes acompanha as reservas feitas por cada cliente e o preço total das reservas que eles fizeram. As tabelas são implementados como árvores rubro negras.
-
-
-\section{\textbf{Yada}}
-
-Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malha~\cite{Ruppert95}. A versão transacional é similar em design ao apresentado em~\cite{Kulkarni06}.
 
 \chapter{LTMS - Lups Transactional Memory Schedule}
 
