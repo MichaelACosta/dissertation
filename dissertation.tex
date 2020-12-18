@@ -455,11 +455,6 @@ Para obter o máximo possível de informações sobre o \emph{hardware} da máqu
 
 Essas informações são geradas em forma de árvore, a qual é composta pela máquina na raiz e os processadores nas folhas, contendo todos os níveis de cache nos níveis intermediários. As principais vantagens da utilização deste modelo como descrição da topologia da máquina são: (i) modelo genérico, pode ser facilmente calculado por diferentes máquinas e bibliotecas de programação, (ii) agrega as diferentes características de máquinas \emph{multicore}. Além disso, as informações de hierarquia de \emph{cache} e latência de acesso a memória podem ser pré-computadas e armazenadas antes da execução da aplicação, o que reduz o \emph{overhead}, uma vez que elas não precisam ser calculadas novamente toda vez que uma aplicação for executada \cite{Pilla_laercio2014}.
 
-
-\chapter{Shrink}
-
-...
-
 \chapter{STAMP}
 \label{chapter::benchmark}
 
@@ -521,11 +516,9 @@ O banco de dados é composto por quatro tabelas: carros, quartos, voos e cliente
 
 Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malha~\cite{Ruppert95}. A versão transacional é similar em design ao apresentado em~\cite{Kulkarni06}.
 
-\chapter{Metodologia}
+\chapter{LTMS - Lups Transactional Memory Schedule}
 
 ...
-
-\chapter{Desenvolvimento}
 
 Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LStm que identifica as características da arquitetura e do programa em tempo de execução.
 
@@ -539,7 +532,7 @@ Essa matriz de comunicação é utilizada nas heurísticas do escalonador LStm j
 \label{LStm}
 \end{figure}
 
-\section{\textbf{LStm}}
+\section{\textbf{Conceitual}}
 
 O escalonador desenvolvido denominado LStm é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
 
@@ -583,13 +576,22 @@ Para executar a heurística threshold o escalonador avalia qual a diferença ent
 
 Após a heurística ser executada e a migração ter sido realizada, o escalonador avalia se existe mais threads disponíveis para execução na fila de execução. Se a migração não for executada a thread realiza um processo de abort padrão da biblioteca de stm.
 
-\chapter{Conclusão}
+\section{\textbf{Aplicação}}
+
+...
+
+\chapter{Esperimentos}
 
 ...
 
 \section{Resultados}
 
 ...
+
+\chapter{Conclusão}
+
+...
+
 
 % Bibliografia http://liinwww.ira.uka.de/bibliography/index.html um
 % site que cataloga no formato bibtex a bibliografia em computacao
