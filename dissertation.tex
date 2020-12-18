@@ -520,21 +520,21 @@ Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malh
 
 ...
 
-Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LStm que identifica as características da arquitetura e do programa em tempo de execução.
+Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LTMS que identifica as características da arquitetura e do programa em tempo de execução.
 
 Este escalonador foi desenvolvido para biblioteca de STM TinyStm, com base no trabalho intitulado STMap \todo{citar}. O STMap fornece uma matriz de comunicação  das threads, esta matriz é montada em tempo de execução com base nas leituras e escritas realizadas.
 
-Essa matriz de comunicação é utilizada nas heurísticas do escalonador LStm junto com outros dados coletados pelo LStm. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
+Essa matriz de comunicação é utilizada nas heurísticas do escalonador LTMS junto com outros dados coletados pelo LTMS. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
 
 \begin{figure}[htbp]
   \centering \includegraphics[scale=.5]{images/lstm}
-\caption{Fluxo de execução da LStm} 
-\label{LStm}
+\caption{Fluxo de execução da LTMS} 
+\label{LTMS}
 \end{figure}
 
 \section{\textbf{Conceitual}}
 
-O escalonador desenvolvido denominado LStm é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
+O escalonador desenvolvido denominado LTMS é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
 
 A primeira etapa, inicialização do sistema, como o nome sugere ocorre no inicio da aplicação e é responsável por identificar a arquitetura utilizada, montar as filas de execução e distribuir as threads entre estás filas.
 
@@ -542,8 +542,8 @@ No inicio desta etapa o escalonador lê a arquitetura utilizada para saber a qua
 
 \begin{figure}[htbp]
   \centering \includegraphics[scale=.5]{images/lstm1}
-\caption{Inicialização da LStm} 
-\label{LStm1}
+\caption{Inicialização da LTMS} 
+\label{LTMS1}
 \end{figure}
 
 Após as filas de execução serem criadas, o escalonador se encarrega de distribuir com base em uma heurística esses threads recém criados entre as filas de execução. Temos duas heurísticas utilizadas para distribuição das threads entre as filas.
@@ -562,8 +562,8 @@ No momento do abort consultamos a matriz de comunicação previamente montada pa
 
 \begin{figure}[htbp]
   \centering \includegraphics[scale=.5]{images/lstm2}
-\caption{Migração de threads na LStm} 
-\label{LStm2}
+\caption{Migração de threads na LTMS} 
+\label{LTMS2}
 \end{figure}
 
 Caso a thread atual não esteja na mesma fila que a outra thread o escalonador avalia a possibilidade de migração desta thread. Para tomar a decisão de executar ou não a migração foi implementada duas heurísticas distintas. A primeira chamada latency tem como base avaliar a latência de acesso à memória, a segunda denominada threshold avalia a relação entre commits e aborts existentes na thread em execução.
@@ -580,7 +580,7 @@ Após a heurística ser executada e a migração ter sido realizada, o escalonad
 
 ...
 
-\chapter{Esperimentos}
+\chapter{Experimentos}
 
 ...
 
