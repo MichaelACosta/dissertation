@@ -461,19 +461,11 @@ AML & Modelo Misto \\
 
 \chapter{LTMS - Lups Transactional Memory Schedule}
 
-...
+Memórias transacionais fornecem uma facilidade maior no desenvolvimento de programas paralelos, a area caminha para o uso de escalonadores de transações que compreendem a aplicação para extrair o melhor desempenho.
 
-Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LTMS que identifica as características da arquitetura e do programa em tempo de execução.
+Porem os escalonadores atuais não consideram as diferenças entre as arquiteturas paralelas existentes. O escalonador LTMS se propõem a avaliar a aplicação e a arquitetura em tempo de execução para tirar máximo de proveito do paralelismo existente.
 
-Este escalonador foi desenvolvido para biblioteca de STM TinyStm, com base no trabalho intitulado STMap \todo{citar}. O STMap fornece uma matriz de comunicação  das threads, esta matriz é montada em tempo de execução com base nas leituras e escritas realizadas.
-
-Essa matriz de comunicação é utilizada nas heurísticas do escalonador LTMS junto com outros dados coletados pelo LTMS. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
-
-\begin{figure}[htbp]
-  \centering \includegraphics[scale=.5]{images/lstm}
-\caption{Fluxo de execução da LTMS} 
-\label{LTMS}
-\end{figure}
+As duas principais arquiteturas paralelas que será abordada na proxima seção são, arquiteturas UMA e arquiteturas NUMA. Os escalonadores atuais assim como as bibliotecas de stm são pensados para arquiteturas UMA não considerando as diferenças quando executadas em NUMA.
 
 \section{Arquiteturas}
 
@@ -512,6 +504,22 @@ Arquiteturas \emph{NUMA} apresentam boas características para aplicações com 
 O conceito de \emph{NUMA-Aware} esta relacionado a melhorias em programas, como visto em \cite{mohamedin2016}, pode-se ter melhorias de desempenho a partir gerenciador de contenção que trata conflitos ocorridos entre nodos de forma diferente dos conflitos ocorridos em um único nodo. Também pode-se obter melhor desempenho das arquiteturas com um escalonador de tarefas, no qual o escalonador considera o endereço de memória que a tarefa acessará, assim reduzindo o tempo de leitura e escrita das tarefas executadas pelo programa \cite{blagodurov2010}.
 
 \section{\textbf{Conceitual}}
+
+...
+
+Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LTMS que identifica as características da arquitetura e do programa em tempo de execução.
+
+% Este escalonador foi desenvolvido para biblioteca de STM TinyStm, com base no trabalho intitulado STMap \todo{citar}. O STMap fornece uma matriz de comunicação  das threads, esta matriz é montada em tempo de execução com base nas leituras e escritas realizadas.
+
+% Essa matriz de comunicação é utilizada nas heurísticas do escalonador LTMS junto com outros dados coletados pelo LTMS. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
+
+\begin{figure}[htbp]
+  \centering \includegraphics[scale=.4]{images/lstm}
+\caption{Fluxo de execução da LTMS} 
+\label{LTMS}
+\end{figure}
+
+...
 
 O escalonador desenvolvido denominado LTMS é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
 
