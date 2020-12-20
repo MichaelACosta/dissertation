@@ -161,8 +161,6 @@
 \section{Estrutura do Texto}
 
 ...
-Teste do overleaf.
-...
 
 \chapter{Memórias Transacionais}
 \label{chapter::stm}
@@ -184,6 +182,8 @@ Transação é uma sequência finita de escritas e leituras na memória executad
 
  \item \textbf{Isolamento}: as transações não interferem nas execuções de outras transações, assim parecendo que elas são executadas serialmente. Uma transação não observa o estado intermediário de outra.
 \end{itemize}
+
+Para garantir estas propriedades as TMs utilizam de mecanismos como o de Versionamento de Dados e Detecções de Conflitos. Estes mecanismos são utilizados pelas transações para garantir a execução das TMs.
 
 \section{Versionamento de Dados}
 
@@ -215,6 +215,8 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 
  O Caso~1, mostra a execução sem conflitos, onde as duas transações são executadas sem problemas. Já o Caso~2, mostra o que acontece quando ocorre um conflito, onde T1 lê A e logo depois T2 escreve em A, então o conflito é detectado e T1 é abortada, após ser efetivada T2, a transação T1 consegue ler A sem problema de conflito. Por fim o Caso~3 mostra a situação de \emph{livelock}, onde as duas transações tentam ler e escrever em A, assim as duas acabam sempre se abortando.
 
+ \todo{imagem nova}
+
 \begin{figure}[!htp]
 \centering
 \includegraphics[height=6.5cm]{images/conflitoadiantado.png}
@@ -228,6 +230,8 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
  O Caso~1, mostra as transações acessando dados diferentes, não ocasionando conflitos. No Caso~2, T2 lê A que é escrita por T1. A T2 só nota o conflito quando T1 é efetivado. Logo depois de notar o conflito T2 é abortada. No Caso~3 não ocorre nenhum conflito, pois T1 lê A antes de T2 escrever. O Caso~4 mostra a situação em que, após ser cancelada, T1 volta a executar.
 \end{itemize}
 
+\todo{imagem nova}
+
 \begin{figure}[!htp]
 \centering
 \includegraphics[height=6.5cm]{images/conflitoatrasado.png}
@@ -238,6 +242,7 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 
 Para solucionar o problema de qual transação continuará executando, quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
 
+\todo{escrever sobre os gerenciadores de contenção?}
 
 \section{TinySTM}
 
@@ -247,14 +252,16 @@ A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C 
 
 Na \emph{TinySTM} a sincronização é feita a partir de um \emph{array} de \emph{locks} compartilhado que gerencia o acesso concorrente à memória. Cada \emph{lock} é do tamanho de um endereço da arquitetura~\cite{TINY}, e bloqueia vários endereços de memória. O mapeamento é feito por meio de uma função \emph{hash}. A Figura~\ref{figurasincronisacaotinystm} apresenta as estruturas de dados utilizadas nesta implementação.
 
+\todo{imagem nova}
+
 \begin{figure}[!htp]
 \centering
 \includegraphics[height=8cm]{images/tinystm.png}
-\caption{Estruturas de dados utilizadas na \emph{tinySTM}. Fonte:~\cite{TINY}}
+\caption{Estruturas de dados utilizadas na \emph{TinySTM}. Fonte:~\cite{TINY}}
 \label{figurasincronisacaotinystm}
 \end{figure}
 
-O bit menos significativo é utilizado para indicar se o \emph{lock} está em uso. Se o bit menos significativo indicar que o \emph{lock} não está em uso, nos bits restantes são armazenados um número de versão que corresponde ao \emph{commit timestamp} da transação que escreveu por último em um dos locais de memória abrangidos pelo \emph{lock}.
+O bit menos significativo é utilizado para indicar se o \emph{lock} está em uso. Se o bit menos significativo indicar que o \emph{lock} não está em uso, nos bits restantes são armazenados um número de versão que corresponde ao \emph{timestamp} da transação que escreveu por último em um dos locais de memória abrangidos pelo \emph{lock}.
 
 Se o bit menos significativo indica que o \emph{lock} está em uso, então nos bits restantes é armazenado um endereço que identifica a transação que está utilizando o dado~(isso utilizando o versionamento adiantado), ou uma entrada no \emph{write set} da transação que está utilizando o dado~(isso utilizando o versionamento atrasado). Em ambos os casos os endereços apontam para uma estrutura que é \emph{word-aligned} e seu bit menos significativo é sempre zero, por isso, o bit menos significativo pode ser utilizado como bit de bloqueio.
 
@@ -374,7 +381,50 @@ O banco de dados é composto por quatro tabelas: carros, quartos, voos e cliente
 
 Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malha~\cite{Ruppert95}. A versão transacional é similar em design ao apresentado em~\cite{Kulkarni06}.
 
+\subsection{Biblioteca Thread.h}
+
+O conjunto de \emph{benchmark} STAMP disponibiliza para os \emph{benchmarks} a biblioteca de \emph{threads} \emph{thread.h}. Esta dispõem do mecanismo \emph{pthread} e \emph{thread\_barrier} para criar um \emph{pull} de trabalhos a ser executado.
+
+A biblioteca dispõem de uma \emph{struct} \emph{thread\_barrier\_t} e disponibiliza as seguintes funções:
+
+\begin{itemize}
+
+\item thread\_startup;
+\item thread\_start;
+\item thread\_shutdown;
+\item thread\_barrier\_alloc;
+\item thread\_barrier\_free;
+\item thread\_barrier\_init;
+\item thread\_barrier;
+\item thread\_getId;
+\item thread\_getNumThread; e
+\item thread\_barrier\_wait.
+
+\end{itemize}
+
+As funções apresentadas acima manipulam a \emph{struct}, Figura~\ref{fig:struct}, disponível na biblioteca provendo a execução do \emph{pool} de trabalhos.
+
+\begin{figure}[!ht] 
+  \centering
+  \begin{verbatim}
+                    typedef struct thread_barrier {
+                        THREAD_MUTEX_T countLock;
+                        THREAD_COND_T proceedCond;
+                        THREAD_COND_T proceedAllCond;
+                        long count;
+                        long numThread;
+                    } thread_barrier_t;
+  \end{verbatim}
+  \caption{Struct disponível na thread.h do \emph{benchmark STAMP}}
+\label{fig:struct}
+\end{figure}
+
+A função \emph{threadWait} disponível em \emph{thread.c} realiza a sincronização de todas as \emph{threads} disponíveis no \emph{pool} de \emph{thread}. \emph{thread\_startup} recebe como parâmetro o número de \emph{threads} a ser criado e realiza a inicialização do \emph{pool} de \emph{threads}.
+
+A função \emph{thread\_start} executa as \emph{threads} disponíveis no \emph{pool de thread} utilizando uma chamada de função para \emph{threadWait}. A partir desta função são executadas as tarefas e utilizadas as demais funções. A biblioteca de escalonamento desenvolvida neste trabalho, tem como base as funções básicas citadas acima.
+
 \chapter{Escalonadores}
+\label{chapter::escalonadores}
 
 O uso de escalonadores provem melhorias nas execuções de programas, pode-se utilizar escalonadores de tarefas para melhorar o desempenho de arquiteturas, como visto no trabalho \cite{Rodolfo:2014}, consegue-se utilizar um escalonador para reduzir a latência de acesso à memória pelo processador em arquiteturas \emph{NUMA}.
 
@@ -460,6 +510,7 @@ AML & Modelo Misto \\
 ...
 
 \chapter{LTMS - Lups Transactional Memory Schedule}
+\label{chapter::ltms}
 
 Memórias transacionais fornecem uma facilidade maior no desenvolvimento de programas paralelos, a area caminha para o uso de escalonadores de transações que compreendem a aplicação para extrair o melhor desempenho.
 
@@ -505,8 +556,6 @@ O conceito de \emph{NUMA-Aware} esta relacionado a melhorias em programas, como 
 
 \section{\textbf{Conceitual}}
 
-...
-
 Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LTMS que identifica as características da arquitetura e do programa em tempo de execução.
 
 % Este escalonador foi desenvolvido para biblioteca de STM TinyStm, com base no trabalho intitulado STMap \todo{citar}. O STMap fornece uma matriz de comunicação  das threads, esta matriz é montada em tempo de execução com base nas leituras e escritas realizadas.
@@ -519,7 +568,6 @@ Para este trabalho foi desenvolvido um escalonador de memórias transacionais in
 \label{LTMS}
 \end{figure}
 
-...
 
 O escalonador desenvolvido denominado LTMS é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
 
@@ -568,6 +616,7 @@ Após a heurística ser executada e a migração ter sido realizada, o escalonad
 ...
 
 \chapter{Experimentos}
+\label{chapter::experimentos}
 
 ...
 
@@ -576,6 +625,7 @@ Após a heurística ser executada e a migração ter sido realizada, o escalonad
 ...
 
 \chapter{Conclusão}
+\label{chapter::Conclusão}
 
 ...
 
