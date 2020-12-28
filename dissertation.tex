@@ -554,7 +554,7 @@ Arquiteturas \emph{NUMA} apresentam boas características para aplicações com 
 
 O conceito de \emph{NUMA-Aware} esta relacionado a melhorias em programas, como visto em \cite{mohamedin2016}, pode-se ter melhorias de desempenho a partir gerenciador de contenção que trata conflitos ocorridos entre nodos de forma diferente dos conflitos ocorridos em um único nodo. Também pode-se obter melhor desempenho das arquiteturas com um escalonador de tarefas, no qual o escalonador considera o endereço de memória que a tarefa acessará, assim reduzindo o tempo de leitura e escrita das tarefas executadas pelo programa \cite{blagodurov2010}.
 
-\section{\textbf{Conceitual}}
+\section{\textbf{Escalonador}}
 
 Para este trabalho foi desenvolvido um escalonador de memórias transacionais intitulado LTMS que identifica as características da arquitetura e do programa em tempo de execução.
 
@@ -562,18 +562,53 @@ Para este trabalho foi desenvolvido um escalonador de memórias transacionais in
 
 % Essa matriz de comunicação é utilizada nas heurísticas do escalonador LTMS junto com outros dados coletados pelo LTMS. Estas heurísticas buscam melhorar a execução do programa após a ocorrência dos conflitos entre as transações.
 
+Como podemos ver na figura~\ref{ltms_generic} o escalonador Ltms é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base no número de cores disponíveis e as threads da aplicação.
+
 \begin{figure}[htbp]
-  \centering \includegraphics[scale=.4]{images/lstm}
+  \centering \includegraphics[scale=.25]{images/ltms_generic}
 \caption{Fluxo de execução da LTMS} 
-\label{LTMS}
+\label{ltms_generic}
 \end{figure}
 
+Após ter as informações sobre o número de cores e threads o Ltms cria as filas de execução. Se o número de threads da aplicação forem maiores que o número de cores o Ltms cria uma fila para cada core, como visto na figura~\ref{queue_core}.
 
-O escalonador desenvolvido denominado LTMS é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=.8]{images/Queue_core.png}
+  \caption{Criação das filas de execução com base nos cores}
+\label{queue_core}
+\end{figure}
 
-A primeira etapa, inicialização do sistema, como o nome sugere ocorre no inicio da aplicação e é responsável por identificar a arquitetura utilizada, montar as filas de execução e distribuir as threads entre estás filas.
+Se o quantidade de threads da aplicação for menor que o número de cores disponível na arquitetura, o Ltms cria uma fila para cada thread como pode ser visto na figura~\ref{queue_thread}.
 
-No inicio desta etapa o escalonador lê a arquitetura utilizada para saber a quantidade de cores disponível na arquitetura, se o número de thread solicitado pela aplicação for menor que o número de cores disponível na arquitetura o escalonador cria uma fila de execução para cada thread solicitada. Se o número de threads solicitados for maior que o número de cores da arquitetura, é criada uma fila de execução para cada core da arquitetura.
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=.8]{images/Queues_thread.png}
+\caption{Criação das filas de execução com base nas threads} 
+\label{queue_thread}
+\end{figure}
+
+O escalonador também se encarrega de distribuir inicialmente as threads entre as filas de execução. Para distribuição de threads entre as filas foram desenvolvidas duas heurísticas que serão apresentadas na subseção~\ref{distribuition_heuristic}.
+
+Em tempo de execução o Ltms coleta as informações como, endereços de leitura e escrita mais utilizados, qual a thread possui a mesma afinidade de leitura e escrita, e a quantidade de commit e abort existentes por thread.
+
+Caso ocorra um abort em uma transação, essas informações serão utilizadas para identificar qual fila a thread em execução tem maior afinidade caso sejá necessário executar uma migração.
+
+Para o Ltms decidir se deve migrar ou não uma thread de fila, foi desenvolvido duas heurísticas que buscam minimizar o overhead do escalonador e aproveitar as características da arquitetura. Estas heurísticas de migrações serão detalhadas na subseção~\ref{migration_heuristic}.
+
+\subsection{Heurística de distribuição}
+\label{distribuition_heuristic}
+
+
+\subsection{Heurística de migração}
+\label{migration_heuristic}
+
+
+% O escalonador desenvolvido denominado LTMS é dividido em três etapas. As etapas são inicialização do sistema, execução e coleta de dados, e migração das threads em execução.
+
+% A primeira etapa, inicialização do sistema, como o nome sugere ocorre no inicio da aplicação e é responsável por identificar a arquitetura utilizada, montar as filas de execução e distribuir as threads entre estás filas.
+
+% No inicio desta etapa o escalonador lê a arquitetura utilizada para saber a quantidade de cores disponível na arquitetura, se o número de thread solicitado pela aplicação for menor que o número de cores disponível na arquitetura o escalonador cria uma fila de execução para cada thread solicitada. Se o número de threads solicitados for maior que o número de cores da arquitetura, é criada uma fila de execução para cada core da arquitetura.
 
 \begin{figure}[htbp]
   \centering \includegraphics[scale=.5]{images/lstm1}
