@@ -599,6 +599,34 @@ Para o Ltms decidir se deve migrar ou não uma thread de fila, foi desenvolvido 
 \subsection{Heurística de distribuição}
 \label{distribuition_heuristic}
 
+Após a criação das filas de execução, conforme apresentado acima, as threads criadas na aplicação são distribuídas com base em uma heurística de distribuição. Para este trabalho foram implementadas duas heurísticas.
+
+A primeira heurística distribui uma thread por fila até a conclusão de todas threads disponíveis. A figura~\ref{queue_one} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
+
+O escalonador executará a primeira faze de distribuição, colocando uma thread para cada fila existente. Após a primeira faze o escalonador verifica se ainda possui threads a serem distribuídas, caso haja thread o Ltms repete a distribuição em uma segunda faze, quando acabarem as threads o Ltms encerra a distribuição.
+
+Neste senário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fica com as threads t1 e t3. Veja que o Ltms alocou a thread t0 em Q0 e depois alocou t1 em Q1, então voltou a execução para alocar t2 em Q0 e t3 em Q1.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=.6]{images/Queue_one.png}
+\caption{Heurística um de distribuição de threads}
+\label{queue_one}
+\end{figure}
+
+A segunda heurística distribui duas threads por fila, no exemplo apresentado na figura~\ref{queue_two} temos o mesmo senário de filas, cores e threads apresentados anteriormente.
+
+Na primeira faze de distribuição o escalonador aloca duas threads por fila, quando acabam as filas o escalonador verifica se há thread disponível para distribuição, se não há mais threads o Ltms encerra a distribuição.
+
+Neste senário o Ltms aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3. Isto por que o escalonador alocou to e t1 em sequencia na fila Q0, para então alocar t2 e t3 na fila Q1.
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[scale=.8]{images/Queue_two.png}
+\caption{Heurística dois de distribuição de threads}
+\label{queue_two}
+\end{figure}
+
 
 \subsection{Heurística de migração}
 \label{migration_heuristic}
