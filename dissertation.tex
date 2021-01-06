@@ -520,51 +520,21 @@ As duas principais arquiteturas paralelas que serão abordadas na proxima seçã
 
 \section{\textbf{Motivação}}
 
-% Dependendo da localização física da memória em relação aos processadores, o tempo de acesso a uma posição de memória pode ser uniforme ou não. Surge então as arquiteturas denominadas de \emph{UMA~(Uniform Memory Access)} e \emph{NUMA~(Non Uniform Memory Access)} \cite{carissimi_2007}.
-
-Máquinas \emph{NUMA} tem a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o gargalo de acesso ao barramento. Sua arquitetura é feita para que os processadores não utilizem o mesmo barramento de acesso à memória como é feito em arquiteturas \emph{UMA}. %, a sua  principal característica é o tempo não uniforme de acesso à memória
+Máquinas \emph{NUMA} tem a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o gargalo de acesso ao barramento. Sua arquitetura é feita para que os processadores não utilizem o mesmo barramento de acesso à memória como é feito em arquiteturas \emph{UMA}.
 
 As arquiteturas \emph{NUMA} possuem múltiplos núcleos dispostos em conjuntos de processadores (Nodos), a memória é fisicamente composta por vários bancos de memória, podendo estar cada um deles vinculados a um Nodo e a um espaço de endereçamento compartilhado. Nesse caso, quando o processador acessa à memória que está vinculada a si, diz-se que houve um acesso local. Se o acesso for à memória de outro processador, diz-se que ocorreu um acesso remoto.
 
 Os acessos remotos são mais lentos que os acessos locais, uma vez que é necessário passar pela rede de interconexão para que se consiga chegar ao dado localizado na memória remota~\cite{Rodolfo:2014}.
 
-Os escalonadores de STM atuais buscam reduzir o número de conflitos para que ocorra a menor quantidade de reexecução das transações. Para isto estes escalonadores implementam filas de execução e migração de threads que tornam serial a execução das transações conflitantes e buscam evitar conflitos futuros.
+Os escalonadores de STM atuais buscam reduzir o número de conflitos para que ocorra a menor quantidade de reexecução das transações. Para isto estes escalonadores implementam filas de execução e migração de threads que tornam serial a execução das transações conflitantes.
 
-Alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita para decidir qual o melhor node de execução para o thread ou quando deve ser migrado o banco de memória.
+Alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita para decidir qual o melhor nodo de execução para o thread ou quando deve ser migrado o banco de memória.
 
 Os escalonadores de stm atuais não consideram a arquitetura e seu custo de acesso à memória. Alguns escalonadores de stm avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos.
 
 Com isto o LTMS implementa um escalonador que avalia as características da arquitetura, e em tempo de execução monta uma matriz de comunicação com base nas leituras e escritas realizadas pelos threads.
 
-Está matriz de comunicação é utilizada para avaliar o custo de acesso à memória e migrar as threads em execução entre as filas, buscando reduzir o número de conflitos por meio da serialização das transações e também otimizar a execução aproveitando a melhor distribuição de tarefas na arquitetura NUMA que reduza a latência à memória.
-
-% A Figura~\ref{arquiteturas_config} ilustra de maneira genérica, \ref{uma_fig} uma máquina de arquitetura \emph{UMA} e \ref{numa_fig} uma máquina de arquitetura \emph{NUMA}. Pode-se observar que, na arquitetura \emph{UMA} representada na Figura~\ref{uma_fig}, as operações relacionadas à memória (leituras e escritas), independente da unidade de processamento \emph{(P0, P1, ..., Pn)} que estão partindo, possuem o mesmo tempo de acesso, pois todos acessam a memória utilizando o mesmo caminho.
-
-% Já na Figura~\ref{numa_fig}, existem dois possíveis e distintos caminhos para acessar à memória, dependendo de qual unidade de processamento irá partir o acesso e da localização física da memória a ser acessada: (i) Acesso Local (\emph{P2} acessando à memória \emph{M2}) e (ii) Acesso Remoto (\emph{P2} acessando à memória \emph{M1}). Os tempos de acessos à memória local de um processador, tanto para leitura quanto para escrita de dados e instruções, são menores do que os tempos de acessos às memórias remotas. Neste tipo de arquitetura, os acessos a memória ocorrem de maneira não uniforme, essas assimetrias no acesso caracterizam este tipo de arquitetura.
-
-% \begin{figure}[!htp]
-% \centering
-% \subfigure[Arquitetura UMA]{
-%   \label{uma_fig}
-%   \includegraphics[height=6cm]{images/UMA.png}
-% }
-% \subfigure[Arquitetura NUMA]{
-%   \label{numa_fig}
-%   \includegraphics[height=6cm]{images/NUMA.png}
-% }
-% \caption{Configuração das arquiteturas UMA e NUMA. Fonte:~\cite{Rodolfo:2014}}
-% \label{arquiteturas_config}
-% \end{figure}
-
-% O custo não uniforme de acesso à memória é importante para o desempenho de uma aplicação, pois este pode oferecer desvantagens quando não forem avaliados. Uma forma bastante comum de medir a não uniformidade de acessos à memória nas arquiteturas assimétricas, é considerar a razão entre o acesso a uma posição de memória remota e um acesso a uma posição de memória local. Esta razão é denominada fator \emph{NUMA}, uma máquina pode apresentar diferentes valores para o fator \emph{NUMA}, dependendo de quais memórias serão acessadas pelos processadores. Portanto, para que uma aplicação execute de forma eficiente é desejável que os processos sejam escalonados próximos a faixa de endereçamento que eles acessam, assim reduzindo o fator \emph{NUMA}.
-
-% É importante conhecer as características da arquitetura \emph{NUMA}, principalmente a latência de acesso às memórias remotas. Estas informações servem de subsidio ao desenvolvedor para que este consiga definir estratégias de escalonamento de tarefas mais eficientes para aplicações que executam neste tipo de arquitetura.
-
-% \subsection{NUMA-Aware}
-
-% Arquiteturas \emph{NUMA} apresentam boas características para aplicações com alto nível de paralelismo, porém, os programadores precisam ter cuidado ao escrever códigos para estas arquiteturas. Com isto surgiu o conceito de \emph{NUMA-Aware}, que aborda maneiras para que os programas utilizem com total eficiência os recursos da máquina.
-
-% O conceito de \emph{NUMA-Aware} esta relacionado a melhorias em programas, como visto em \cite{mohamedin2016}, pode-se ter melhorias de desempenho a partir gerenciador de contenção que trata conflitos ocorridos entre nodos de forma diferente dos conflitos ocorridos em um único nodo. Também pode-se obter melhor desempenho das arquiteturas com um escalonador de tarefas, no qual o escalonador considera o endereço de memória que a tarefa acessará, assim reduzindo o tempo de leitura e escrita das tarefas executadas pelo programa \cite{blagodurov2010}.
+Está matriz de comunicação é utilizada para avaliar o custo de acesso à memória e migrar as threads em execução entre as filas, buscando diminuir os números de conflitos por meio da serialização das transações e otimizar a execução aproveitando a melhor distribuição de tarefas na arquitetura NUMA reduzindo a latência de acesso à memória.
 
 \section{\textbf{Escalonador}}
 
