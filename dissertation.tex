@@ -322,6 +322,7 @@ A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, e
 A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de gerenciamento de contenção.
 
 \section{STAMP}
+\label{section:stamp}
 
 
 STAMP~\cite{STAMP} é um conjunto de \emph{benchmarks} criado para pesquisa de memórias transacionais, composto por oito \emph{benchmarks}. Apesar de desenvolvido para a STM~TL2, com algumas modificações disponíveis pode ser usado no \emph{TinySTM}.  A versão do STAMP utilizada será a 0.9.10. O conjunto de \emph{benchmarks} STAMP foi escolhido devido a ele implementar vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM além de ser o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM.
@@ -657,13 +658,21 @@ Se o LTMS decidir não migrar a thread, a transação segue seu fluxo atual util
 
 \section{\textbf{Aplicação}}
 
-...
+O LTMS é um escalonador de STM que inicializa sua execução junto com a aplicação e fornece todo suporte a memórias transacionais. A figura~\ref{LTMS1} apresenta o fluxo de execução de uma aplicação utilizando o LTMS.
 
 \begin{figure}[htbp]
   \centering \includegraphics[scale=.5]{images/lstm1}
 \caption{Inicialização da LTMS} 
 \label{LTMS1}
 \end{figure}
+
+O escalonador foi desenvolvido em C++ para ser utilizado com a biblioteca de STM TinySTM. Para este trabalho foram utilizado os benchmarks do conjunto de benchmark STMAP.
+
+% Como visto na seção~\ref{section:stamp} o STAMP fornece uma biblioteca de thread chamada thread.h. O LTMS sobrepõem esta biblioteca fornecendo threads no padrão C++ 11 e uma serie de funções de escalonamento e mecanismos de distribuição de tarefas.
+
+A implementação do LTMS trás um conjunto de funções que utilizam recursos de threads do c++ para executar a aplicação junto com a biblioteca TinySTM. Estes ...
+
+% Para avaliar a arquitetura e entender o fluxo de execução foram utilizadas dentro do escalonador a biblioteca HwLoc e...
 
 ...
 
