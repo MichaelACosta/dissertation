@@ -115,6 +115,10 @@
 
 \chapter{Introdução}
 
+As arquitetura paralelas estão presentes em praticamente todas plataformas computacionais modernas. Processadores com múltiplos núcleos são usados para construção de computadores domésticos e super computadores. O paralelismo desses processadores tendem a crescer, e o aumento de desempenho dos computadores atuais tem se baseado no desenvolvimento de arquiteturas paralelas.
+
+Para os programas extraírem o máximo de desempenho das arquiteturas paralelas, o código deve explorar todo poder computacional oferecido pelas unidades de processamento, porem, a programação paralela está longe de ser uma atividade fácil. 
+
 \section{Motivação}
 ...~\cite{vonNeumann:1966:TSR}.
 
@@ -488,7 +492,11 @@ AML & Modelo Misto \\
 
 \subsection{ATS}
 
-\emph{Adaptive Transaction Scheduling}~(ATS)~\cite{ats2008} apresenta uma lista global onde é inserida todas transações conflitantes, assim o escalonador garante que será executada apenas uma transação por vez.
+\emph{Adaptive Transaction Scheduling}~(ATS)~\cite{ats2008} foi um dos primeiros trabalho a apresentar um escalonador de MT para trabalhar junto com gerenciador de contenção.
+
+O ATS utiliza um valor para tomada de decisão denominado CI (Contention Intensity), cada thread em execução possui seu próprio CI. O CI é calculado cada vez que ocorre um commit ou um abort e é zerado a cada inicio de transação.
+
+O escalonador utiliza o valor do CI em sua tomada de decisão. Quando o valor do CI ultrapassa um limiar pré definido, a thread é colocada em uma única fila para garantir uma execução de forma serial.
 
 \subsection{Blake}
 
@@ -496,7 +504,14 @@ AML & Modelo Misto \\
 
 \subsection{CAR-STM}
 
-\emph{CAR-STM}~\cite{carstm2008} mantém uma fila e uma \emph{thread} para cada núcleo disponível na máquina, o escalonador seleciona uma das filas e insere a transação que esta prestes a iniciar, após isto, passa o controle para a \emph{thread} na qual esta fila pertence. A idéia principal é que durante o tempo de execução o escalonador insira as transações abortadas na fila da transação conflitante, assim, reduzindo o número de \emph{aborts} através da serialização destas transações.
+\emph{Collision Avoidance and Resolution}~(CAR-STM)~\cite{carstm2008} foi desenvolvido para evitar que conflitos já existentes voltem a ocorrer. Para isto é apresentado duas heurísticas de gerenciamento.
+
+A primeira heurística é denominada Básica e busca executar de forma serial as transações conflitantes sem manter um histórico da execução. A segunda denominada Permanente busca manter um histórico das transações que conflitaram e executa-las de forma serial.
+
+\begin{itemize}
+  \item Básica: Quando detectado um conflito, a transação mais recente é abortada e migrada para fila da transação conflitante, assim sua execução sera serializada.
+  \item Permanente: Quando uma transação Tb aborta em relação a Ta, Tb é migrado para fila de Ta e sua ordem de execução será Ta -> Tb. Caso a transação Ta conflite e aborte em relação a Tc, Ta deverá ser migrada para fila de Tc carregando sua dependência Ta -> Tb.
+\end{itemize}
 
 \subsection{LUTS}
 
