@@ -515,11 +515,25 @@ A primeira heurística é denominada Básica e busca executar de forma serial as
 
 \subsection{LUTS}
 
-\emph{LUTS} apresenta um escalonador de transações em nível de usuário, este apresenta uma heurística proativa que usa o escalonador para evitar o início de transações conflitantes, escolhendo na fila de tarefas uma transação menos suscetível ao conflito.
+\emph{Light-Weight User-Level Transaction Scheduler}~(LUTS) apresenta um escalonador que busca evitar a ociosidade de um núcleo após a serialização de uma transação. 
+
+Cada thread é representado internamente por um Registro de Contexto em Execução (RCE), cada RCE encapsulta um thread. O escalonador cria uma fila de RCE no inicio da execução.
+
+O LUTS dispara um RCE por núcleo utilizando a fila para não disparar mais RCEs que núcleos disponíveis. Cada REC disparado é convertido em uma thread de sistema que executa um conjunto de transações.
+
+
 
 \subsection{Shirink}
 
-\emph{Shirink}~\cite{shirink2009} é uma técnica de detecção de conflitos, este evita inicializar transações com maiores chances de \emph{abort}. Esta previsão toma como base os acessos realizados anteriormente pelas transações, porém a técnica é ativada depois que um determinado número de \emph{aborts} ocorram, assim, evitando \emph{overhead} de execução.
+\emph{Shirink}~\cite{shirink2009} apresenta um escalonador que busca minimizar a ocorrência de aborts com base nos conjuntos de leituras e escritas ocorridos em cada thread.
+
+O escalonador é baseado em predição e usa como heurística os acessos à memória das transações executadas anteriormente. Para evitar overhead em sua execução o Shirink avalia os acessos apenas se existir uma alta contenção no sistema.
+
+No inicio de cada transação o escalonador avalia se existe a relação entre commit e abort é superior a um limiar predefinido, se esse valor for superior ao limiar o escalonador considera que o sistema possui uma alta contenção e ativa a heurística para serializar as transações em execução.
+
+Cada thread possui um conjunto dos acessos de leitura e escrita realizados pelas transações, quando uma transação vai iniciar com um sistema de alta contenção esse conjunto de leitura e escrita é verificado, se outra thread em execução possuir um conjunto semelhante o escalonador assume que há uma alta chance da transação abortar.
+
+Para que transação não aborte a thread que iniciaria a transação é bloqueada até o fim da transação na thread em execução, assim o Shrink busca forçar a serialização das execuções.
 
 \subsection{STMap}
 
