@@ -517,11 +517,25 @@ A primeira heurística é denominada Básica e busca executar de forma serial as
 
 \emph{Light-Weight User-Level Transaction Scheduler}~(LUTS) apresenta um escalonador que busca evitar a ociosidade de um núcleo após a serialização de uma transação. 
 
-Cada thread é representado internamente por um Registro de Contexto em Execução (RCE), cada RCE encapsulta um thread. O escalonador cria uma fila de RCE no inicio da execução.
+Para isto cada thread é representado internamente por um Registro de Contexto em Execução (RCE), cada RCE encapsula uma thread. No inicio da execução o escalonador cria uma fila de RCEs para serem executados no futuro.
 
-O LUTS dispara um RCE por núcleo utilizando a fila para não disparar mais RCEs que núcleos disponíveis. Cada REC disparado é convertido em uma thread de sistema que executa um conjunto de transações.
+Assim o LUTS dispara um RCE por núcleo, e utiliza a fila para não disparar mais RCEs que núcleos disponíveis. Cada REC disparado é convertido em uma thread de sistema que executa um conjunto de transações.
 
+Na tentativa de evitar conflitos o LUTS apresenta uma forma dinâmica para soluciona-los, considerando transações curtas e transações longas. Para definir o tamanho da transação é utilizada a contagem de ciclos da mesma, onde a partir de 100 mil ciclos temos uma transação longa.
 
+Para transações curtas, a heurística utilizada é similar a do ATS, o escalonador calcula a intensidade de conflito da transação e serializa esta quando o calculo ultrapassa um limiar. Porém o LUTS escolhe outra transação para substituir a atual.
+
+Para transações longas, a heurística é mais elaborada, utilizando três metadados globais:
+
+\begin{itemize}
+  \item  activeTx: Um vetor de tamanho igual ao total de núcleos disponíveis, usado para armazenar o identificador da transação que está sendo executada.
+  \item conflictTable: Uma tabela do históricode conflitos, cada linha armazena um conjunto de transações dada pelo activeTx, e cada coluna armazena a probabilidade de conflito.
+  \item bestTx: Um vetor que sumariza a melhor transação a ser executada para cada núcleo.
+\end{itemize}
+
+Quando uma transação realiza um commit ou abort o escalonador se encarrega de atualizar a conflictTable na sua respectiva linha, aumentando ou diminuindo sua probabilidade de conflito.
+
+Para evitar percorrer a conflictTable no inicio de cada transação o LUTS percorre a bestTx e seleciona qual transação deve executar. Quando a conflictTable é atualizada o escalonador atualiza a bestTx.
 
 \subsection{Shirink}
 
