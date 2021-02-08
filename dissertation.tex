@@ -498,10 +498,6 @@ O ATS utiliza um valor para tomada de decisão denominado CI (Contention Intensi
 
 O escalonador utiliza o valor do CI em sua tomada de decisão. Quando o valor do CI ultrapassa um limiar pré definido, a thread é colocada em uma única fila para garantir uma execução de forma serial.
 
-\subsection{Blake}
-
-\emph{Blake}~\cite{blake2009} apresenta um escalonador proativo com gerenciamento de conflito, esta previsão ocorre através do armazenamento de um valor de confiança que indica a probabilidade de ocorrência do conflito, assim, o escalonador utiliza do valor de confiança para decidir entre executar a transação, esperar ou executar outra transação.
-
 \subsection{CAR-STM}
 
 \emph{Collision Avoidance and Resolution}~(CAR-STM)~\cite{carstm2008} foi desenvolvido para evitar que conflitos já existentes voltem a ocorrer. Para isto é apresentado duas heurísticas de gerenciamento.
@@ -547,7 +543,29 @@ No inicio de cada transação o escalonador avalia se existe a relação entre c
 
 Cada thread possui um conjunto dos acessos de leitura e escrita realizados pelas transações, quando uma transação vai iniciar com um sistema de alta contenção esse conjunto de leitura e escrita é verificado, se outra thread em execução possuir um conjunto semelhante o escalonador assume que há uma alta chance da transação abortar.
 
-Para que transação não aborte a thread que iniciaria a transação é bloqueada até o fim da transação na thread em execução, assim o Shrink busca forçar a serialização das execuções.
+Para que a transação não aborte a thread que iniciaria a transação é bloqueada até o fim da transação na thread em execução, assim o Shrink busca forçar a serialização das execuções.
+
+\subsection{ProVit}
+
+\todo{entender o que é transação e o que é operação atomica (thread)}
+
+O escalonador ProVIT fornece uma abordagem otimista da execução, evitando considerar que toda transação que abortou ira abortar novamente na sequencia. Assim como o LUTS o ProVIT avalia o tamanho das transações para aplicar sua heurística.
+
+Porém no ProVIT mais de uma heurística pode estar ativa ao mesmo tempo. Também foi apresentada a observação que duas transações conflitantes, de leitura e escrita, podem efetuar o commit dependendo da ordem, se o commit for efetuado primeiro pela transação de leitura, a de escrita não será conflitante.
+
+Em transações longas, a política é baseada em grão fino para melhorar a precisão da predição e evitar o reinicio da transação. Se uma transação longa efetua um abort o escalonador marca a transação como Very Important Transaction (VIT) e copia seu conjunto de leitura para uma lista auxiliar global.
+
+Com isto, para uma transação que realiza escritas efetue seu commit, ela verifica se o seu conjunto de escrita não conflita com os conjuntos de leituras das VITs que estão na fila global. Assim, o escalonador tenta garantir que as VITs não abortem novamente. Caso haja conflito, o commit é adiado por um tempo pré-determinado.
+
+Em transações curtas a heurística evita a validação com base na intersecção para não adicionar overhead desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde apresenta uma métrica de decisão para serializar as transações.
+
+Para definir quando uma transação será serializada, o escalonador utiliza um valor calculado denominado Tempo Perdido (TP). Cada transação possui seu proprio TP, que é calculado com base em um valor pré-definido e a quantidade de reexecução da transação e seu TP anterior.
+
+Toda transação que começa com TP igual a zero é executada livremente, conforme o TP aumenta o ProVit se encarrega de serializar as transações reduzindo a concorrencia, até o ponto em que somente uma transação poderá ser executada por vez.
+
+Para definir se uma operação atomica é curta ou longa foi implementado uma politica de definição, onde toda operação atomica inicia sua execução como curta. Quando uma transação finaliza o escalonador atualiza seu conhecimento sobre as operações atomicas com base no TP.
+
+Uma operação atomica é considerada longa quando o tamanho médio do seu conjunto de leitura for maior que um limite pré-definido. Assim, o tamanho da operação atomica é baseado nas operações de leitura e não no tempo de execução.
 
 \subsection{STMap}
 
