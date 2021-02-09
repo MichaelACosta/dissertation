@@ -547,21 +547,23 @@ Para que a transação não aborte a thread que iniciaria a transação é bloqu
 
 \subsection{ProVit}
 
-\todo{entender o que é transação e o que é operação atomica (thread)}
+O escalonador \emph{ProVIT}~\cite{rito2015} fornece uma abordagem otimista da execução, evitando considerar que toda transação que abortou ira abortar novamente na sequencia. 
 
-O escalonador ProVIT fornece uma abordagem otimista da execução, evitando considerar que toda transação que abortou ira abortar novamente na sequencia. Assim como o LUTS o ProVIT avalia o tamanho das transações para aplicar sua heurística.
+Assim como o LUTS o ProVIT avalia o tamanho das operações atomicas para aplicar sua heurística. Porém no ProVIT mais de uma heurística pode estar ativa ao mesmo tempo. 
 
-Porém no ProVIT mais de uma heurística pode estar ativa ao mesmo tempo. Também foi apresentada a observação que duas transações conflitantes, de leitura e escrita, podem efetuar o commit dependendo da ordem, se o commit for efetuado primeiro pela transação de leitura, a de escrita não será conflitante.
+Também foi apresentada a observação que duas transações conflitantes, de leitura e escrita, podem efetuar o commit dependendo da ordem, se o commit for efetuado primeiro pela transação de leitura, a de escrita não será conflitante.
 
-Em transações longas, a política é baseada em grão fino para melhorar a precisão da predição e evitar o reinicio da transação. Se uma transação longa efetua um abort o escalonador marca a transação como Very Important Transaction (VIT) e copia seu conjunto de leitura para uma lista auxiliar global.
+Operações atomicas longas utilizam uma política é baseada em grão fino para melhorar a precisão da predição e evitar a reexecução de transações. Essa predição utiliza como base o conjunto de leitura das transações já executadas.
 
-Com isto, para uma transação que realiza escritas efetue seu commit, ela verifica se o seu conjunto de escrita não conflita com os conjuntos de leituras das VITs que estão na fila global. Assim, o escalonador tenta garantir que as VITs não abortem novamente. Caso haja conflito, o commit é adiado por um tempo pré-determinado.
+Se uma transação efetua um abort o escalonador marca esta transação como Very Important Transaction (VIT) e copia seu conjunto de leitura para uma lista auxiliar global.  Quando uma transação tenta efetuar um commit ela verifica a lista global para garantir que não ha conflito entre os conjuntos de escrita e leituras.
 
-Em transações curtas a heurística evita a validação com base na intersecção para não adicionar overhead desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde apresenta uma métrica de decisão para serializar as transações.
+Caso haja conflito entre a transação e alguma VIT, o commit é adiado por um tempo pré-determinado. Assim, o escalonador tenta garantir que as VITs não abortem novamente. Caso não haja o conflito o commit é realizado.
 
-Para definir quando uma transação será serializada, o escalonador utiliza um valor calculado denominado Tempo Perdido (TP). Cada transação possui seu proprio TP, que é calculado com base em um valor pré-definido e a quantidade de reexecução da transação e seu TP anterior.
+Nas operações atomicas curtas a heurística evita a validação com base na intersecção para não adicionar overhead desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde é utilizada uma métrica de decisão para serializar as transações.
 
-Toda transação que começa com TP igual a zero é executada livremente, conforme o TP aumenta o ProVit se encarrega de serializar as transações reduzindo a concorrencia, até o ponto em que somente uma transação poderá ser executada por vez.
+Para definir quando uma transação será serializada, o escalonador utiliza um valor calculado em tempo de execução denominado Tempo Perdido (TP). Cada operação atomica possui seu proprio TP, que é calculado com base em um valor pré-definido e a quantidade de reexecução da transação e seu TP anterior.
+
+Toda operação atomica começa com TP igual a zero e é executada livremente, conforme o TP aumenta o ProVit se encarrega de serializar as transações reduzindo a concorrencia até o ponto em que somente uma transação poderá ser executada por vez.
 
 Para definir se uma operação atomica é curta ou longa foi implementado uma politica de definição, onde toda operação atomica inicia sua execução como curta. Quando uma transação finaliza o escalonador atualiza seu conhecimento sobre as operações atomicas com base no TP.
 
