@@ -571,7 +571,15 @@ Uma operação atomica é considerada longa quando o tamanho médio do seu conju
 
 \subsection{STMap}
 
-...
+O \enph{STMap}~\cite{...} apresenta um escalonador que utiliza mecanismos de sharing-aware mapping para aplicações STMs. O escalonador utiliza esse mecanismo para executar as transações concorrentes no mesmo núcleo NUMA para otimizar a execução da aplicação.
+
+Em tempo de execução o escalonador coleta dados sobre os comportamentos compartilhados entre as threads, esses dados são usados para calcular um mapeamento otimizado de threads para núcleos e migra as threads em execução.
+
+A coleta de dados é realizada em tempo de execução quando ocorre uma escrita ou leitura dentro de uma transação, esse endereço de leitura ou escrita é comparado com os endereços utilizados pelas outras transações. Se esse endereço é usado por outra transação o STMap incrementa uma matriz de comunicação com essas informações.
+
+A matriz de comunicação possui como tamanho o mesmo número de threads em execução. Supondo que a transação t1 executada pela thread T1 manipule o mesmo endereço que a transação t2 da thread T2, a transação t1 descobre o ID da thread T1 e da thread T2 e incrementa o valor da matriz de comunicação nas posições respectivas aos IDs.
+
+Essa matriz é utilizada para caracterisar as transações e mapear a arquitetura em relação as threads, assim sendo possivel agrupar as threads por nodos de processamento para otimizar a execução e aproveitar ao máximo a coerencia de cache.
 
 \chapter{LTMS - Lups Transactional Memory Scheduler}
 \label{chapter::ltms}
