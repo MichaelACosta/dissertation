@@ -219,8 +219,6 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 
  O Caso~1, mostra a execução sem conflitos, onde as duas transações são executadas sem problemas. Já o Caso~2, mostra o que acontece quando ocorre um conflito, onde T1 lê A e logo depois T2 escreve em A, então o conflito é detectado e T1 é abortada, após ser efetivada T2, a transação T1 consegue ler A sem problema de conflito. Por fim o Caso~3 mostra a situação de \emph{livelock}, onde as duas transações tentam ler e escrever em A, assim as duas acabam sempre se abortando.
 
- \todo{imagem nova}
-
 \begin{figure}[!htp]
 \centering
 \includegraphics[height=6.5cm]{images/conflitoadiantado.png}
@@ -234,8 +232,6 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
  O Caso~1, mostra as transações acessando dados diferentes, não ocasionando conflitos. No Caso~2, T2 lê A que é escrita por T1. A T2 só nota o conflito quando T1 é efetivado. Logo depois de notar o conflito T2 é abortada. No Caso~3 não ocorre nenhum conflito, pois T1 lê A antes de T2 escrever. O Caso~4 mostra a situação em que, após ser cancelada, T1 volta a executar.
 \end{itemize}
 
-\todo{imagem nova}
-
 \begin{figure}[!htp]
 \centering
 \includegraphics[height=6.5cm]{images/conflitoatrasado.png}
@@ -246,8 +242,6 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 
 Para solucionar o problema de qual transação continuará executando, quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
 
-\todo{escrever sobre os gerenciadores de contenção?}
-
 \section{TinySTM}
 
 A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C e C++. Seu algoritmo é baseado em outros algoritmos de STM como o TL2~(\emph{Transactional Locking} 2)~\cite{tl2}. Ela é uma biblioteca utilizada para escrever aplicativos que usam memórias transacionais para sincronização, em substituição aos tradicionais \emph{locks}.
@@ -255,8 +249,6 @@ A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C 
 \subsection{Sincronização e Versionamento}
 
 Na \emph{TinySTM} a sincronização é feita a partir de um \emph{array} de \emph{locks} compartilhado que gerencia o acesso concorrente à memória. Cada \emph{lock} é do tamanho de um endereço da arquitetura~\cite{TINY}, e bloqueia vários endereços de memória. O mapeamento é feito por meio de uma função \emph{hash}. A Figura~\ref{figurasincronisacaotinystm} apresenta as estruturas de dados utilizadas nesta implementação.
-
-\todo{imagem nova}
 
 \begin{figure}[!htp]
 \centering
