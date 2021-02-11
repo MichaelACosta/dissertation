@@ -1,4 +1,4 @@
-LATEX = pdflatex --interaction=batchmode
+LATEX = pdflatex --interaction=nonstopmode -halt-on-error
 BIBTEX = bibtex
 RM = rm -f
 FILE = dissertation
