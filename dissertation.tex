@@ -219,8 +219,6 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 
  O Caso~1, mostra a execução sem conflitos, onde as duas transações são executadas sem problemas. Já o Caso~2, mostra o que acontece quando ocorre um conflito, onde T1 lê A e logo depois T2 escreve em A, então o conflito é detectado e T1 é abortada, após ser efetivada T2, a transação T1 consegue ler A sem problema de conflito. Por fim o Caso~3 mostra a situação de \emph{livelock}, onde as duas transações tentam ler e escrever em A, assim as duas acabam sempre se abortando.
 
- \todo{imagem nova}
-
 \begin{figure}[!htp]
 \centering
 \includegraphics[height=6.5cm]{images/conflitoadiantado.png}
@@ -234,8 +232,6 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
  O Caso~1, mostra as transações acessando dados diferentes, não ocasionando conflitos. No Caso~2, T2 lê A que é escrita por T1. A T2 só nota o conflito quando T1 é efetivado. Logo depois de notar o conflito T2 é abortada. No Caso~3 não ocorre nenhum conflito, pois T1 lê A antes de T2 escrever. O Caso~4 mostra a situação em que, após ser cancelada, T1 volta a executar.
 \end{itemize}
 
-\todo{imagem nova}
-
 \begin{figure}[!htp]
 \centering
 \includegraphics[height=6.5cm]{images/conflitoatrasado.png}
@@ -246,8 +242,6 @@ Da mesma forma que o versionamento de dados, a detecção de conflito também po
 
 Para solucionar o problema de qual transação continuará executando, quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
 
-\todo{escrever sobre os gerenciadores de contenção?}
-
 \section{TinySTM}
 
 A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C e C++. Seu algoritmo é baseado em outros algoritmos de STM como o TL2~(\emph{Transactional Locking} 2)~\cite{tl2}. Ela é uma biblioteca utilizada para escrever aplicativos que usam memórias transacionais para sincronização, em substituição aos tradicionais \emph{locks}.
@@ -255,8 +249,6 @@ A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C 
 \subsection{Sincronização e Versionamento}
 
 Na \emph{TinySTM} a sincronização é feita a partir de um \emph{array} de \emph{locks} compartilhado que gerencia o acesso concorrente à memória. Cada \emph{lock} é do tamanho de um endereço da arquitetura~\cite{TINY}, e bloqueia vários endereços de memória. O mapeamento é feito por meio de uma função \emph{hash}. A Figura~\ref{figurasincronisacaotinystm} apresenta as estruturas de dados utilizadas nesta implementação.
-
-\todo{imagem nova}
 
 \begin{figure}[!htp]
 \centering
@@ -329,104 +321,121 @@ A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de ge
 \label{section:stamp}
 
 
-STAMP~\cite{STAMP} é um conjunto de \emph{benchmarks} criado para pesquisa de memórias transacionais, composto por oito \emph{benchmarks}. Apesar de desenvolvido para a STM~TL2, com algumas modificações disponíveis pode ser usado no \emph{TinySTM}.  A versão do STAMP utilizada será a 0.9.10. O conjunto de \emph{benchmarks} STAMP foi escolhido devido a ele implementar vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM além de ser o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM.
+\emph{Stanford Transactional Applications for Multi-Processing}~\cite{STAMP} é um conjunto de \emph{benchmarks} criado para pesquisa de memórias transacionais, composto por oito \emph{benchmarks}. Apesar de desenvolvido para a STM~TL2, com algumas modificações disponíveis pode ser usado no \emph{TinySTM}.
 
+%A versão do STAMP utilizada será a 0.9.10.
+% O conjunto de \emph{benchmarks} STAMP foi escolhido devido a ele implementar vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM além de ser o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM.
 
-Os \emph{benchmarks} implementados pelo STAMP são~\cite{STAMP}:
-\newline
-
-
-\subsection{Bayes}
-
-Esta aplicação implementa um algoritmo de aprendizado de redes Bayesianas, que é uma parte importante do aprendizado de máquina. Normalmente, nem as distribuições de probabilidades nem as dependências condicionais entre eles são conhecidas ou podem ser resolvidos por um ser humano, assim redes Bayesianas são frequentemente estudadas com os dados observados. O algoritmo específico implementa uma estratégia de \emph{hill-climbing} ou subida de encosta que usa buscas locais e globais, semelhante à técnica descrita em~\cite{bayesian}. Para estimativas eficientes de distribuição de probabilidade, utiliza-se uma \emph{adtree} ou árvore de decisão a partir de~\cite{Moore97}.
-
-
-\subsection{Genome}
-
-Este \emph{benchmark} implementa um programa de sequenciamento de genes que reconstrói a sequência de genes a partir de sequências maiores. O algoritmo usado para o sequenciamento de genes têm  três fases:
-
-\begin{enumerate}
-  \item [1.] Remove os segmentos duplicados utilizando uma \emph{hash};
-  \item [2.] Combina segmentos utilizando o algoritmo de pesquisa de sequência \emph{Rabin-Karp}~\cite{Karp87}; e
-  \item [3.] Constrói a sequência.
-  \newline
-\end{enumerate}
-
-
-\subsection{Intruder}
-
-Este \emph{benchmark} simula o Design 5 dos NIDS~(\emph{Network Intrusion Detection System}) descritos por Haagdorens em~\cite{Haagdorens05}. Pacotes de rede são processados paralelamente e passam por três fases: captação, remontagem e detecção. A estrutura de dados principal na fase de captura é uma simples fila, e a fase de remontagem utiliza um dicionário (implementado por uma árvore auto balanceada), que contém a lista de pacotes que pertencem à mesma seção. Ao avaliar seus cinco designs para um NIDS \emph{multithread}, Haagdorens afirma que a complexidade da fase de remontagem fez com que ele utilize a sincronização de grãos grosso nos designs~4 e~5. Assim, embora estes dois modelos tentam explorar níveis mais elevados de simultaneidade, a sincronização aproximada de grão resulta em um pior desempenho.
-
-
-\subsection{Kmeans}
-
-Este \emph{benchmark} foi tirado do \emph{NU-MineBench 2.0}~\cite{Pisharath05}. \emph{K-means} é um método baseado em partição~\cite{Bezdek81} e é sem dúvida a técnica de agrupamento mais utilizada. Este algoritmo é comumente usado para partição de itens de dados em subconjuntos relacionados. Cada \emph{thread} processa uma partição dos objetos iterativamente. A versão transacional adiciona uma transação para proteger o update do centro do \emph{cluster} que ocorre durante cada iteração.
-
-
-\subsection{Labyrinth}
-
-Dado um labirinto, este \emph{benchmark} encontra os caminhos de menor distância entre os pares de pontos inicial e final. O algoritmo de roteamento utilizado é o algoritmo Lee~\cite{Lee61}.
-
-Nesse algoritmo, o labirinto é representado como uma grade, em que cada ponto de grade pode conter ligações adjacentes, para os pontos da grade que não estão nas diagonais. O algoritmo busca um caminho mais curto entre os pontos de conexão através da realização de uma busca em largura e marca cada ponto da grade com a sua distância para o início. Esta fase de expansão acabará por chegar ao ponto final, se a conexão for possível. A segunda fase de rastreamento, em seguida, estabelece a ligação, seguindo todo o caminho diminuindo a distância. Este algoritmo é garantido para encontrar o caminho mais curto entre um ponto inicial e final, no entanto, quando vários caminhos são feitos, um caminho pode bloquear outro.
-
-
-\subsection{SSCA2}
-
-\emph{Scalable Synthetic Compact Applications 2}~(SSCA2)~\cite{Bader05} é composta por quatro \emph{kernels} que operam em um grande, dirigido e ponderado gráfico. Estes quatro \emph{kernels} gráficos são comumente usados em aplicações que vão desde a biologia computacional até a segurança. STAMP incide sobre um \emph{Kernel}, que constrói uma estrutura de dados eficiente utilizando matrizes de adjacência e matrizes auxiliares.
-
-
-\subsection{Vacation}
-
-Este \emph{benchmark} implementa um sistema de reserva de viagens alimentado por um banco de dados não-distribuído. A carga de trabalho é composto por vários segmentos de clientes que interagem com o banco de dados via gerenciador de transações do sistema.
-
-O banco de dados é composto por quatro tabelas: carros, quartos, voos e clientes. Os três primeiros têm relações com os campos que representam um número único de identificação, quantidade reservada, a quantidade total disponível, e preço. A tabela de clientes acompanha as reservas feitas por cada cliente e o preço total das reservas que eles fizeram. As tabelas são implementados como árvores rubro negras.
-
-
-\subsection{Yada}
-
-Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malha~\cite{Ruppert95}. A versão transacional é similar em design ao apresentado em~\cite{Kulkarni06}.
-
-\subsection{Biblioteca Thread.h}
-
-O conjunto de \emph{benchmark} STAMP disponibiliza para os \emph{benchmarks} a biblioteca de \emph{threads} \emph{thread.h}. Esta dispõem do mecanismo \emph{pthread} e \emph{thread\_barrier} para criar um \emph{pull} de trabalhos a ser executado.
-
-A biblioteca dispõem de uma \emph{struct} \emph{thread\_barrier\_t} e disponibiliza as seguintes funções:
+O conjunto de \emph{benchmarks} STAMP implementa vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM e é o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM. Os oito benchmarks apresentados são:
 
 \begin{itemize}
-
-\item thread\_startup;
-\item thread\_start;
-\item thread\_shutdown;
-\item thread\_barrier\_alloc;
-\item thread\_barrier\_free;
-\item thread\_barrier\_init;
-\item thread\_barrier;
-\item thread\_getId;
-\item thread\_getNumThread; e
-\item thread\_barrier\_wait.
-
+  \item \textbf{Bayes}: Apresenta uma rede bayesinana de aprendizado;
+  \item \textbf{Genome}: Implementa uma aplicação que reconstroi a sequêcia de um gene a partir de sequências maiores;
+  S\item \textbf{Intruder}: Simula o Design 5 do \emph{Network Intrusion Detection System}~(NIDS)~\cite{Haagdorens05};
+  \item \textbf{Kmeans}:  \emph{K-means} é um algoritmo comumente usado para partição de itens de dados em subconjuntos relacionados;
+  \item \textbf{Labyrinth}: Implementa uma algoritmo que descobre o menor caminho entre um ponto inicial e um ponto final;
+  \item \textbf{SSCA2}: É composto por quatro \emph{kernels} que operam em um grande, dirigido e ponderado gráfico;
+  \item \textbf{Vacation}: Implementa um sistema de reserva de viagens alimentado por um banco de dados não-distribuído; e
+  \item \textbf{Yada}: Implementa o algoritmo de Ruppert~\cite{Ruppert95} para refinamento de malha.
 \end{itemize}
 
-As funções apresentadas acima manipulam a \emph{struct}, Figura~\ref{fig:struct}, disponível na biblioteca provendo a execução do \emph{pool} de trabalhos.
+Neste trabalho vai ser utilizada a versão 0.9.10 do STAMP para avaliar e comparar a exeução da bibloteca de STM TinySTM atual e a utilização do escalonador proposto.
 
-\begin{figure}[!ht] 
-  \centering
-  \begin{verbatim}
-                    typedef struct thread_barrier {
-                        THREAD_MUTEX_T countLock;
-                        THREAD_COND_T proceedCond;
-                        THREAD_COND_T proceedAllCond;
-                        long count;
-                        long numThread;
-                    } thread_barrier_t;
-  \end{verbatim}
-  \caption{Struct disponível na thread.h do \emph{benchmark STAMP}}
-\label{fig:struct}
-\end{figure}
+% Os \emph{benchmarks} implementados pelo STAMP são~\cite{STAMP}:
+% \newline
 
-A função \emph{threadWait} disponível em \emph{thread.c} realiza a sincronização de todas as \emph{threads} disponíveis no \emph{pool} de \emph{thread}. \emph{thread\_startup} recebe como parâmetro o número de \emph{threads} a ser criado e realiza a inicialização do \emph{pool} de \emph{threads}.
 
-A função \emph{thread\_start} executa as \emph{threads} disponíveis no \emph{pool de thread} utilizando uma chamada de função para \emph{threadWait}. A partir desta função são executadas as tarefas e utilizadas as demais funções. A biblioteca de escalonamento desenvolvida neste trabalho, tem como base as funções básicas citadas acima.
+% \subsection{Bayes}
+
+% Esta aplicação implementa um algoritmo de aprendizado de redes Bayesianas, que é uma parte importante do aprendizado de máquina. Normalmente, nem as distribuições de probabilidades nem as dependências condicionais entre eles são conhecidas ou podem ser resolvidos por um ser humano, assim redes Bayesianas são frequentemente estudadas com os dados observados. O algoritmo específico implementa uma estratégia de \emph{hill-climbing} ou subida de encosta que usa buscas locais e globais, semelhante à técnica descrita em~\cite{bayesian}. Para estimativas eficientes de distribuição de probabilidade, utiliza-se uma \emph{adtree} ou árvore de decisão a partir de~\cite{Moore97}.
+
+
+% \subsection{Genome}
+
+% Este \emph{benchmark} implementa um programa de sequenciamento de genes que reconstrói a sequência de genes a partir de sequências maiores. O algoritmo usado para o sequenciamento de genes têm  três fases:
+
+% \begin{enumerate}
+%   \item [1.] Remove os segmentos duplicados utilizando uma \emph{hash};
+%   \item [2.] Combina segmentos utilizando o algoritmo de pesquisa de sequência \emph{Rabin-Karp}~\cite{Karp87}; e
+%   \item [3.] Constrói a sequência.
+%   \newline
+% \end{enumerate}
+
+
+% \subsection{Intruder}
+
+% Este \emph{benchmark} simula o Design 5 dos NIDS~(\emph{Network Intrusion Detection System}) descritos por Haagdorens em~\cite{Haagdorens05}. Pacotes de rede são processados paralelamente e passam por três fases: captação, remontagem e detecção. A estrutura de dados principal na fase de captura é uma simples fila, e a fase de remontagem utiliza um dicionário (implementado por uma árvore auto balanceada), que contém a lista de pacotes que pertencem à mesma seção. Ao avaliar seus cinco designs para um NIDS \emph{multithread}, Haagdorens afirma que a complexidade da fase de remontagem fez com que ele utilize a sincronização de grãos grosso nos designs~4 e~5. Assim, embora estes dois modelos tentam explorar níveis mais elevados de simultaneidade, a sincronização aproximada de grão resulta em um pior desempenho.
+
+
+% \subsection{Kmeans}
+
+% Este \emph{benchmark} foi tirado do \emph{NU-MineBench 2.0}~\cite{Pisharath05}. \emph{K-means} é um método baseado em partição~\cite{Bezdek81} e é sem dúvida a técnica de agrupamento mais utilizada. Este algoritmo é comumente usado para partição de itens de dados em subconjuntos relacionados. Cada \emph{thread} processa uma partição dos objetos iterativamente. A versão transacional adiciona uma transação para proteger o update do centro do \emph{cluster} que ocorre durante cada iteração.
+
+
+% \subsection{Labyrinth}
+
+% Dado um labirinto, este \emph{benchmark} encontra os caminhos de menor distância entre os pares de pontos inicial e final. O algoritmo de roteamento utilizado é o algoritmo Lee~\cite{Lee61}.
+
+% Nesse algoritmo, o labirinto é representado como uma grade, em que cada ponto de grade pode conter ligações adjacentes, para os pontos da grade que não estão nas diagonais. O algoritmo busca um caminho mais curto entre os pontos de conexão através da realização de uma busca em largura e marca cada ponto da grade com a sua distância para o início. Esta fase de expansão acabará por chegar ao ponto final, se a conexão for possível. A segunda fase de rastreamento, em seguida, estabelece a ligação, seguindo todo o caminho diminuindo a distância. Este algoritmo é garantido para encontrar o caminho mais curto entre um ponto inicial e final, no entanto, quando vários caminhos são feitos, um caminho pode bloquear outro.
+
+
+% \subsection{SSCA2}
+
+% \emph{Scalable Synthetic Compact Applications 2}~(SSCA2)~\cite{Bader05} é composta por quatro \emph{kernels} que operam em um grande, dirigido e ponderado gráfico. Estes quatro \emph{kernels} gráficos são comumente usados em aplicações que vão desde a biologia computacional até a segurança. STAMP incide sobre um \emph{Kernel}, que constrói uma estrutura de dados eficiente utilizando matrizes de adjacência e matrizes auxiliares.
+
+
+% \subsection{Vacation}
+
+% Este \emph{benchmark} implementa um sistema de reserva de viagens alimentado por um banco de dados não-distribuído. A carga de trabalho é composto por vários segmentos de clientes que interagem com o banco de dados via gerenciador de transações do sistema.
+
+% O banco de dados é composto por quatro tabelas: carros, quartos, voos e clientes. Os três primeiros têm relações com os campos que representam um número único de identificação, quantidade reservada, a quantidade total disponível, e preço. A tabela de clientes acompanha as reservas feitas por cada cliente e o preço total das reservas que eles fizeram. As tabelas são implementados como árvores rubro negras.
+
+
+% \subsection{Yada}
+
+% Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malha~\cite{Ruppert95}. A versão transacional é similar em design ao apresentado em~\cite{Kulkarni06}.
+
+% \subsection{Biblioteca Thread.h}
+
+% O conjunto de \emph{benchmark} STAMP disponibiliza para os \emph{benchmarks} a biblioteca de \emph{threads} \emph{thread.h}. Esta dispõem do mecanismo \emph{pthread} e \emph{thread\_barrier} para criar um \emph{pull} de trabalhos a ser executado.
+
+% A biblioteca dispõem de uma \emph{struct} \emph{thread\_barrier\_t} e disponibiliza as seguintes funções:
+
+% \begin{itemize}
+
+% \item thread\_startup;
+% \item thread\_start;
+% \item thread\_shutdown;
+% \item thread\_barrier\_alloc;
+% \item thread\_barrier\_free;
+% \item thread\_barrier\_init;
+% \item thread\_barrier;
+% \item thread\_getId;
+% \item thread\_getNumThread; e
+% \item thread\_barrier\_wait.
+
+% \end{itemize}
+
+% As funções apresentadas acima manipulam a \emph{struct}, Figura~\ref{fig:struct}, disponível na biblioteca provendo a execução do \emph{pool} de trabalhos.
+
+% \begin{figure}[!ht] 
+%   \centering
+%   \begin{verbatim}
+%                     typedef struct thread_barrier {
+%                         THREAD_MUTEX_T countLock;
+%                         THREAD_COND_T proceedCond;
+%                         THREAD_COND_T proceedAllCond;
+%                         long count;
+%                         long numThread;
+%                     } thread_barrier_t;
+%   \end{verbatim}
+%   \caption{Struct disponível na thread.h do \emph{benchmark STAMP}}
+% \label{fig:struct}
+% \end{figure}
+
+% A função \emph{threadWait} disponível em \emph{thread.c} realiza a sincronização de todas as \emph{threads} disponíveis no \emph{pool} de \emph{thread}. \emph{thread\_startup} recebe como parâmetro o número de \emph{threads} a ser criado e realiza a inicialização do \emph{pool} de \emph{threads}.
+
+% A função \emph{thread\_start} executa as \emph{threads} disponíveis no \emph{pool de thread} utilizando uma chamada de função para \emph{threadWait}. A partir desta função são executadas as tarefas e utilizadas as demais funções. A biblioteca de escalonamento desenvolvida neste trabalho, tem como base as funções básicas citadas acima.
 
 \chapter{Escalonadores}
 \label{chapter::escalonadores}
@@ -511,7 +520,7 @@ A primeira heurística é denominada Básica e busca executar de forma serial as
 
 \subsection{LUTS}
 
-\emph{Light-Weight User-Level Transaction Scheduler}~(LUTS) apresenta um escalonador que busca evitar a ociosidade de um núcleo após a serialização de uma transação. 
+\emph{Light-Weight User-Level Transaction Scheduler}~(LUTS)~\cite{Nicacio2012} apresenta um escalonador que busca evitar a ociosidade de um núcleo após a serialização de uma transação. 
 
 Para isto cada thread é representado internamente por um Registro de Contexto em Execução (RCE), cada RCE encapsula uma thread. No inicio da execução o escalonador cria uma fila de RCEs para serem executados no futuro.
 
@@ -547,15 +556,39 @@ Para que a transação não aborte a thread que iniciaria a transação é bloqu
 
 \subsection{ProVit}
 
-O escalonador ProVIT fornece uma abordagem otimista da execução, evitando considerar que toda transação que abortou ira abortar novamente na sequencia. Assim como o LUTS o ProVIT avalia o tamanho das transações para aplicar sua heurística.
+O escalonador \emph{ProVIT}~\cite{rito2015} fornece uma abordagem otimista da execução, evitando considerar que toda transação que abortou ira abortar novamente na sequencia. 
 
-Porém no ProVIT mais de uma heurística pode estar ativa ao mesmo tempo. Também foi apresentada a observação que duas transações conflitantes, de leitura e escrita, podem efetuar o commit dependendo da ordem, se o commit for efetuado primeiro pela transação de leitura, a de escrita não será conflitante.
+Assim como o LUTS o ProVIT avalia o tamanho das operações atomicas para aplicar sua heurística. Porém no ProVIT mais de uma heurística pode estar ativa ao mesmo tempo. 
 
+Também foi apresentada a observação que duas transações conflitantes, de leitura e escrita, podem efetuar o commit dependendo da ordem, se o commit for efetuado primeiro pela transação de leitura, a de escrita não será conflitante.
 
+Operações atomicas longas utilizam uma política é baseada em grão fino para melhorar a precisão da predição e evitar a reexecução de transações. Essa predição utiliza como base o conjunto de leitura das transações já executadas.
+
+Se uma transação efetua um abort o escalonador marca esta transação como Very Important Transaction (VIT) e copia seu conjunto de leitura para uma lista auxiliar global.  Quando uma transação tenta efetuar um commit ela verifica a lista global para garantir que não ha conflito entre os conjuntos de escrita e leituras.
+
+Caso haja conflito entre a transação e alguma VIT, o commit é adiado por um tempo pré-determinado. Assim, o escalonador tenta garantir que as VITs não abortem novamente. Caso não haja o conflito o commit é realizado.
+
+Nas operações atomicas curtas a heurística evita a validação com base na intersecção para não adicionar overhead desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde é utilizada uma métrica de decisão para serializar as transações.
+
+Para definir quando uma transação será serializada, o escalonador utiliza um valor calculado em tempo de execução denominado Tempo Perdido (TP). Cada operação atomica possui seu proprio TP, que é calculado com base em um valor pré-definido e a quantidade de reexecução da transação e seu TP anterior.
+
+Toda operação atomica começa com TP igual a zero e é executada livremente, conforme o TP aumenta o ProVit se encarrega de serializar as transações reduzindo a concorrencia até o ponto em que somente uma transação poderá ser executada por vez.
+
+Para definir se uma operação atomica é curta ou longa foi implementado uma politica de definição, onde toda operação atomica inicia sua execução como curta. Quando uma transação finaliza o escalonador atualiza seu conhecimento sobre as operações atomicas com base no TP.
+
+Uma operação atomica é considerada longa quando o tamanho médio do seu conjunto de leitura for maior que um limite pré-definido. Assim, o tamanho da operação atomica é baseado nas operações de leitura e não no tempo de execução.
 
 \subsection{STMap}
 
-...
+O \emph{STMap}~\cite{pasqualin2020online} apresenta um escalonador que utiliza mecanismos de sharing-aware mapping para aplicações STMs. O escalonador utiliza esse mecanismo para executar as transações concorrentes no mesmo núcleo NUMA para otimizar a execução da aplicação.
+
+Em tempo de execução o escalonador coleta dados sobre os comportamentos compartilhados entre as threads, esses dados são usados para calcular um mapeamento otimizado de threads para núcleos e migra as threads em execução.
+
+A coleta de dados é realizada em tempo de execução quando ocorre uma escrita ou leitura dentro de uma transação, esse endereço de leitura ou escrita é comparado com os endereços utilizados pelas outras transações. Se esse endereço é usado por outra transação o STMap incrementa uma matriz de comunicação com essas informações.
+
+A matriz de comunicação possui como tamanho o mesmo número de threads em execução. Supondo que a transação t1 executada pela thread T1 manipule o mesmo endereço que a transação t2 da thread T2, a transação t1 descobre o ID da thread T1 e da thread T2 e incrementa o valor da matriz de comunicação nas posições respectivas aos IDs.
+
+Essa matriz é utilizada para caracterisar as transações e mapear a arquitetura em relação as threads, assim sendo possivel agrupar as threads por nodos de processamento para otimizar a execução e aproveitar ao máximo a coerencia de cache.
 
 \chapter{LTMS - Lups Transactional Memory Scheduler}
 \label{chapter::ltms}
@@ -570,15 +603,17 @@ As duas principais arquiteturas paralelas que serão abordadas na proxima seçã
 
 Máquinas \emph{NUMA} tem a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o gargalo de acesso ao barramento. Sua arquitetura é feita para que os processadores não utilizem o mesmo barramento de acesso à memória como é feito em arquiteturas \emph{UMA}.
 
-As arquiteturas \emph{NUMA} possuem múltiplos núcleos dispostos em conjuntos de processadores (Nodos), a memória é fisicamente composta por vários bancos de memória, podendo estar cada um deles vinculados a um Nodo e a um espaço de endereçamento compartilhado. Nesse caso, quando o processador acessa à memória que está vinculada a si, diz-se que houve um acesso local. Se o acesso for à memória de outro processador, diz-se que ocorreu um acesso remoto.
+As arquiteturas \emph{NUMA} possuem múltiplos núcleos dispostos em conjuntos de processadores (Nodos), a memória é fisicamente composta por vários bancos de memória, podendo estar cada um deles vinculados a um Nodo e a um espaço de endereçamento compartilhado.
+
+Nesse caso, quando o processador acessa à memória que está vinculada a si, diz-se que houve um acesso local. Se o acesso for à memória de outro processador, diz-se que ocorreu um acesso remoto.
 
 Os acessos remotos são mais lentos que os acessos locais, uma vez que é necessário passar pela rede de interconexão para que se consiga chegar ao dado localizado na memória remota~\cite{Rodolfo:2014}.
 
-Os escalonadores de STM atuais buscam reduzir o número de conflitos para que ocorra a menor quantidade de reexecução das transações. Para isto estes escalonadores implementam filas de execução e migração de threads que tornam serial a execução das transações conflitantes.
+Os escalonadores de STM atuais buscam reduzir o número de conflitos para que ocorra a menor quantidade de reexecução das transações. Para isto estes escalonadores implementam filas de execução e migração de threads que tornam serial a execução das transações conflitantes como nos trabalhos apresentados em~\cite{Nicacio2012}.
 
-Alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita para decidir qual o melhor nodo de execução para o thread ou quando deve ser migrado o banco de memória.
+Alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita para decidir qual o melhor nodo de execução para o thread ou quando deve ser migrado o banco de memória. Outros utilizam de uma matriz de comunicação para fazer um mapeamento de threads e assim otimizar a execução, como é feito em~\cite{pasqualin2020thread}.
 
-Os escalonadores de stm atuais não consideram a arquitetura e seu custo de acesso à memória. Alguns escalonadores de stm avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos.
+Os escalonadores de stm atuais não consideram a arquitetura e seu custo de acesso à memória para serializar as execuções. Alguns escalonadores de stm avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos~\cite{shirink2009}.
 
 Com isto o LTMS implementa um escalonador que avalia as características da arquitetura, e em tempo de execução monta uma matriz de comunicação com base nas leituras e escritas realizadas pelos threads.
 

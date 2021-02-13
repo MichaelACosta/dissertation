@@ -450,3 +450,34 @@ month={Oct}
   year={2008},
   organization={ACM}
 }
+
+@article{rito2015,
+    title = {Adaptive transaction scheduling for mixed transactional workloads},
+    journal = {Parallel Computing},
+    volume = {41},
+    pages = {31-49},
+    year = {2015},
+    issn = {0167-8191},
+    doi = {https://doi.org/10.1016/j.parco.2014.11.001},
+    author = {Hugo Rito and João Cachopo},
+    keywords = {Software Transactional Memory, Transaction conflict, Transaction scheduling},
+    abstract = {Transaction schedulers reduce the number of transaction reexecutions in applications using Software Transactional Memory (STM) by preventing conflicting transactions to run in parallel. Unfortunately, current scheduling solutions are too conservative, rely on coarse measures to serialize transactions, and are specially inadequate for workloads with long transactions. In this paper we introduce an optimistic and adaptive transaction scheduler that takes advantage of the information already collected by the STM runtime to increase parallelism between transactions and, thus, improve transactions’ throughput. Our new ProVIT scheduler implements a low-overhead scheduling policy for short transactions that reduces concurrency as contention increases and a fine-grained scheduling policy for long transactions based on the novel concept of Very Important Transaction. Experimental results conducted with the STMBench7 benchmark and the STAMP benchmark suite showed that the ProVIT scheduler has comparable performance to other current scheduling solutions for short transactions, but is up to 65% faster for long-running transactions.}
+}
+
+@inproceedings{pasqualin2020online,
+  title={Online Sharing-Aware Thread Mapping in Software Transactional Memory},
+  author={Pasqualin, Douglas Pereira and Diener, Matthias and Du Bois, Andr{\'e} Rauber and Pilla, Maur{\'\i}cio Lima},
+  booktitle={2020 IEEE 32nd International Symposium on Computer Architecture and High Performance Computing (SBAC-PAD)},
+  pages={35--42},
+  year={2020},
+  organization={IEEE}
+}
+
+@inproceedings{pasqualin2020thread,
+  title={Thread affinity in software transactional memory},
+  author={Pasqualin, Douglas Pereira and Diener, Matthias and Du Bois, Andr{\'e} Rauber and Pilla, Maur{\'\i}cio Lima},
+  booktitle={2020 19th International Symposium on Parallel and Distributed Computing (ISPDC)},
+  pages={180--187},
+  year={2020},
+  organization={IEEE}
+}
