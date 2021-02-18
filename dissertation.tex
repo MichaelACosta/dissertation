@@ -330,7 +330,7 @@ O conjunto de \emph{benchmarks} STAMP implementa vários \emph{benchmarks}, assi
 
 \begin{itemize}
   \item \textbf{Bayes}: Apresenta uma rede bayesinana de aprendizado;
-  \item \textbf{Genome}: Implementa uma aplicação que reconstroi a sequêcia de um gene a partir de sequências maiores;
+  \item \textbf{Genome}: Implementa uma aplicação que reconstrói a sequencia de um gene a partir de sequências maiores;
   S\item \textbf{Intruder}: Simula o Design 5 do \emph{Network Intrusion Detection System}~(NIDS)~\cite{Haagdorens05};
   \item \textbf{Kmeans}:  \emph{K-means} é um algoritmo comumente usado para partição de itens de dados em subconjuntos relacionados;
   \item \textbf{Labyrinth}: Implementa uma algoritmo que descobre o menor caminho entre um ponto inicial e um ponto final;
@@ -339,7 +339,7 @@ O conjunto de \emph{benchmarks} STAMP implementa vários \emph{benchmarks}, assi
   \item \textbf{Yada}: Implementa o algoritmo de Ruppert~\cite{Ruppert95} para refinamento de malha.
 \end{itemize}
 
-Neste trabalho vai ser utilizada a versão 0.9.10 do STAMP para avaliar e comparar a exeução da bibloteca de STM TinySTM atual e a utilização do escalonador proposto.
+Neste trabalho vai ser utilizada a versão 0.9.10 do STAMP para avaliar e comparar a execução da biblioteca de STM TinySTM atual e a utilização do escalonador proposto.
 
 % Os \emph{benchmarks} implementados pelo STAMP são~\cite{STAMP}:
 % \newline
@@ -442,37 +442,38 @@ Neste trabalho vai ser utilizada a versão 0.9.10 do STAMP para avaliar e compar
 
 O uso de escalonadores provem melhorias nas execuções de programas, pode-se utilizar escalonadores de tarefas para melhorar o desempenho de arquiteturas, como visto no trabalho \cite{Rodolfo:2014}, consegue-se utilizar um escalonador para reduzir a latência de acesso à memória pelo processador em arquiteturas \emph{NUMA}.
 
-Em STM o uso de escalonadores pode reduzir o número de conflitos gerados pelo aumento do paralelismo, em \cite{Nicacio2012} foi proposto um escalonador de transações dinâmico denominado \emph{LUTS}, este apresenta heurísticas de detecção de conflitos para que o escalonador de transações evite \emph{aborts} no decorrer de sua execução.
+Em STM o uso de escalonadores pode reduzir o número de conflitos gerados pelo aumento do paralelismo, como podemos ver em \cite{Nicacio2012} o \emph{LUTS} apresenta heurísticas de detecção de conflitos para que o escalonador de transações evite \emph{aborts} no decorrer de sua execução.
 
 %\section{Heurísticas}
 
-%Existem muitas heurísticas diferentes para prever conflitos, estas podem servir como base para o escalonamento de transações. Nesta seção será apresentado alguns trabalhos com heurísticas distintas.
+Escalonadores fornecem diferentes abordagens para cada problema proposto, estas distintas abordagens permitem aos desenvolvedores explorar heurísticas de escalonamento que se adaptam a arquitetura utilizada propiciando uma solução mais eficiente.
 
-Escalonadores fornecem diferentes abordagens para cada problema proposto, estas distintas abordagens permitem aos desenvolvedores explorar heurísticas de escalonamento que se adaptam a arquitetura utilizada propiciando uma solução mais eficiente. Para este trabalho foram estudados algumas heurísticas que serviram como base para o escalonamento de transações, estes trabalhos são:
+Existem muitas heurísticas diferentes para prever conflitos, estas podem servir como base para o escalonamento de transações. Para este trabalho foram estudados algumas das principais heurísticas e suas classificações.
 
-\section{Categorias}
+O trabalho apresentado em~\cite{disanzo2017} fornece uma categorização dos escalonadores de STM, na qual os algoritmos são classificados de acordo com suas heurísticas.
 
-Di zando apresenta uma categorização dos escalonadores de STM, onde ele classifica os algoritmos de acordo com as heurísticas apresentadas por eles.
-
-Está classificação é dividica por Baseada em Heurística e Baseado em Modelo.
+Está categorização é dividida em algoritmos Baseados em Heurística e algoritmos Baseados em Modelo. Cada categorização possui classificações de acordo com o comportamento de sua heurística.
 
 \begin{itemize}
 	\item Baseado em Heurística:
 	\begin{itemize}
-	    \item Feedback;
-	    \item Predição;
-	    \item Reativo; e
-	    \item Heurística Mista.
+	    \item Feedback: Utiliza o feedback da execução para realimentar sua heurística;
+	    \item Predição: Utiliza uma predição das informações para tomada de decisão;
+	    \item Reativo: Só executa sua heurística após determinado comportamento da aplicação ocorrer; e
+	    \item Heurística Mista: Mescla as classificações anteriores para otimizar a heurística.
 	\end{itemize}
 	\item Baseado em Modelo:
 	\begin{itemize}
-	    \item Aprendizado de Máquina;
-	    \item Modelo Analítico; e
-	    \item Modelo Misto.
+	    \item Aprendizado de Máquina: Utiliza algoritmos de aprendizado de máquina para tomar decisão;
+	    \item Modelo Analítico: Monta modelos analíticos para tomar decisão; e
+	    \item Modelo Misto: Mistura as classificações acima para otimizar a heurística.
 	\end{itemize}
 \end{itemize}
 
-A tabela~\ref{tab:compare} apresenta a caracterização dos algoritmos revizados na bibliografia
+
+% \section{Categorias}
+
+A tabela~\ref{tab:compare} apresenta as classificações dos principais algoritmos revisados na bibliografia durante o desenvolvimento deste trabalho.
 
 \begin{table}[]
 \footnotesize
@@ -499,7 +500,7 @@ AML & Modelo Misto \\
 \end{tabular}
 \end{table}
 
-\subsection{ATS}
+\section{ATS}
 
 \emph{Adaptive Transaction Scheduling}~(ATS)~\cite{ats2008} foi um dos primeiros trabalho a apresentar um escalonador de MT para trabalhar junto com gerenciador de contenção.
 
@@ -507,7 +508,7 @@ O ATS utiliza um valor para tomada de decisão denominado CI (Contention Intensi
 
 O escalonador utiliza o valor do CI em sua tomada de decisão. Quando o valor do CI ultrapassa um limiar pré definido, a thread é colocada em uma única fila para garantir uma execução de forma serial.
 
-\subsection{CAR-STM}
+\section{CAR-STM}
 
 \emph{Collision Avoidance and Resolution}~(CAR-STM)~\cite{carstm2008} foi desenvolvido para evitar que conflitos já existentes voltem a ocorrer. Para isto é apresentado duas heurísticas de gerenciamento.
 
@@ -518,7 +519,7 @@ A primeira heurística é denominada Básica e busca executar de forma serial as
   \item Permanente: Quando uma transação Tb aborta em relação a Ta, Tb é migrado para fila de Ta e sua ordem de execução será Ta -> Tb. Caso a transação Ta conflite e aborte em relação a Tc, Ta deverá ser migrada para fila de Tc carregando sua dependência Ta -> Tb.
 \end{itemize}
 
-\subsection{LUTS}
+\section{LUTS}
 
 \emph{Light-Weight User-Level Transaction Scheduler}~(LUTS)~\cite{Nicacio2012} apresenta um escalonador que busca evitar a ociosidade de um núcleo após a serialização de uma transação. 
 
@@ -534,7 +535,7 @@ Para transações longas, a heurística é mais elaborada, utilizando três meta
 
 \begin{itemize}
   \item  activeTx: Um vetor de tamanho igual ao total de núcleos disponíveis, usado para armazenar o identificador da transação que está sendo executada.
-  \item conflictTable: Uma tabela do históricode conflitos, cada linha armazena um conjunto de transações dada pelo activeTx, e cada coluna armazena a probabilidade de conflito.
+  \item conflictTable: Uma tabela do histórico de conflitos, cada linha armazena um conjunto de transações dada pelo activeTx, e cada coluna armazena a probabilidade de conflito.
   \item bestTx: Um vetor que sumariza a melhor transação a ser executada para cada núcleo.
 \end{itemize}
 
@@ -542,7 +543,7 @@ Quando uma transação realiza um commit ou abort o escalonador se encarrega de 
 
 Para evitar percorrer a conflictTable no inicio de cada transação o LUTS percorre a bestTx e seleciona qual transação deve executar. Quando a conflictTable é atualizada o escalonador atualiza a bestTx.
 
-\subsection{Shirink}
+\section{Shirink}
 
 \emph{Shirink}~\cite{shirink2009} apresenta um escalonador que busca minimizar a ocorrência de aborts com base nos conjuntos de leituras e escritas ocorridos em cada thread.
 
@@ -554,31 +555,31 @@ Cada thread possui um conjunto dos acessos de leitura e escrita realizados pelas
 
 Para que a transação não aborte a thread que iniciaria a transação é bloqueada até o fim da transação na thread em execução, assim o Shrink busca forçar a serialização das execuções.
 
-\subsection{ProVit}
+\section{ProVit}
 
 O escalonador \emph{ProVIT}~\cite{rito2015} fornece uma abordagem otimista da execução, evitando considerar que toda transação que abortou ira abortar novamente na sequencia. 
 
-Assim como o LUTS o ProVIT avalia o tamanho das operações atomicas para aplicar sua heurística. Porém no ProVIT mais de uma heurística pode estar ativa ao mesmo tempo. 
+Assim como o LUTS o ProVIT avalia o tamanho das operações atômicas para aplicar sua heurística. Porém no ProVIT mais de uma heurística pode estar ativa ao mesmo tempo. 
 
 Também foi apresentada a observação que duas transações conflitantes, de leitura e escrita, podem efetuar o commit dependendo da ordem, se o commit for efetuado primeiro pela transação de leitura, a de escrita não será conflitante.
 
-Operações atomicas longas utilizam uma política é baseada em grão fino para melhorar a precisão da predição e evitar a reexecução de transações. Essa predição utiliza como base o conjunto de leitura das transações já executadas.
+Operações atômicas longas utilizam uma política é baseada em grão fino para melhorar a precisão da predição e evitar a reexecução de transações. Essa predição utiliza como base o conjunto de leitura das transações já executadas.
 
 Se uma transação efetua um abort o escalonador marca esta transação como Very Important Transaction (VIT) e copia seu conjunto de leitura para uma lista auxiliar global.  Quando uma transação tenta efetuar um commit ela verifica a lista global para garantir que não ha conflito entre os conjuntos de escrita e leituras.
 
 Caso haja conflito entre a transação e alguma VIT, o commit é adiado por um tempo pré-determinado. Assim, o escalonador tenta garantir que as VITs não abortem novamente. Caso não haja o conflito o commit é realizado.
 
-Nas operações atomicas curtas a heurística evita a validação com base na intersecção para não adicionar overhead desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde é utilizada uma métrica de decisão para serializar as transações.
+Nas operações atômicas curtas a heurística evita a validação com base na intersecção para não adicionar overhead desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde é utilizada uma métrica de decisão para serializar as transações.
 
-Para definir quando uma transação será serializada, o escalonador utiliza um valor calculado em tempo de execução denominado Tempo Perdido (TP). Cada operação atomica possui seu proprio TP, que é calculado com base em um valor pré-definido e a quantidade de reexecução da transação e seu TP anterior.
+Para definir quando uma transação será serializada, o escalonador utiliza um valor calculado em tempo de execução denominado Tempo Perdido (TP). Cada operação atômica possui seu próprio TP, que é calculado com base em um valor pré-definido e a quantidade de reexecução da transação e seu TP anterior.
 
-Toda operação atomica começa com TP igual a zero e é executada livremente, conforme o TP aumenta o ProVit se encarrega de serializar as transações reduzindo a concorrencia até o ponto em que somente uma transação poderá ser executada por vez.
+Toda operação atômica começa com TP igual a zero e é executada livremente, conforme o TP aumenta o ProVit se encarrega de serializar as transações reduzindo a concorrência até o ponto em que somente uma transação poderá ser executada por vez.
 
-Para definir se uma operação atomica é curta ou longa foi implementado uma politica de definição, onde toda operação atomica inicia sua execução como curta. Quando uma transação finaliza o escalonador atualiza seu conhecimento sobre as operações atomicas com base no TP.
+Para definir se uma operação atômica é curta ou longa foi implementado uma politica de definição, onde toda operação atômica inicia sua execução como curta. Quando uma transação finaliza o escalonador atualiza seu conhecimento sobre as operações atômicas com base no TP.
 
-Uma operação atomica é considerada longa quando o tamanho médio do seu conjunto de leitura for maior que um limite pré-definido. Assim, o tamanho da operação atomica é baseado nas operações de leitura e não no tempo de execução.
+Uma operação atômica é considerada longa quando o tamanho médio do seu conjunto de leitura for maior que um limite pré-definido. Assim, o tamanho da operação atômica é baseado nas operações de leitura e não no tempo de execução.
 
-\subsection{STMap}
+\section{STMap}
 
 O \emph{STMap}~\cite{pasqualin2020online} apresenta um escalonador que utiliza mecanismos de sharing-aware mapping para aplicações STMs. O escalonador utiliza esse mecanismo para executar as transações concorrentes no mesmo núcleo NUMA para otimizar a execução da aplicação.
 
@@ -588,7 +589,7 @@ A coleta de dados é realizada em tempo de execução quando ocorre uma escrita 
 
 A matriz de comunicação possui como tamanho o mesmo número de threads em execução. Supondo que a transação t1 executada pela thread T1 manipule o mesmo endereço que a transação t2 da thread T2, a transação t1 descobre o ID da thread T1 e da thread T2 e incrementa o valor da matriz de comunicação nas posições respectivas aos IDs.
 
-Essa matriz é utilizada para caracterisar as transações e mapear a arquitetura em relação as threads, assim sendo possivel agrupar as threads por nodos de processamento para otimizar a execução e aproveitar ao máximo a coerencia de cache.
+Essa matriz é utilizada para caracterizar as transações e mapear a arquitetura em relação as threads, assim sendo possível agrupar as threads por nodos de processamento para otimizar a execução e aproveitar ao máximo a coerência de cache.
 
 \chapter{LTMS - Lups Transactional Memory Scheduler}
 \label{chapter::ltms}
