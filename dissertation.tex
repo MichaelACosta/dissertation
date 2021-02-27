@@ -594,11 +594,11 @@ Essa matriz é utilizada para caracterizar as transações e mapear a arquitetur
 \chapter{LTMS - Lups Transactional Memory Scheduler}
 \label{chapter::ltms}
 
-Memórias transacionais fornecem uma facilidade maior no desenvolvimento de programas paralelos, a área caminha para o uso de escalonadores de transações que compreendem a aplicação para extrair o melhor desempenho.
+Memórias transacionais fornecem um nível maior de abstração para o desenvolvimento de programas paralelos, a área caminha para o uso de escalonadores de transações que compreendem a aplicação para extrair o melhor desempenho.
 
 Porém os escalonadores atuais não consideram as diferenças entre as arquiteturas paralelas existentes. O escalonador LTMS se propõem a avaliar a aplicação e a arquitetura em tempo de execução para tirar máximo de proveito do paralelismo existente.
 
-As duas principais arquiteturas paralelas que serão abordadas na proxima seção são, arquiteturas UMA e arquiteturas NUMA. Os escalonadores atuais assim como as bibliotecas de stm são pensados para arquiteturas UMA não considerando as diferenças quando executadas em NUMA.
+As duas principais arquiteturas paralelas que serão abordadas na proxima seção são, arquiteturas UMA e arquiteturas NUMA. Os escalonadores atuais assim como as bibliotecas de STM são pensados para arquiteturas UMA não considerando as diferenças quando executadas em NUMA.
 
 \section{\textbf{Motivação}}
 
@@ -614,15 +614,13 @@ Os escalonadores de STM atuais buscam reduzir o número de conflitos para que oc
 
 Alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita para decidir qual o melhor nodo de execução para o thread ou quando deve ser migrado o banco de memória. Outros utilizam de uma matriz de comunicação para fazer um mapeamento de threads e assim otimizar a execução, como é feito em~\cite{pasqualin2020thread}.
 
-Os escalonadores de stm atuais não consideram a arquitetura e seu custo de acesso à memória para serializar as execuções. Alguns escalonadores de stm avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos~\cite{shirink2009}.
+Os escalonadores de STM atuais não consideram a arquitetura e seu custo de acesso à memória para serializar as execuções. Alguns escalonadores de STM avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos~\cite{shirink2009}.
 
-Com isto o LTMS implementa um escalonador que avalia as características da arquitetura, e em tempo de execução monta uma matriz de comunicação com base nas leituras e escritas realizadas pelos threads.
-
-Está matriz de comunicação é utilizada para avaliar o custo de acesso à memória e migrar as threads em execução entre as filas, buscando diminuir os números de conflitos por meio da serialização das transações e otimizar a execução aproveitando a melhor distribuição de tarefas na arquitetura NUMA reduzindo a latência de acesso à memória.
+Com isto o LTMS implementa um escalonador que avalia as características da arquitetura, e em tempo de execução monta uma matriz de comunicação com base nas leituras e escritas realizadas pelos threads. Está matriz de comunicação é utilizada para avaliar o custo de acesso à memória e migrar as threads em execução entre as filas, buscando diminuir os números de conflitos por meio da serialização das transações e otimizar a execução aproveitando a melhor distribuição de tarefas na arquitetura NUMA, reduzindo assim a latência de acesso à memória.
 
 \section{\textbf{Escalonador}}
 
-O LTMS é um escalonador de STM NUMA-Aware, ele identifica as características da arquitetura e do programa em tempo de execução para extrair o máximo de desempenho da máquina utilizada e facilitar a implementação de códigos paralelos.
+O LTMS é um escalonador de STM NUMA-Aware que identifica as características da arquitetura e do programa em tempo de execução para extrair o máximo de desempenho da máquina utilizada e facilitar a implementação de códigos paralelos.
 
 Como podemos ver na figura~\ref{ltms_generic} o escalonador LTMS é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base no número de cores disponíveis e as threads da aplicação.
 
@@ -652,22 +650,22 @@ Se o quantidade de threads da aplicação for menor que o número de cores dispo
 
 O escalonador também se encarrega de distribuir inicialmente as threads entre as filas de execução. Para distribuição de threads entre as filas foram desenvolvidas duas heurísticas que serão apresentadas na subseção~\ref{distribuition_heuristic}.
 
-Em tempo de execução o LTMS coleta as informações como, endereços de leitura e escrita mais utilizados, qual a thread possui a mesma afinidade de leitura e escrita, e a quantidade de commit e abort existentes por thread.
+Em tempo de execução o LTMS coleta as informações como, endereços de leitura e escrita mais utilizados, quais threads possuem a mesma afinidade de leitura e escrita, e a quantidade de commits e aborts existentes por thread.
 
 Caso ocorra um abort em uma transação, essas informações serão utilizadas para identificar qual fila a thread em execução tem maior afinidade caso sejá necessário executar uma migração.
 
-Para o LTMS decidir se deve migrar ou não uma thread de fila, foi desenvolvido duas heurísticas que buscam minimizar o overhead do escalonador e aproveitar as características da arquitetura. Estas heurísticas de migrações serão detalhadas na subseção~\ref{migration_heuristic}.
+Para o LTMS decidir se deve migrar ou não uma thread de fila, foram desenvolvidas duas heurísticas que buscam minimizar o overhead do escalonador e aproveitar as características da arquitetura. Estas heurísticas de migrações serão detalhadas na subseção~\ref{migration_heuristic}.
 
-\subsection{Heurística de distribuição}
+\subsection{Heurísticas de distribuição}
 \label{distribuition_heuristic}
 
 Após a criação das filas de execução, conforme apresentado acima, as threads criadas na aplicação são distribuídas com base em uma heurística de distribuição. Para este trabalho foram implementadas duas heurísticas.
 
 A primeira heurística distribui uma thread por fila até a conclusão de todas threads disponíveis. A figura~\ref{queue_one} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
 
-O escalonador executará a primeira faze de distribuição, colocando uma thread para cada fila existente. Após a primeira faze o escalonador verifica se ainda possui threads a serem distribuídas, caso haja thread o LTMS repete a distribuição em uma segunda faze, quando acabarem as threads o LTMS encerra a distribuição.
+O escalonador executará a primeira fase de distribuição, colocando uma thread para cada fila existente. Após a primeira fase o escalonador verifica se ainda possui threads a serem distribuídas, caso hajam threads o LTMS repete a distribuição em uma segunda fase, até acabarem as threads.
 
-Neste senário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fica com as threads t1 e t3. Veja que o LTMS alocou a thread t0 em Q0 e depois alocou t1 em Q1, então voltou a execução para alocar t2 em Q0 e t3 em Q1.
+Neste cenário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fica com as threads t1 e t3. Veja que o LTMS alocou a thread t0 em Q0 e depois alocou t1 em Q1, então voltou a execução para alocar t2 em Q0 e t3 em Q1.
 
 \begin{figure}[htbp]
   \centering
@@ -676,11 +674,11 @@ Neste senário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fic
 \label{queue_one}
 \end{figure}
 
-A segunda heurística distribui duas threads por fila, no exemplo apresentado na figura~\ref{queue_two} temos o mesmo senário de filas, cores e threads apresentados anteriormente.
+A segunda heurística distribui duas threads por fila, no exemplo apresentado na figura~\ref{queue_two} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
 
-Na primeira faze de distribuição o escalonador aloca duas threads por fila, quando acabam as filas o escalonador verifica se há thread disponível para distribuição, se não há mais threads o LTMS encerra a distribuição.
+Na primeira fase de distribuição o escalonador aloca duas threads por fila, quando acabam as filas o escalonador verifica se há thread disponível para distribuição, se não há mais threads o LTMS encerra a distribuição.
 
-Neste senário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3. Isto por que o escalonador alocou to e t1 em sequencia na fila Q0, para então alocar t2 e t3 na fila Q1.
+Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3.% Isto por que o escalonador alocou to e t1 em sequencia na fila Q0, para então alocar t2 e t3 na fila Q1.
 
 \begin{figure}[htbp]
   \centering
@@ -690,7 +688,7 @@ Neste senário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threa
 \end{figure}
 
 
-\subsection{Heurística de migração}
+\subsection{Heurísticas de migração}
 \label{migration_heuristic}
 
 Durante a execução das threads são coletados informações sobre sua execução com base em sua fila atual. Entre os dados coletados é montada uma matriz de comunicação e uma matriz de endereços.

@@ -1,5 +1,5 @@
-# LATEX = pdflatex --interaction=nonstopmode -halt-on-error
-LATEX = pdflatex --interaction=batchmode
+LATEX = pdflatex --interaction=nonstopmode -halt-on-error
+# LATEX = pdflatex --interaction=batchmode
 BIBTEX = bibtex
 RM = rm -f
 FILE = dissertation
