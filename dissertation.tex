@@ -693,23 +693,13 @@ Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threa
 
 Durante a execução das threads são coletados informações sobre sua execução com base em sua fila atual. Entre os dados coletados é montada uma matriz de comunicação e uma matriz de endereços.
 
-A matriz de comunicação consiste em uma matriz que armazena quantas vezes um thread lê e escreve no mesmo endereço de memória que outro thread.
+A matriz de comunicação consiste em uma matriz que armazena quantas vezes um thread lê e escreve no mesmo endereço de memória que outro thread. A matriz de endereço armazena os endereços de memória no qual um thread realizou operações de leitura e escrita. Outros dados também armazenados por thread em tempo de execução são as quantidade de aborts e commits realizados. Cada thread pode executar n transações, a cada commit e abort de uma transação o thread incrementa seu respectivo contador para manter esse dado atualizado. No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar todo thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
 
-A matriz de endereço armazena os endereços de memória no qual um thread realizou operações de leitura e escrita. Outros dados também armazenados por thread em tempo de execução são as quantidade de aborts e commits realizados.
+Para reduzir o impacto no tempo gerados pela migração threads de forma inapropriada foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread.
 
-Cada thread pode executar n transações, a cada commit e abort de uma transação o thread incrementa seu respectivo contador para manter esse dado atualizado.
+Para as duas heurísticas a fila para qual pretendemos migar o thread é escolhida com base na matriz de comunicação. O thread que possui a transação que abortou avalia qual o thread que tem maior afinidade de leitura e escrita. Após identificar o thread com maior afinidade, o LTMS descobre em qual fila o thread está e escolhe esta fila para migrar o thread atual.
 
-No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar todo thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
-
-Para reduzir o impacto no tempo migrando threads de forma inapropriada foi desenvolvido duas heurísticas de migração que avaliam os dados coletados para tomar a decisão de migrar a thread.
-
-Para as duas heurísticas a fila para qual pretendemos migara o thread é escolhida com base na matriz de comunicação. O thread que possui a transação que abortou avalia qual o thread que tem maior afinidade de leitura e escrita.
-
-Após identificar o thread com maior afinidade, o LTMS descobre em qual fila o thread está e escolhe esta fila para migrar o thread atual.
-
-A primeira heurística, denominada threshold, é apresentada na figura~\ref{threshold}. O LTMS após definir para qual fila pretende migrar o thread atual consulta com o thread qual a razão entre a quantidade de aborts e commits.
-
-Se o resultado da razão entre os aborts e commits do thread atual forem superior a um limiar, previamente estipulado pelo desenvolvedor, o escalonador decide por migrar o thread atual.
+A primeira heurística, denominada threshold, é apresentada na figura~\ref{threshold}. O LTMS após definir para qual fila pretende migrar o thread atual, consulta com o thread qual a razão entre a quantidade de aborts e commits. Se o resultado da razão entre os aborts e commits do thread atual forem superior a um limiar, previamente estipulado pelo desenvolvedor, o escalonador decide por migrar o thread atual.
 
 \begin{figure}[htbp]
   \centering
@@ -718,13 +708,7 @@ Se o resultado da razão entre os aborts e commits do thread atual forem superio
 \label{threshold}
 \end{figure}
 
-A segunda heurística de migração implementa, denominada latency, é apresentada na figura~\ref{latency}. Nesta heurística após o LTMS escolher a fila para qual a thread pode ser migrada, o escalonador avalia a latência de acesso à memória.
-
-Para isto, o LTMS consulta na matriz de endereços qual o endereço em comum entre o thread atual e o thread que executa na fila indicada para migração. O LTMS armazena qual o node NUMA esse endereço pertence.
-
-Com a informação do nodo NUMA do endereço de memória, o escalonador calcula a latência de acesso da fila do thread atual para esse endereço e a latência da futura fila para esse endereço.
-
-Se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread, o escalonador efetua a migração. Caso a latência seja menor ou igual a thread mantem sua execução na fila atual.
+A segunda heurística de migração implementa, denominada latency, é apresentada na figura~\ref{latency}. Nesta heurística após o LTMS escolher a fila para qual a thread pode ser migrada, o escalonador avalia a latência de acesso à memória. Para isto, o LTMS consulta na matriz de endereços, qual o endereço em comum entre o thread atual e o thread que executa na fila indicada para migração. O LTMS armazena qual o node NUMA esse endereço pertence. Com a informação do nodo NUMA do endereço de memória, o escalonador calcula a latência de acesso da fila do thread atual para esse endereço e a latência da futura fila para esse endereço. Se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread, o escalonador efetua a migração. Caso a latência seja menor ou igual a thread mantem sua execução na fila atual.
 
 \begin{figure}[htbp]
   \centering
@@ -733,7 +717,7 @@ Se a fila atual possui uma latência de acesso maior que a fila para a qual pret
 \label{latency}
 \end{figure}
 
-Para realizar a migração ambas as heurísticas bloqueiam o thread atual, então o escalonador se encarrega de trocar as informações sobre a execução da thread para nova fila. Após trocar o thread de fila o escalonador verifica a fila anterior para dar inicio a execução de um novo thread.
+Para realizar a migração ambas as heurísticas bloqueiam o thread atual, então o escalonador se encarrega de trocar as informações sobre a execução da thread para nova fila. Após trocar o thread de fila o escalonador verifica se a fila anterior possui mais threads para executar, e assim da inicio a execução de um novo thread.
 
 Se o LTMS decidir não migrar a thread, a transação segue seu fluxo atual utilizando os mecanismos de gerenciamento de conflito existentes nas bibliotecas STM.
 
