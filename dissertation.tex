@@ -630,7 +630,7 @@ Como podemos ver na figura~\ref{ltms_generic} o escalonador LTMS é inicializado
 \label{ltms_generic}
 \end{figure}
 
-Após ter as informações sobre o número de cores e threads o LTMS cria as filas de execução. Se o número de threads da aplicação forem maiores que o número de cores o LTMS cria uma fila para cada core, como visto na figura~\ref{queue_core}.
+Para reduzir o custo de inicialização o escalonador evita criar mais filas de execução do que o necessário para a aplicação. Assim, o LTMS compara o número de threads da aplicação com a quantidade de cores da máquina, se o número de threads da aplicação for maior que o número de cores o LTMS cria uma fila para cada core, como visto na figura~\ref{queue_core}.
 
 \begin{figure}[htbp]
   \centering
@@ -639,7 +639,7 @@ Após ter as informações sobre o número de cores e threads o LTMS cria as fil
 \label{queue_core}
 \end{figure}
 
-Se o quantidade de threads da aplicação for menor que o número de cores disponível na arquitetura, o LTMS cria uma fila para cada thread como pode ser visto na figura~\ref{queue_thread}.
+Se a quantidade de threads da aplicação for menor que o número de cores disponível na arquitetura, o LTMS cria a mesma quantidade de filas que a quantidade de threads, fixando um core por fila e distribuindo uma thread por fila, como visto na figura~\ref{queue_thread}
 
 \begin{figure}[htbp]
   \centering
@@ -676,7 +676,7 @@ Neste cenário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fic
 
 A segunda heurística distribui duas threads por fila, no exemplo apresentado na figura~\ref{queue_two} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
 
-Na primeira fase de distribuição o escalonador aloca duas threads por fila, quando acabam as filas o escalonador verifica se há thread disponível para distribuição, se não há mais threads o LTMS encerra a distribuição.
+Na primeira fase de distribuição o escalonador aloca duas threads por fila, quando acabam as filas o escalonador verifica se há thread disponível para distribuição, se não há mais threads o LTMS encerra a distribuição. Caso haja apenas uma ultima thread para distribuir o escalonador aloca esta na fila em que parou a distribuição.
 
 Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3.% Isto por que o escalonador alocou to e t1 em sequencia na fila Q0, para então alocar t2 e t3 na fila Q1.
 
@@ -699,7 +699,7 @@ Para reduzir o impacto no tempo gerados pela migração threads de forma inaprop
 
 Para as duas heurísticas a fila para qual pretendemos migar o thread é escolhida com base na matriz de comunicação. O thread que possui a transação que abortou avalia qual o thread que tem maior afinidade de leitura e escrita. Após identificar o thread com maior afinidade, o LTMS descobre em qual fila o thread está e escolhe esta fila para migrar o thread atual.
 
-A primeira heurística, denominada threshold, é apresentada na figura~\ref{threshold}. O LTMS após definir para qual fila pretende migrar o thread atual, consulta com o thread qual a razão entre a quantidade de aborts e commits. Se o resultado da razão entre os aborts e commits do thread atual forem superior a um limiar, previamente estipulado pelo desenvolvedor, o escalonador decide por migrar o thread atual.
+A primeira heurística, denominada threshold, apresentada na figura~\ref{threshold} avalia o nivel de contenção apresentado pelo thread em tempo de execução, esse nivel de contenção é medido pela razão entre os aborts e commits realizados pelo thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts. Para utilizar esta heurística o LTMS primeiro defini para qual fila pretende migrar o thread atual, então consulta com o thread qual a razão entre a quantidade de aborts e commits (nivel de contenção). Se o nivel de contenção do thread atual for superior a um limiar previamente estipulado pelo desenvolvedor, o escalonador decide por migrar o thread atual.
 
 \begin{figure}[htbp]
   \centering
