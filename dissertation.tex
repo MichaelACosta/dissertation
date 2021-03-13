@@ -708,7 +708,7 @@ Para reduzir o impacto no tempo gerados pela migração threads de forma inaprop
 Para as duas heurísticas a fila para qual pretendemos migar a thread é escolhida com base na matriz de comunicação. Como poder ver na imagem~\ref{findNewQueue} a thread que possui a transação que abortou utiliza a função \emph{findNewQueue} passando o identificador da sua fila para avaliar qual a fila que possui maior afinidade de leitura e escrita. Após identificar a fila com maior afinidade, o LTMS descobre utiliza uma das heurísticas para decidir se migrará a thread ou não.
 
 \begin{figure}[htbp]
-  % \centering
+  \centering
   \begin{lstlisting}
     int findNewQueue(queue) {
       newQueue = queue
@@ -731,7 +731,7 @@ Após descobrir o identificador da fila para onde a thread pode ser migrada a fu
 O limiar é uma constante definida pelo desenvolvedor que indica o nível máximo de contenção aceito pela aplicação, um valor baixo para o limiar gera mais migrações que proporciona maior serialização do sistema reduzindo assim os aborts e aumentando tempo de execução, enquanto um limiar muito alto mantem o paralelismo mas aumenta o número de aborts.
 
 \begin{figure}[htbp]
-  % \centering
+  \centering
   \begin{lstlisting}
     bool thresholdHeuristic(thread) {
       contentionIndex = thread.aborts/thread.commits
@@ -768,51 +768,36 @@ O limiar é uma constante definida pelo desenvolvedor que indica o nível máxim
 %   \label{threshold}
 % \end{figure}
 
-A segunda heurística de migração implementa, denominada latency, é apresentada na figura~\ref{latency}. Nesta heurística após o LTMS escolher a fila para qual a thread pode ser migrada, o escalonador avalia a latência de acesso à memória. Para isto, o LTMS consulta na matriz de endereços, qual o endereço em comum entre o thread atual e o thread que executa na fila indicada para migração. O LTMS armazena qual o node NUMA esse endereço pertence. Com a informação do nodo NUMA do endereço de memória, o escalonador calcula a latência de acesso da fila do thread atual para esse endereço e a latência da futura fila para esse endereço. Se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread, o escalonador efetua a migração. Caso a latência seja menor ou igual a thread mantem sua execução na fila atual.
+A segunda heurística de migração, denominada \emph{latency}, avalia a lentência de acesso a memória entres os nodos da filas envolvidas na migração e o endereço de memória mais acessado pela thread. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na figura\ref{latency}.
+
+Após descobrir o identificador da fila para onde a thread pode ser migrada a função \emph{latencyHeuristic} é executada, esta função consulta na matriz de endereços qual endereço de memória em que as threads que executam nas filas que estão sendo avaliada possuem em comum. Assim, a função descobre qual o nodo NUMA a fila atual pertence e qual o nodo NUMA a fila que está sendo avaliada pertence.
+
+Com as informações sobre os nodos NUMA e o endereço de memória utilizado, é avaliada a latência de acesso da fila atual para memória, e a latência de acesso da futura fila para a memória, se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread o escalonador efetua a migração, caso a latência seja menor ou igual a thread mantem sua execução na fila atual.
+
+Migrando a thread para uma fila com latência menor que a atual, o LTMS busca reduzir o número de aborts serializando parte da execução, e busca também aproveitar as caracteristicas da arquitetura otimizando o acesso à memória dentro da região NUMA. A migração não ocorre se a latência da nova fila for maior para evitar futuros acessos entre diferentes nodos NUMA.
 
 \begin{figure}[htbp]
   \centering
   \begin{lstlisting}
-    int findNewQueue(queue) {
-      newQueue = queue
-      for(i=0; i==threads; ++i ){
-        if(matrixComm[queue][newQueue]<matrixComm[queue][i]) {
-          newQueue=i
-        }
-      }
-      return newQueue
-    }
-
-    bool thresholdHeuristic(thread) {
-      contentionIndex = thread.aborts/thread.commits
-      if(contentionIndex>=threshold) {
+    bool latencyHeuristic(thread, queueId) {
+      address = matrix_address[thread.queueId][queueId]
+      newNode = queues[queueId].node
+      node = thread.node
+      currentLatency = latency(node, address)
+      nextLatency = latency(newNode, address)
+      if(currentLatency>nextLatency) {
         return true
       }
       return false
-    }
-
-    void migration(thread) {
-      newQueue = findNewQueue(thread.queue)
-      if(thresholdHeuristic(thread)){
-        thread.setNewQueue(newQueue)
-        queues[newQueue].push(thread)
-      }
     }
   \end{lstlisting}
   \caption{Heurística de migração latency}
 \label{latency}
 \end{figure}
 
-% \begin{figure}[htbp]
-%   \centering
-%   \includegraphics[scale=.8]{images/latency.png}
-%   \caption{Heurística de migração latency}
-% \label{latency}
-% \end{figure}
+% Para realizar a migração ambas as heurísticas bloqueiam o thread atual, então o escalonador se encarrega de trocar as informações sobre a execução da thread para nova fila. Após trocar o thread de fila o escalonador verifica se a fila anterior possui mais threads para executar, e assim da inicio a execução de um novo thread.
 
-Para realizar a migração ambas as heurísticas bloqueiam o thread atual, então o escalonador se encarrega de trocar as informações sobre a execução da thread para nova fila. Após trocar o thread de fila o escalonador verifica se a fila anterior possui mais threads para executar, e assim da inicio a execução de um novo thread.
-
-Se o LTMS decidir não migrar a thread, a transação segue seu fluxo atual utilizando os mecanismos de gerenciamento de conflito existentes nas bibliotecas STM.
+% Se o LTMS decidir não migrar a thread, a transação segue seu fluxo atual utilizando os mecanismos de gerenciamento de conflito existentes nas bibliotecas STM.
 
 \section{\textbf{Aplicação}}
 
