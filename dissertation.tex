@@ -699,17 +699,13 @@ Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threa
 \subsection{Heurísticas de migração}
 \label{migration_heuristic}
 
-Durante a execução das threads são coletados informações sobre sua execução com base em sua fila atual. Entre os dados coletados é montada uma matriz de comunicação e uma matriz de endereços.
+Para execução das heuristicas de migração, alguns dados são coletados em tempo de execução com base nos acessos à memória realizados pelos threads e com base nos aborts e commits realizados pelas transações. Os dados coletados sobre os acessos à memória fornecem insumos para duas matrizes, uma matriz de comunicação e uma matriz de endereços.
 
-A matriz de comunicação consiste em uma matriz que armazena quantas vezes um thread lê e escreve no mesmo endereço de memória que outro thread. A matriz de endereço armazena os endereços de memória no qual um thread realizou operações de leitura e escrita. Outros dados também armazenados por thread em tempo de execução são as quantidade de aborts e commits realizados. Cada thread pode executar n transações, a cada commit e abort de uma transação o thread incrementa seu respectivo contador para manter esse dado atualizado. No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar todo thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
+A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória que outro thread. A matriz de endereço armazena os endereços de memória no qual uma thread realizou operações de leitura e escrita. Outros dados também armazenados por threads em tempo de execução são as quantidades de aborts e commits realizados. Cada thread pode executar n transações, a cada commit e abort de uma transação o thread incrementa seu respectivo contador para manter esse dado atualizado. No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar todo thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
 
-Para reduzir o impacto no tempo gerados pela migração threads de forma inapropriada foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Para as duas heurísticas a fila para qual pretendemos migar o thread é escolhida com base na matriz de comunicação. O thread que possui a transação que abortou avalia qual o thread que tem maior afinidade de leitura e escrita. Após identificar o thread com maior afinidade, o LTMS descobre em qual fila o thread está e escolhe esta fila para migrar o thread atual.
+Para reduzir o impacto no tempo gerados pela migração threads de forma inapropriada foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Estas heurística foram denominadas \emph{threshold} e \emph{latency} e são apresentadas nas figuras~\ref{threshold} e~\ref{latency}.
 
-A primeira heurística, denominada threshold, avalia o nível de contenção apresentado pelo thread em tempo de execução, esse nivel de contenção é medido pela razão entre os aborts e commits realizados pelo thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts.
-
-Para realizar uma migração utilizando esta heurística o LTMS executa três funções importantes que são apresentadas na figura\ref{threshold}. Quando um abort é identificado a função \emph{migration} é executada, esta função se encarrega de realizar ou não a migração, para isto a primeira etapa é executar a função \emph{findNewQueue} passando o identificador da fila na qual a thread atual está executando, essa função busca na matriz de comunicação qual a outra fila que possui mais acessos aos mesmos endereços de memória e retorna o identificador desta fila. Após ter a informação do identificador da fila que devemos migrar o thread é executada a função \emph{thresholdHeuristic} que avalia se o indice de contenção ultrapassa o valor pré definido no threshold. O indice de contenção é calculado pela relação entre aborts e commits e o valor de threshold é uma constante definida pelo desenvolvedor antes da compilação. Se o valor do indice de contenção ultrapassa o valor do threshold a função \emph{migration} realiza a migração do thread para nova fila, caso o valor do indice de contenção fique abaixo do valor threshold a função não migra a thread e retorna para sua execução natural.
-
-% Para utilizar esta heurística o LTMS primeiro defini para qual fila pretende migrar o thread atual, então consulta com o thread qual a razão entre a quantidade de aborts e commits (nivel de contenção). Se o nivel de contenção do thread atual for superior a um limiar previamente estipulado pelo desenvolvedor, o escalonador decide por migrar o thread atual.
+Para as duas heurísticas a fila para qual pretendemos migar a thread é escolhida com base na matriz de comunicação. Como poder ver na imagem~\ref{findNewQueue} a thread que possui a transação que abortou utiliza a função \emph{findNewQueue} passando o identificador da sua fila para avaliar qual a fila que possui maior afinidade de leitura e escrita. Após identificar a fila com maior afinidade, o LTMS descobre utiliza uma das heurísticas para decidir se migrará a thread ou não.
 
 \begin{figure}[htbp]
   % \centering
@@ -723,7 +719,20 @@ Para realizar uma migração utilizando esta heurística o LTMS executa três fu
       }
       return newQueue
     }
+  \end{lstlisting}
+  \caption{Algoritmo que identifica a nova fila para migração}
+  \label{findNewQueue}
+\end{figure}
 
+A primeira heurística, denominada threshold, avalia o nível de contenção apresentado pela thread em tempo de execução, esse nivel de contenção é medido pela razão entre os aborts e commits realizados pela thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na figura\ref{threshold}.
+
+Após descobrir o identificador da fila para onde a thread pode ser migrada a função \emph{thresholdHeuristic} é executada, esta função calcula o indice de contenção dado pela razão dos aborts e commits realizados pela thread e avalia se o indice de contenção é maior que um valor limiar. Se o indice de contenção for maior que o limiar a função permite a migração da thread, se o valor do inidice de contenção ficar abaixo do limiar a thread não deve ser migrada.
+
+O limiar é uma constante definida pelo desenvolvedor que indica o nível máximo de contenção aceito pela aplicação, um valor baixo para o limiar gera mais migrações que proporciona maior serialização do sistema reduzindo assim os aborts e aumentando tempo de execução, enquanto um limiar muito alto mantem o paralelismo mas aumenta o número de aborts.
+
+\begin{figure}[htbp]
+  % \centering
+  \begin{lstlisting}
     bool thresholdHeuristic(thread) {
       contentionIndex = thread.aborts/thread.commits
       if(contentionIndex>=threshold) {
@@ -731,18 +740,33 @@ Para realizar uma migração utilizando esta heurística o LTMS executa três fu
       }
       return false
     }
-
-    void migration(thread) {
-      newQueue = findNewQueue(thread.queue)
-      if(thresholdHeuristic(thread)){
-        thread.setNewQueue(newQueue)
-        queues[newQueue].push(thread)
-      }
-    }
   \end{lstlisting}
   \caption{Heurística de migração threshold}
   \label{threshold}
 \end{figure}
+
+% \begin{figure}[htbp]
+%   % \centering
+%   \begin{lstlisting}
+%     bool thresholdHeuristic(thread) {
+%       contentionIndex = thread.aborts/thread.commits
+%       if(contentionIndex>=threshold) {
+%         return true
+%       }
+%       return false
+%     }
+
+%     void migration(thread) {
+%       newQueue = findNewQueue(thread.queue)
+%       if(thresholdHeuristic(thread)){
+%         thread.setNewQueue(newQueue)
+%         queues[newQueue].push(thread)
+%       }
+%     }
+%   \end{lstlisting}
+%   \caption{Heurística de migração threshold}
+%   \label{threshold}
+% \end{figure}
 
 A segunda heurística de migração implementa, denominada latency, é apresentada na figura~\ref{latency}. Nesta heurística após o LTMS escolher a fila para qual a thread pode ser migrada, o escalonador avalia a latência de acesso à memória. Para isto, o LTMS consulta na matriz de endereços, qual o endereço em comum entre o thread atual e o thread que executa na fila indicada para migração. O LTMS armazena qual o node NUMA esse endereço pertence. Com a informação do nodo NUMA do endereço de memória, o escalonador calcula a latência de acesso da fila do thread atual para esse endereço e a latência da futura fila para esse endereço. Se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread, o escalonador efetua a migração. Caso a latência seja menor ou igual a thread mantem sua execução na fila atual.
 
