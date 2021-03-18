@@ -745,29 +745,6 @@ O limiar é uma constante definida pelo desenvolvedor que indica o nível máxim
   \label{threshold}
 \end{figure}
 
-% \begin{figure}[htbp]
-%   % \centering
-%   \begin{lstlisting}
-%     bool thresholdHeuristic(thread) {
-%       contentionIndex = thread.aborts/thread.commits
-%       if(contentionIndex>=threshold) {
-%         return true
-%       }
-%       return false
-%     }
-
-%     void migration(thread) {
-%       newQueue = findNewQueue(thread.queue)
-%       if(thresholdHeuristic(thread)){
-%         thread.setNewQueue(newQueue)
-%         queues[newQueue].push(thread)
-%       }
-%     }
-%   \end{lstlisting}
-%   \caption{Heurística de migração threshold}
-%   \label{threshold}
-% \end{figure}
-
 A segunda heurística de migração, denominada \emph{latency}, avalia a lentência de acesso a memória entres os nodos da filas envolvidas na migração e o endereço de memória mais acessado pela thread. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na figura\ref{latency}.
 
 Após descobrir o identificador da fila para onde a thread pode ser migrada a função \emph{latencyHeuristic} é executada, esta função consulta na matriz de endereços qual endereço de memória em que as threads que executam nas filas que estão sendo avaliada possuem em comum. Assim, a função descobre qual o nodo NUMA a fila atual pertence e qual o nodo NUMA a fila que está sendo avaliada pertence.
@@ -795,9 +772,21 @@ Migrando a thread para uma fila com latência menor que a atual, o LTMS busca re
 \label{latency}
 \end{figure}
 
-% Para realizar a migração ambas as heurísticas bloqueiam o thread atual, então o escalonador se encarrega de trocar as informações sobre a execução da thread para nova fila. Após trocar o thread de fila o escalonador verifica se a fila anterior possui mais threads para executar, e assim da inicio a execução de um novo thread.
+A função de migração utiliza as funções citadas a cima, a figura~\ref(migration) ilustra como a função~\emph(migration) utiliza as demais funções. A função \emph(migration) é executada quando ocorre um abort e após encontrar a fila para qual podemos efetuar a migração utilizamos uma das duas heurísticas citadas para determinar se devemos migrar a thread atual. Caso a thread deva ser migrada, a thread é adicionada a fila de execução para qual desejase migrala. Caso a thread não deva ser migrada, a função retorna para operação de abort e segue a exucação utilizando o gerenciador de contenção.
 
-% Se o LTMS decidir não migrar a thread, a transação segue seu fluxo atual utilizando os mecanismos de gerenciamento de conflito existentes nas bibliotecas STM.
+\begin{figure}[htbp]
+  % \centering
+  \begin{lstlisting}
+    void migration(thread) {
+      newQueue = findNewQueue(thread.queue)
+      if(selectedHeuristic(thread)){
+        queues[newQueue].push(thread)
+      }
+    }
+  \end{lstlisting}
+  \caption{Função de migração}
+  \label{migration}
+\end{figure}
 
 \section{\textbf{Aplicação}}
 
