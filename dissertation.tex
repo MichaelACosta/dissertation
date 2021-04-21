@@ -620,7 +620,7 @@ As arquiteturas \emph{NUMA} possuem múltiplos núcleos dispostos em conjuntos d
 
 Os escalonadores de STM atuais buscam reduzir o número de conflitos para reduzir a quantidade de reexecução das transações. Para isto estes escalonadores implementam filas de execução e migração de threads que tornam serial a execução das transações conflitantes, como nos trabalhos apresentados em~\cite{shirink2009},~\cite{Nicacio2012}, e~\cite{rito2015}.
 
-Algoritmos NUMA-Aware avaliam as diferentes características da arquitetura que a aplicação está executando. Possuindo conhecimento das diferentes latências de acesso à memória esses algoritmos podem extrair o máximo de recurso da máquina. Assim, alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita das aplicações para decidir qual é o melhor nodo de execução para o thread, ou quando deve ser migrado a página de memória. Outros utilizam uma matriz de comunicação para fazer um mapeamento de threads e assim otimizar sua execução, como é feito em~\cite{pasqualin2020thread}.
+Algoritmos NUMA-Aware avaliam as diferentes características da arquitetura que a aplicação está executando. Possuindo conhecimento das diferentes latências de acesso à memória esses algoritmos podem extrair o máximo de recurso da máquina. Assim, alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita das aplicações para decidir qual é o melhor nodo de execução para a thread, ou quando deve ser migrado a página de memória. Outros utilizam uma matriz de comunicação para fazer um mapeamento de threads e assim otimizar sua execução, como é feito em~\cite{pasqualin2020thread}.
 
 Os escalonadores de STM atuais não consideram a arquitetura e seu custo de acesso à memória para serializar as execuções. Alguns escalonadores de STM avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos, como é visto em~\cite{shirink2009}.
 
@@ -721,142 +721,86 @@ Os dados coletados sobre os acessos à memória fornecem insumos para duas matri
 A matriz de comunicação fornece insumos sobre a quantidade de vezes que duas threads acessam o mesmo endereçamento de memória. Os valores da matriz de comunicação se dão pelos somatorios dos acessos ao mesmo endereçamento de memória entre dois threds, sendo os identificadores dos threads as procições da matriz. Sendo assim se a thread com id 0 lê ou escreve 1000 vezes no mesmo endereço que a thread de id 1, o valor da matriz de comunicação na posição \emph{matrixComm[0][1]} será 1000.
 \todo{detalhar o algoritmo}
 
-A matriz de endereços por sua vez armazena a informação de quais endereços iguais foram acessados mais vezes pelas threads. Os valores da matriz de endereços são os endereçamentos de memória acessados mais vezes entre dois threads, e assim como na matriz de comunicação os identificadores dos threads são as posições da matriz. Assim, se a thread com id 0 e a thread de id 1 possuem mais acesse em comum com o endereço 0x111, o valor da matriz de endereços na posição \emph{matrixAddress[0][1]} será 0x111.
+A matriz de endereços por sua vez armazena a informação de quais endereços iguais foram acessados mais vezes pelas threads. Os valores da matriz de endereços são os endereçamentos de memória acessados mais vezes entre dois threads, e assim como na matriz de comunicação os identificadores dos threads são as posições da matriz. Assim, se a thread com id 0 e a thread de id 1 possuem mais acesse em comum com o endereço 0xbff6f36c, o valor da matriz de endereços na posição \emph{matrixAddress[0][1]} será 0xbff6f36c.
 \todo{detalhar o algoritmo}
 
 \todo{abort e commit}
 
 
-% A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória que outro thread. A matriz de endereço armazena os endereços de memória no qual uma thread realizou operações de leitura e escrita. Outros dados também armazenados por threads em tempo de execução são as quantidades de aborts e commits realizados. Cada thread pode executar n transações, a cada commit e abort de uma transação o thread incrementa seu respectivo contador para manter esse dado atualizado. No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar todo thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
+% A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória que outra thread. A matriz de endereço armazena os endereços de memória no qual uma thread realizou operações de leitura e escrita. Outros dados também armazenados por threads em tempo de execução são as quantidades de aborts e commits realizados. Cada thread pode executar n transações, a cada commit e abort de uma transação a thread incrementa seu respectivo contador para manter esse dado atualizado. No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar toda thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
 
 % \todo{
 %   H: O sistema coleta duas matrizes...
 
-% "A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória de outro thread"
+% "A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória de outra thread"
 
 % Tens que descrever melhor essa matriz e colocar o algoritmo. Essa explicação não está correta.
 % }
 
 \subsection{Migração de Threads}
 
-\subsubsection{Heurísticas de migração} \todo{sai}
-\label{migration_heuristic}
+O LTMS fornece um sistema de migração de threads entre as filas existentes, esse sistema entra em ação após a ocorrencia de um abort e busca agrupar as threads conflitantes com intuito de serializalas para evitar conflitos futuros. O sistema de migração é dividido em duas etapas, a identificação da fila para a qual o thread será migrado e a heuristica de migração que define se a migração ira acontecer.
 
+A figura~\ref(migration) ilustra a função de miguração denominada ~\emph(migrateThread), está função é executada após a ocorrencia de um abort, a função~\emph{findBestQueue} identifica a fila para qual podemos efetuar a migração e a função~\emph{okToMigrate} utiliza uma heurística que determinar se devemos migrar a thread atual. Caso a thread deva ser migrada, a thread é adicionada a fila de execução para qual desejase migrala. Caso a thread não deva ser migrada, a função retorna para operação de abort e segue a exucação utilizando o gerenciador de contenção.
 
-\todo{
-  i: nao entendi essa história da heurística reduzir o impacto da migração
-}
-Para reduzir o impacto no tempo gerados pela migração threads de forma inapropriada foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Estas heurística foram denominadas \emph{threshold} e \emph{latency} e são apresentadas nas figuras~\ref{threshold} e~\ref{latency}.
-
-Para as duas heurísticas a fila para qual pretendemos migar a thread é escolhida com base na matriz de comunicação. Como poder ver na imagem~\ref{findNewQueue} a thread que possui a transação que abortou utiliza a função \emph{findNewQueue} passando o identificador da sua fila para avaliar qual a fila que possui maior afinidade de leitura e escrita. Após identificar a fila com maior afinidade, o LTMS descobre utiliza uma das heurísticas para decidir se migrará a thread ou não.
-
-\todo{
-  h: Esse código, sem uma explicação não adianta. Explicando o que ele faz, o código se torna desnecessário. Então é melhor tirar
-}
 \begin{figure}[htbp]
   \centering
   \begin{lstlisting}
-    int findNewQueue(queue) {
-      newQueue = queue
-      for(i=0; i==threads; ++i ){
-        if(matrixComm[queue][newQueue]<matrixComm[queue][i]) {
-          newQueue=i
-        }
-      }
-      return newQueue
+    migrateThread(thread) {
+      if (okToMigrate(thread))
+        findBestQueue(thread).push();
     }
   \end{lstlisting}
-  \caption{Algoritmo que identifica a nova fila para migração}
-  \label{findNewQueue}
+  \caption{Função de migração}
+  \label{migration}
 \end{figure}
 
-A primeira heurística, denominada threshold, avalia o nível de contenção apresentado pela thread em tempo de execução, esse nivel de contenção é medido pela razão entre os aborts e commits realizados pela thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na figura\ref{threshold}.
+A etapa de identificação das threads conflitantes busca entender a aplicação e a arquitetura para definir para qual fila a thread que gerou o abort deve ser migrada, para isso a função~\emph{findBestQueue} recebe o identificador da thread atual e consulta na matriz de comunicação qual a thread em execuçao possui mais acessos em comum à memória, após idententifacar a thread a função retorna a fila na qual a thread pertence. Após identificar a fila com maior afinidade, o LTMS utiliza uma das heurísticas para decidir se migrará a thread ou não.
 
-Após descobrir o identificador da fila para onde a thread pode ser migrada a função \emph{thresholdHeuristic} é executada, esta função calcula o indice de contenção dado pela razão dos aborts e commits realizados pela thread e avalia se o indice de contenção é maior que um valor limiar. Se o indice de contenção for maior que o limiar a função permite a migração da thread, se o valor do inidice de contenção ficar abaixo do limiar a thread não deve ser migrada.
+A etapa de heurística de migração avalia se a thread que gerou o abort está apta a ser migrada, o LTMS permite que diferentes heuristicas de migração sejam desenvolvidas e acopladas a ele.  Para este trabalho foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Estas heurística foram denominadas \emph{threshold} e \emph{latency} e são apresentadas nas figuras~\ref{threshold} e~\ref{latency}.
 
-O limiar é uma constante definida pelo desenvolvedor que indica o nível máximo de contenção aceito pela aplicação, um valor baixo para o limiar gera mais migrações que proporciona maior serialização do sistema reduzindo assim os aborts e aumentando tempo de execução, enquanto um limiar muito alto mantem o paralelismo mas aumenta o número de aborts.
+A primeira heurística, denominada threshold, avalia o nível de contenção apresentado pela thread em tempo de execução, esse nível de contenção é medido pela razão entre os aborts e commits realizados pela thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na figura\ref{threshold}.
 
-\todo{
-  K:
+A função \emph{thresholdHeuristic} apresentadas na figura~\ref{threshold} calcula o índice de contenção dado pela razão dos aborts e commits realizados pela thread e avalia se o índice de contenção é maior que um valor limiar. Se o índice de contenção for maior que o limiar a função permite a migração da thread, se o valor do índice de contenção ficar abaixo do limiar a thread não deve ser migrada.
 
-bool threasholdHeuristic)(thread{
-   return thread.aborts/thread.commits >= threashold;
-}
-}
+O limiar denominado~\emph{threshold} é uma constante definida pelo desenvolvedor que indica o nível máximo de contenção aceito pela aplicação, um valor baixo para o limiar gera mais migrações que proporciona maior serialização do sistema reduzindo assim os aborts e aumentando tempo de execução, enquanto um limiar muito alto mantem o paralelismo mas aumenta o número de aborts.
+
 \begin{figure}[htbp]
   \centering
   \begin{lstlisting}
     bool thresholdHeuristic(thread) {
-      contentionIndex = thread.aborts/thread.commits
-      if(contentionIndex>=threshold) {
-        return true
-      }
-      return false
+      return thread.aborts/thread.commits >= threshold
     }
   \end{lstlisting}
   \caption{Heurística de migração threshold}
   \label{threshold}
 \end{figure}
 
-\todo{
-  L: aqui tu diz que a heurística avalia a latência de acesso a memória, mas isso já não é feito pela etapa anterior (figura 10)?
-}
-A segunda heurística de migração, denominada \emph{latency}, avalia a lentência de acesso a memória entres os nodos da filas envolvidas na migração e o endereço de memória mais acessado pela thread. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na figura\ref{latency}.
+A segunda heurística de migração, denominada \emph{latency}, avalia a lentência de acesso a memória entres os nodos da filas envolvidas na migração e o endereço de memória mais acessado pela thread. Para realizar uma migração utilizando esta heurística o LTMS executa a função denominada~\emph{latencyHeuristic} apresentada na figura\ref{latency}.
 
-Após descobrir o identificador da fila para onde a thread pode ser migrada a função \emph{latencyHeuristic} é executada, esta função consulta na matriz de endereços qual endereço de memória em que as threads que executam nas filas que estão sendo avaliada possuem em comum. Assim, a função descobre qual o nodo NUMA a fila atual pertence e qual o nodo NUMA a fila que está sendo avaliada pertence.
+A função \emph{latencyHeuristic} busca na matriz de endereços qual o endereço de memória em comum é mais acessado pelas filas. A função também consulta quais os nodos NUMA a fila atual e a fila que está sendo avaliada pertencem. Com as informações sobre os nodos NUMA e o endereço de memória mais acessado, é avaliada as latências de acesso das duas filas para o endereço de memória, se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread o escalonador efetua a migração, caso a latência seja menor ou igual a thread mantem sua execução na fila atual.
 
-Com as informações sobre os nodos NUMA e o endereço de memória utilizado, é avaliada a latência de acesso da fila atual para memória, e a latência de acesso da futura fila para a memória, se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread o escalonador efetua a migração, caso a latência seja menor ou igual a thread mantem sua execução na fila atual.
-
-\todo{
-  M: as vezes tu diz "o thread" e as vezes tu diz "a thread"
-tem que explicar essa tua história de serialização. Quando eu leio serializaçao, eu me lembro dos outros algoritmos que criam uma unica fila para serialzar todas as threads. mas o que tu faz é serializar somente as threads em conflito, ou seja, tu coloca elas na mesma fila de execuçao.
-}
 Migrando a thread para uma fila com latência menor que a atual, o LTMS busca reduzir o número de aborts serializando parte da execução, e busca também aproveitar as caracteristicas da arquitetura otimizando o acesso à memória dentro da região NUMA. A migração não ocorre se a latência da nova fila for maior para evitar futuros acessos entre diferentes nodos NUMA.
 
 \begin{figure}[htbp]
   \centering
   \begin{lstlisting}
-    bool latencyHeuristic(thread, queueId) {
-      address = matrix_address[thread.queueId][queueId]
-      newNode = queues[queueId].node
-      node = thread.node
-      currentLatency = latency(node, address)
-      nextLatency = latency(newNode, address)
-      if(currentLatency>nextLatency) {
-        return true
-      }
-      return false
+    bool latencyHeuristic(currentQueueId, nextQueueId) {
+      address = getAddress(currentQueueId, nextQueueId)
+      nodeNextQueue = getNodeNuma(nextQueueId.node)
+      nodeCurrentQueue = getNodeNuma(currentQueueId.node)
+      currentLatency = latency(nodeCurrentQueue, address)
+      nextLatency = latency(nodeNextQueue, address)
+      return currentLatency > nextLatency
     }
   \end{lstlisting}
   \caption{Heurística de migração latency}
 \label{latency}
 \end{figure}
 
-A função de migração utiliza as funções citadas a cima, a figura~\ref(migration) ilustra como a função~\emph(migration) utiliza as demais funções. A função \emph(migration) é executada quando ocorre um abort e após encontrar a fila para qual podemos efetuar a migração utilizamos uma das duas heurísticas citadas para determinar se devemos migrar a thread atual. Caso a thread deva ser migrada, a thread é adicionada a fila de execução para qual desejase migrala. Caso a thread não deva ser migrada, a função retorna para operação de abort e segue a exucação utilizando o gerenciador de contenção.
+\section{Conclusão}
 
-\todo{
-  N: Acho que esse algoritmo deve ficar ANTES de falar a respeito das heurística. Pois com ele tu explica o que faz o escalonador, o que muda nesse código é a heuristica sendo usada.
-
-Da pra simplificar:
-migrateThread(Thread thread)
-{
-  if (okToMigrate(thread))
-    findBestQueue(thread).push();
-}
-}
-\begin{figure}[htbp]
-  % \centering
-  \begin{lstlisting}
-    void migration(thread) {
-      newQueue = findNewQueue(thread.queue)
-      if(selectedHeuristic(thread)){
-        queues[newQueue].push(thread)
-      }
-    }
-  \end{lstlisting}
-  \caption{Função de migração}
-  \label{migration}
-\end{figure}
+...
 
 % \section{\textbf{Aplicação}}
 
