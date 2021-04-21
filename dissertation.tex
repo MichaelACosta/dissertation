@@ -714,23 +714,34 @@ A segunda heurística distribui chunks de threads por fila, sendo o tamanho do c
 
 \subsection{Coleta de dados em tempo de execução}
 
-\todo{escrever}
+Durante a execução da aplicação o escalonador se encarrega de coletar dados de sua execução e da arquitetura utilizada para otimizar a redistribuição de threads entre as filas existentes caso ocarram aborts nas transações. Entre os dados coletados estão os acessos à memória, a quantidade de aborts e a quantidade de commits realizados pelos threads, também são coletados informações sobre os nodos NUMA existentes na arquitetura e os custos de latência existentes.
+
+Os dados coletados sobre os acessos à memória fornecem insumos para duas matrizes, uma matriz de comunicação e uma matriz de endereços. Estas matrizes serão utilizadas nas heuristicas de migração para definir o grau de relação entre as filas de execução para reduzir os conflitos após uma migração de threads entre as filas.
+
+A matriz de comunicação fornece insumos sobre a quantidade de vezes que duas threads acessam o mesmo endereçamento de memória. Os valores da matriz de comunicação se dão pelos somatorios dos acessos ao mesmo endereçamento de memória entre dois threds, sendo os identificadores dos threads as procições da matriz. Sendo assim se a thread com id 0 lê ou escreve 1000 vezes no mesmo endereço que a thread de id 1, o valor da matriz de comunicação na posição \emph{matrixComm[0][1]} será 1000.
+\todo{detalhar o algoritmo}
+
+A matriz de endereços por sua vez armazena a informação de quais endereços iguais foram acessados mais vezes pelas threads. Os valores da matriz de endereços são os endereçamentos de memória acessados mais vezes entre dois threads, e assim como na matriz de comunicação os identificadores dos threads são as posições da matriz. Assim, se a thread com id 0 e a thread de id 1 possuem mais acesse em comum com o endereço 0x111, o valor da matriz de endereços na posição \emph{matrixAddress[0][1]} será 0x111.
+\todo{detalhar o algoritmo}
+
+\todo{abort e commit}
+
+
+% A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória que outro thread. A matriz de endereço armazena os endereços de memória no qual uma thread realizou operações de leitura e escrita. Outros dados também armazenados por threads em tempo de execução são as quantidades de aborts e commits realizados. Cada thread pode executar n transações, a cada commit e abort de uma transação o thread incrementa seu respectivo contador para manter esse dado atualizado. No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar todo thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
+
+% \todo{
+%   H: O sistema coleta duas matrizes...
+
+% "A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória de outro thread"
+
+% Tens que descrever melhor essa matriz e colocar o algoritmo. Essa explicação não está correta.
+% }
 
 \subsection{Migração de Threads}
 
 \subsubsection{Heurísticas de migração} \todo{sai}
 \label{migration_heuristic}
 
-Para execução das heuristicas de migração, alguns dados são coletados em tempo de execução com base nos acessos à memória realizados pelos threads e com base nos aborts e commits realizados pelas transações. Os dados coletados sobre os acessos à memória fornecem insumos para duas matrizes, uma matriz de comunicação e uma matriz de endereços.
-
-\todo{
-  H: O sistema coleta duas matrizes...
-
-"A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória de outro thread"
-
-Tens que descrever melhor essa matriz e colocar o algoritmo. Essa explicação não está correta.
-}
-A matriz de comunicação consiste em uma matriz que armazena quantas vezes uma thread lê e escreve no mesmo endereço de memória que outro thread. A matriz de endereço armazena os endereços de memória no qual uma thread realizou operações de leitura e escrita. Outros dados também armazenados por threads em tempo de execução são as quantidades de aborts e commits realizados. Cada thread pode executar n transações, a cada commit e abort de uma transação o thread incrementa seu respectivo contador para manter esse dado atualizado. No momento que a transação efetua um abort, o escalonador avalia a possibilidade de migrar todo thread em execução para uma nova fila, buscando otimizar a execução e evitar futuros aborts.
 
 \todo{
   i: nao entendi essa história da heurística reduzir o impacto da migração
