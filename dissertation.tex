@@ -795,34 +795,27 @@ Como visto na seção o LTMS é um escalonador NUMA-Aware de tres etapas, a prim
 
 O escalonador permite a criação de diferentes heurísticas para avaliar seu comportamento de distribuição de threads na faze inicial e migração de threads na ocorrência de aborts. Estas heurísticas podem ser criadas e acopladas ao LTMS para melhorar o fluxo de execução das aplicações.
 
-O LTMS é um escalonador reativo que opera a faze de migração de threads a partir da ocorrência de um abort, como podemos ter mais de uma transação por thread os dados coletados para o sistema de migração são avaliados por threads, permitindo a comparação entre as características dos acessos à memória e o índice de contenção gerado por cada thread. Assim como o LTMS o \todo{shirink} avaliam as informações em tempo de execução com base nas threads, porem este não avalia as características de acesso à memória.
+O LTMS é um escalonador reativo que opera a faze de migração de threads a partir da ocorrência de um abort, como podemos ter mais de uma transação por thread os dados coletados para o sistema de migração são avaliados por threads, permitindo a comparação entre as características dos acessos à memória e o índice de contenção gerado por cada thread. Assim como o LTMS o Shirink~\cite{shirink2009} avalia as informações em tempo de execução com base nas threads, porem este não avalia as características de acesso à memória.
 
-Algoritmos como \todo{algoritmo que migra} utilizam a migração para reduzir o índice de contenção, porem este algoritmo realiza a migração para uma única fila, serializando a aplicação sem considerar as características de acesso à memória em arquiteturas NUMA. Outros algoritmos como \todo{ATS} realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas não aproveita totalmente o recurso da arquitetura.
+Algoritmos como LUTS~\cite{Nicacio2012} utilizam a migração para reduzir o índice de contenção, porem este algoritmo realiza a migração para uma única fila, serializando a aplicação sem considerar as características de acesso à memória em arquiteturas NUMA. Outros algoritmos, como o ATS~\cite{ats2008}, realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas não aproveita totalmente o recurso da arquitetura.
 
 A tabela~\todo{tabela abaixo} apresenta uma comparação entre as características dos escalonadores atuais a fim de entender o impacto que os escalonadores podem fornecer ao sistemas paralelos com uso de STM.
 
-\todo{arrumar}
+\todo{melhorar}
 \begin{table}[]
   \footnotesize
   \centering
   \caption{Algoritmos e técnicas de escalonamento}
   \label{tab:compare}
-  \begin{tabular}{l|l}
+  \begin{tabular}{l|l|l|l|}
   \hline
-  Escalonador & Técnica \\ \hline
-  ATS & Feedback \\
-  Probe & Feedback \\
-  F2C2 & Feedback \\
-  Shrink & Predição \\
-  SCA & Predição \\
-  CAR-STM & Reativo \\
-  RelSTM & Reativo \\
-  LUTS & Heurística Mista \\
-  ProVIT & Heurística Mista \\
-  SAC-STM & Aprendizado de Máquina \\
-  CSR-STM & Modelo Analítico \\
-  MCATS & Modelo Analítico \\
-  AML & Modelo Misto \\
+  Escalonador & Técnica & Migração & Filas & Arquitetura \\ \hline
+  LTMS & Reativo & V & V & V \\
+  ATS & Feedback & X & X & X \\
+  Shrink & Predição & X & X & X \\
+  LUTS & Heurística Mista & V & V & X \\
+  ProVIT & Heurística Mista & X & X & X \\
+  STMap & Predição & V & X & V \\
   \hline
   \end{tabular}
   \end{table}
