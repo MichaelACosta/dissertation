@@ -791,7 +791,41 @@ Migrando a thread para uma fila com latência menor que a atual, o LTMS busca re
 
 \section{Conclusão}
 
-...
+Como visto na seção o LTMS é um escalonador NUMA-Aware de tres etapas, a primeira se encarrega de inicializar a aplicação criando filas de execução e distribuindo as threads entre estas filas, a segunda etapa coleta dados sobre a arquitetura e a aplicação em tempo de execução para otimizar a aplicação por meio da serialização de threads conflitantes, a terceira etapa se encarrega de avaliar se uma thread que abortou deve ser serializada, a serialização ocorre por meio da migração da thread para uma fila que possua as mesmas caracteristicas de acesso à memória.
+
+O escalonador permite a criação de diferentes heuristicas para avaliar seu comportamento de distribuição de threads na faze inicial e migração de threads na ocorrencia de aborts. Estas heuristicas podem ser criadas e acopladas ao LTMS para melhorar o fluxo de execução das aplicações.
+
+O LTMS é um escalonador reativo que opera a faze de migração de threads a partir da ocorrencia de um abort, como podemos ter mais de uma transação por thread os dados coletados para o sistema de migração são avaliados por threads, permitindo a comparação entre as caracteristicas dos acessos à memória e o indice de contenção gerado por cada thread. Assim como o LTMS o \todo{shirink} avaliam as informações em tempo de execução com base nas threads, porem este não avalia as caracteristicas de acesso à memória.
+
+Algoritmos como \todo{algoritmo que migra} utilizam a migração para reduzir o indice de contenção, porem este algoritmo realiza a migração para uma unica fila, serializando a aplicação sem conciderar as caracteristicas de acesso à memória em arquiteturas NUMA. Outros algoritmos como \todo{ATS} realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas não aproveita totalmente o recurso da arquitetura.
+
+A tablea~\todo{tabela abaixo} apresenta uma comparação entre as caracteristicas dos escalonadores atuais a fim de entender o impacto que os escalonadores podem fornecer ao sistemas paralelos com uso de STM.
+
+\todo{arrumar}
+\begin{table}[]
+  \footnotesize
+  \centering
+  \caption{Algoritmos e técnicas de escalonamento}
+  \label{tab:compare}
+  \begin{tabular}{l|l}
+  \hline
+  Escalonador & Técnica \\ \hline
+  ATS & Feedback \\
+  Probe & Feedback \\
+  F2C2 & Feedback \\
+  Shrink & Predição \\
+  SCA & Predição \\
+  CAR-STM & Reativo \\
+  RelSTM & Reativo \\
+  LUTS & Heurística Mista \\
+  ProVIT & Heurística Mista \\
+  SAC-STM & Aprendizado de Máquina \\
+  CSR-STM & Modelo Analítico \\
+  MCATS & Modelo Analítico \\
+  AML & Modelo Misto \\
+  \hline
+  \end{tabular}
+  \end{table}
 
 % \section{\textbf{Aplicação}}
 
