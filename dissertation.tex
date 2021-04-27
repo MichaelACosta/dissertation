@@ -799,26 +799,24 @@ O LTMS é um escalonador reativo que opera a faze de migração de threads a par
 
 Algoritmos como LUTS~\cite{Nicacio2012} utilizam a migração para reduzir o índice de contenção, porem este algoritmo realiza a migração para uma única fila, serializando a aplicação sem considerar as características de acesso à memória em arquiteturas NUMA. Outros algoritmos, como o ATS~\cite{ats2008}, realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas não aproveita totalmente o recurso da arquitetura.
 
-A tabela~\todo{tabela abaixo} apresenta uma comparação entre as características dos escalonadores atuais a fim de entender o impacto que os escalonadores podem fornecer ao sistemas paralelos com uso de STM.
+A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as características dos escalonadores atuais a fim de entender o impacto que os escalonadores podem fornecer ao sistemas paralelos com uso de STM.
 
-\todo{melhorar}
 \begin{table}[]
   \footnotesize
   \centering
-  \caption{Algoritmos e técnicas de escalonamento}
-  \label{tab:compare}
-  \begin{tabular}{l|l|l|l|}
+  \caption{Comparativo entre os escalonadores}
+  \label{tab:compare_ltms}
+  \begin{tabular}{l|l|l|l|l|l|l}
   \hline
-  Escalonador & Técnica & Migração & Filas & Arquitetura \\ \hline
-  LTMS & Reativo & V & V & V \\
-  ATS & Feedback & X & X & X \\
-  Shrink & Predição & X & X & X \\
-  LUTS & Heurística Mista & V & V & X \\
-  ProVIT & Heurística Mista & X & X & X \\
-  STMap & Predição & V & X & V \\
+  Escalonadores & LTMS & ATS & Shrink & LUTS & ProVIT & STMap \\ \hline %escalonadores
+  Distribuição inicial de threads & Sim & Não & Não & Não & Não & Sim \\ 
+  Coleta de dados por threads & Sim & Não & Sim & Sim & Sim & Sim \\
+  Migração entre filas & Sim & Não & Não & Sim & Não & Não \\
+  Avalia a arquitetura  & Sim & Não & Não & Não & Não & Sim \\
+  Técnica de escalonamento & Reativo & Feedback & Predição & Mista & Mista & Predição \\ 
   \hline
   \end{tabular}
-  \end{table}
+\end{table}
 
 % \section{\textbf{Aplicação}}
 
