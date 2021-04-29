@@ -849,11 +849,24 @@ A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais c
 \chapter{Experimentos}
 \label{chapter::experimentos}
 
-...
+Para este trabalho foi desenvolvida um escalonador de STM NUMA-Aware, entitulado LTMS, que funciona em três etapas. Para validação o escalonador LTMS foi desenvolvido em linguagem C, e aplicado à biblioteca de STM TinySTM em sua versão 1.0.5, e foram rodados esperimentos com o conjunto de benchmarks STMAP em sua versão 0.9.10.
+
+Os testes foram rodados em uma máquina de arquitetura NUMA com processador Intel Xeon E5-4650 com 96 núcleos e 192 threads e 468 Gb de memória RAM, utilizando com sistema operacional Linux Debian kernel 4.19.0-8-amd64  e gcc 8.3.0.
+
+Como comentado anteriormente o LTMS permite que heurísticas para distribuição de threads e heurísticas para migração de threads sejas desenvolvidas e acopladas a ele de maneira simples para que estudos possam ser realizados, neste trabalho foi desenvolvido duas heurísticas de distribuição e duas heurísticas de migração. Para obter os resultados do LTMS foram rodadas queatro baterias de testes com as seguintes configurações, LTMS com distribuição 1 e migração threshold, LTMS com distribuição 1 e migração latency, LTMS com distribuição 2 e migração threshold, e LTMS com distribuição 2 e migração latency. Para comparar o desenpenho do escalonador LTMS, foi executada uma bateria de teste com a TinySTM |todo{versão da tiny} sem modificações.
+
+Cada bateria de teste consiste em 30 execuções de cada benchmark do conjunto STAMP, para os cenarios de 1, 2, 4, 8, 16, 32, 64, 128, 256, e 512 threads. A seção~\ref{resultados} mostra os resultados obtidos com os experimentos.
 
 \section{Resultados}
+\label{resultados}
 
 \input{tempo.tex}
+
+\input{tempo2.tex}
+
+\input{abort.tex}
+
+\input{abort2.tex}
 
 \chapter{Conclusão}
 \label{chapter::Conclusão}
