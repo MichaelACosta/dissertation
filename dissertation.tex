@@ -639,6 +639,7 @@ O LTMS é um escalonador de STM NUMA-Aware que identifica as características da
 % O LTMS foi desenvolvido de forma a permitir que novos módulos com diferentes heurísticas sejam acoplados a ele, permitindo explorar diferentes alternativas para heurísticas de distribuição de threads ou migração de threads.
 
 \subsection{Inicialização do sistema}
+\label{inicializacao}
 
 Como podemos ver na figura~\ref{ltms_generic} o escalonador LTMS é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base nas threads da aplicação e no número de cores disponíveis. O LTMS fornece uma biblioteca de threads integrada a stm que prove todos os recursos necessários para o desenvolvimento das aplicações, quando uma thread é criada ela fica disponível para o escalonador distribuir ela entre as filas com base em uma na Heurística de distribuição.
 
@@ -713,6 +714,7 @@ A segunda heurística distribui chunks de threads por fila, sendo o tamanho do c
 
 
 \subsection{Coleta de dados em tempo de execução}
+\label{coleta}
 
 Durante a execução da aplicação o escalonador se encarrega de coletar dados de sua execução e da arquitetura utilizada para otimizar a redistribuição de threads entre as filas existentes caso ocorram aborts nas transações. Entre os dados coletados estão os acessos à memória, a quantidade de aborts e a quantidade de commits realizados pelos threads, também são coletados informações sobre os nodos NUMA existentes na arquitetura e os custos de latência existentes.
 
@@ -729,6 +731,7 @@ Para montar a matriz de endereços foi utilizado o mesmo sistema de amostragem a
 O LTMS também fica encarregado de coletar dados sobre o comportamento das transações. Durante sua execução uma thread pode ter n transações que geram aborts e commits, o escalonador mantem em cada thread um contador para os commits e um para os aborts. Esse contador mantem o histórico de commits e aborts de uma thread que será utilizado para identificar o índice de contenção da thread. 
 
 \subsection{Migração de Threads}
+\label{migracao}
 
 O LTMS fornece um sistema de migração de threads entre as filas existentes, esse sistema entra em ação após a ocorrência de um abort e busca agrupar as threads conflitantes com intuito de serializadas para evitar conflitos futuros. O sistema de migração é dividido em duas etapas, a identificação da fila para a qual o thread será migrado e a heurística de migração que define se a migração ira acontecer.
 
@@ -869,9 +872,35 @@ Cada bateria de teste consiste em 30 execuções de cada benchmark do conjunto S
 \input{abort2.tex}
 
 \chapter{Conclusão}
-\label{chapter::Conclusão}
+\label{chapter::conclusao}
 
-...
+Memória transacional (TM) fornece uma abstração para sincronização de threads em programas paralelos. Esteas podem ser implmentadas em hardware (HTM), software (STM) ou de forma hibrida com hardware e software. Este trabalho consentrace em aplicações de STM. Muitos estudos de STM apresentam escalonadores transacionais que focam em reduzir o número de conflitos por meio da serialização das transações reduzindo as threads ativas na aplicação ou bloqueando as transações conflitantes. Reduzir o número de conflitos se mostra eficiente para melhorar o desempenho, mas em arquiteturas multicore atuais com hierarquias de memória complexas também é importante considerar onde a posição de memória utilizada está localizada e por qual núcleo ela é acessada.
+
+O entendimento da arquitetura utilizada, threads e dados é impotante para o desempenho, melhorando a localidade e reduzindo a latencia dos acessos à memória. As aplicações que utilizam STM fornecem oportunidades interessantes para entendimento da arquitetura e aplicação, pois em tempo de execução o STM fornece informações precisas sobre as áreas de memória que são compartilhadas entre threads, seus respectivos endereços e a intensidade com que cada endereço são acessados pelas threads. A partir do mapeamento destas informações este trabalhor desenvolveu um escalonador NUMA-Aware que permite a migração de threads entre as filas de execução.
+
+A principal contribuição desta dissertação é um escalonador de STM, entitulado~\emph{LTMS} e apresentado em~\ref{chapter::ltms}, que adquira conhecimento sobre a arquitetura utilizada e suaa aplicaçã0, este conhecimento é gerado em tempo de execução por meio da colta de dados das threads e suas transações. Este escalonador fornece um mecanismo de distribuição inicial de threads, criação de filas, e migração de threads conflitantes entre as filas existentes. Este mecanismo busca otimizar o desempenhe de aplicações paralelas, reduzindo conflitos repetidos por meio da migração de threads agrupandoas as threads conflitantes na mesma filas. Para o desenvolvimento deste escalonador foi apresentada três etapas que temos como contribuções individuais do trabalho.
+
+A etapa de inicialização contribui com um sistema de filas individuais para os núcleos, apresentado em~\ref{inicializacao}, na qual para executar a distribuição das threads entre estas filas podemos utilizar diferentes heuristicas para estudos, este trabalho apresentou duas heurísticas de distribuições. Estas heurísticas buscam distribuir inicialmente estas threads entre as filas disponiveis entender o comportamento do número inicial de conflitos existentes na aplicação e comportamento do acesso à memória.
+
+Em tempo de execução o escalonador contribui com um mecanismo para coleta de dados da STM, apresentado em~\ref{coleta}, onde são montados duas matrizes uma de comunicação e uma de endereços. A matriz de comunicação fornece insumos sobre a quantidade de acessos aos endereços em comum entre threads. A matriz de endereços apresenta o endereço em comum mais acessado entre duas threads. Alem destas matrizes, são coletadas informações sobre a latencia de acesso à memória entre os nodos disponiveis na arquitetura e a quantidade de abortes e commites que ocorreram em cada trhead. Estas informações são insumos para compreender a arquitetura e a aplicação e são fundamentais para tomada de decisão na etapa de migração de threads do escalonador.
+
+A ultima contribuição deste trabalho está em um sistema de migração de threads, apresentado em~\ref{migracao}, que é ativo apenas após a ocorrencia de um abort da aplicação. O escalonador identifica a thread que gerou o abort, e com base nas informações preveamente coletadas decide identifica para qual fila deve migrar está thread. O escalonador tem como base migrar a thread para uma fila na qual exista uma thread com maior número de acessos em comum à memória. Para tomada de decisão, se uma thread deve ou não ser migrada, é possivel utilizar diferentes heurística para estudo, nesta dissertação foi utilizada duas heurísticas. A primeira baseiase na relação entre abort e commit, quando está relação fica acima de um valor pré definido temos um indicativo de uma aplicação com alto indice de conflitos e o escalonador efetua a migração com intuido de reduzir os conflitos na aplicação, para identificar o valor limiar utilizado neste trabalho foram executados testes onde chegamos ao limiar de 0.8, que indica que com 80\% de abortes a thread deve ser migrada. A segunda heurística utiliza o custo da latencia no acesso à memória como parametro para efetuar a migração, onde se a fila atual que o thread executa possuir latencia maior que a fila para qual desejamos migrar o escalonador efetua a migração, está heurística busca reduzir o custo de latencia gasto na aplicação.
+
+O escalonador foi desenvolvido sobre a biblioteca de STM TinySTM, e foram executados testes junto do conjundo de benchmarks STMAP, os exeperimentos foram rodados com o escalonador com ambas configurações de heuristicas desenvolvidas, como apresentado em~\ref{chapter::experimentos}, e comparados com a biblioteca original de TinySTM. Ambas as configurações de heuristicas apresentaram um desempenho de tempo melhor e número de conflitos menores que a TinySTM para maioria dos benchmarks testados. Concluímos que as aplicações ... \todo{concluir}
+
+\section{\textbf{Trabalhos futuros}}
+
+A pesquisa apresentada neste trabalho pode ser estendida das seguintes formas:
+
+\begin{itemize}
+	\item \emph{Novas heuristicas de distribuição}: O LTMS permite explorar distintas heuriticas de distribuição de threads ao inicializar a aplicação. Com isto é impotante avançarmos nos estudos para explorar diferentes formas de distribuição e comparalas. As distintas caracteristicas entre as heuristicas de distribuição podem ser exploradas em tralhos futuros.  
+
+	\item \emph{Heuristica de migração hibrida}: O LTMS permite aplicar duas heuriticas de migração, uma com foco no indice de contenção e outra com foco na latencia de acesso à memória, mas o escalonador permite que estas heuristicas possam ser utilizadas juntas para aperfeiçoar o sistema de migração, buscando a redução da contenção e otimização do acesso à memória para reduzir a latencia da aplicação. 
+
+	\item \emph{Impacto energetio dos escalonadore de STM}: Os trabalhos atuais focam no impacto que os escalonadores possuem sobre o desempenho de tempo e redução de conflitos. Um aspecto a ser abordado em trabalhos futuros pode ser o impacto que escalonador com consiencia da arquitetura, como o LTMS, possuem em relação ao custo energetico em relação a outros escalonadore.
+\end{itemize}
+
+O escalonado LTMS, desenvolvido nesta dissertação, pode ser estendido permitindo que estas caracteristicas sejam avaliadas em trabalhos futuros. Assim, podemos seguir com o desenvolvimento do LTMS contribuindo e explorando outros aspectos da área.
 
 \bibliographystyle{abnt}
 \bibliography{bibliografia} 
