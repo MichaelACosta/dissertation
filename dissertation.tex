@@ -125,40 +125,50 @@
 
 \chapter{Introdução}
 
-As arquitetura paralelas estão presentes em praticamente todas plataformas computacionais modernas. Processadores com múltiplos núcleos são usados para construção de computadores domésticos e super computadores. O paralelismo desses processadores tendem a crescer, e o aumento de desempenho dos computadores atuais tem se baseado no desenvolvimento de arquiteturas paralelas.
+As arquitetura paralelas estão presentes em praticamente todas plataformas computacionais modernas. Processadores com múltiplos núcleos são usados para construção de computadores domésticos e super computadores. O paralelismo desses processadores crescem a cada dia, pois o aumento de desempenho dos computadores atuais se baseiam no desenvolvimento de arquiteturas paralelas.
 
-Para os programas extraírem o máximo de desempenho das arquiteturas paralelas, o código deve explorar todo poder computacional oferecido pelas unidades de processamento, porem, a programação paralela está longe de ser uma atividade fácil. 
+A arquitetura paralela mais simples é baseada em um único barramento de acesso à memória, assim, um ou mais processadores e módulos de memória usam o mesmo barramento para comunicação. Estas arquiteturas são chamadas de UMA (\emph{Uniform Memory Access}) pois possuem um único valor de latencia indiferente de qual processador acessa o módolo de memória. Porem, existe um problema de escalabilidade à medida que o número de núcleos aumenta existe, já que toda comunicação passa pou um unico barramento.
+
+Como alternativa a arquitetura UMA temos a arquitetura NUMA (\emph{Non-Uniform Memory Access}), e estão se tornando dominantes em servidores~\cite{Calciu:2017}, a NUMA possui vários nodos, sendo que cada nodo é composto por um ou mais processadores e módulos de memória. O acesso à memória dentro de um nó é chamado acesso local e utiliza cada nó possui seu próprio barramento com sua latencia, como as aplicações possuem acesso a toda memória, esta arquitetura permite que o processador de um nodo acesse o módulo de memória pertencente a outro nodo, esse acesso é denominado acesso remoto, e a latencia do acesso remoto é maior que a latencia de acesso local. Com isto, a distribuição da carga de trabalho se torna importante no desempenho das aplicações.
+
+Para os programas extraírem o máximo de desempenho das arquiteturas paralelas, o código deve explorar todo poder computacional oferecido pelas unidades de processamento, porem, a programação paralela está longe de ser uma atividade fácil. O acesso à memória compartilhada é um dos cuidados que programadores devem tomar ao desenvolver programas paralelos, para isso, as linguagens fornecem mecanismos de sincronização de threads como locks. Porem, este modelo de programação não é intuitivo e é propenso a erros como \emph{deadlocks}. 
+
+
+Uma alternativa para substituir o uso de locks na programação paralela á a Memória Transacional (TM), este é um mecanismo de sincronização que realiza execuções atômicas e isoladas de partes compartilhadas de código. Na programação utilizando Software Transacional Memory (STM), o acesso à memória compartilhada é realizada dentro de uma transação executada atomicamente. A programação com STM permite que o programador não se preocupe com as aquisições e liberações de locks, o desenvolvedor deve apenas delimitar as seções criticas, o que facilita sua programação. Esta dissertação concentrou os estudos no uso de STM e seus escalonadores.
+
+Os algoritmos de STM quando utilizados junto as arquiteturas atuais apresentão um aumento no número de contenção, o que geram conflitos e aborts. Para buscar solucionar e reduzir estes conflitos muitos trabalhos concentranse em desenvolver escalonadores que limitão o número de threads ativos ou serializão a execução de threads agrupandoas em uma unica fila de execução. Um dos grandes desafios é o desenvolvimento de um escalonador transacional que avalie a arquitetura utilizada para proporcionar uma melhor distribuição das threads garantindo o máximo de paralelismo que a máquina pode fornecer.
 
 \section{Motivação}
-...~\cite{vonNeumann:1966:TSR}.
+
+...
 
 \section{Objetivos}
 
-...~\ref{tabela}.
+...
 
-\begin{table}
-  \begin{center}
-    \caption{Nome da Tabela}\label{tabela}
-    \begin{tabular}{p{4cm}p{5cm}p{6cm}}
-      \hline
-      Blabla & Blabla & Blablabla\\
-      \hline
-      {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-        blablabla blabla blablabla.}\\
-      {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-        blablabla blabla blablabla.}\\
-      {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-        blablabla blabla blablabla.}\\
-      {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-        blablabla blabla blablabla.}\\
-      {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-        blablabla blabla blablabla.}\\
-      {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-        blablabla blabla blablabla.}\\
-      \hline
-    \end{tabular}
-  \end{center}
-\end{table}
+% \begin{table}
+%   \begin{center}
+%     \caption{Nome da Tabela}\label{tabela}
+%     \begin{tabular}{p{4cm}p{5cm}p{6cm}}
+%       \hline
+%       Blabla & Blabla & Blablabla\\
+%       \hline
+%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
+%         blablabla blabla blablabla.}\\
+%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
+%         blablabla blabla blablabla.}\\
+%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
+%         blablabla blabla blablabla.}\\
+%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
+%         blablabla blabla blablabla.}\\
+%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
+%         blablabla blabla blablabla.}\\
+%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
+%         blablabla blabla blablabla.}\\
+%       \hline
+%     \end{tabular}
+%   \end{center}
+% \end{table}
 
 \subsection{Objetivo geral}
 
