@@ -146,7 +146,15 @@ As arquiteturas atuais possuem hierarquias de memória complexas com diferentes 
 
 \section{contribuição}
 
-...
+O principal objetivo desta dissertação é prover um escalonador de STM NUMA-Aware, o escalonador desenvolvido foi entitulado Lups Transactional Memory Schedule~\emph{(LTMS)}. O LTMS é ativado no inicio das aplicações de STM e portanto foi divido em três etapas, onde este contribui com diferentes mecanismos para inicialização da aplicação, coleta de dados e migração de threads conflitantes. A etapa de inicialização busca criar filas de acordo com a aplicação e arquitetura, distribuindo as threads incialmente para o sistema. A etapa de coleta de dados, endente a arquitetura utilizada, e em tempo de execução coleta as informações sobre os dados acessados pelas threads e transações. A etapa de migração é ativada apenas na ocorrencia de conflitos nas transações e busca por meio dos dados obtidos preveamente redistribuir a thread conflitante de forma a otimizar sua execução no futuro. Ao contrario de trabalhos anteriores, o LTMS busca reduzir o número de conflitos das aplicações sem reduzir o número de threads ativas na aplicação. Também considera as caracteristicas da arquitetura utilizada e os acessados à memória em tempo de execução para não onerar a aplicação com um custo maior de latencia, para fornecer estás caracteristicas esta dissertação traz as seguintes contribuições:
+
+\begin{itemize}
+  \item Desenvilveu um mecanismo para leitura da arquitetura e criação de filas com conhecimento sobre os nodos NUMA utilizados, onde cada fila utilizará um unico núcleo disponivel da arquitetura;
+  \item Foi desenvolvida duas diferentes heuristicas de distribuição inicial de threads e aplicados para melhorar o estudo e compreender o impacto da distribuiçao inicial de threads em aplicações paralelas;
+  \item  Desenvolveu um mecanismo que em tempo de execução coleta informações sobre as threads e armazena os endereções de memória mais utilizados por cada thread, para então mensurar com base nos nodos NUMA utilizados os diferentes custo de acesso à memória; e
+  \item Desenvilveu um mecanismo de migração de threads entre as filas de execução, que permite a serialização de threads conflitantes e não reduz o paralelismo da aplicação; e
+  \item Foi desenvolvida duas heuristicas de migração e adicionadas ao escalonador para estudar e compreender o impacto que a redução da latencia e o alto indice de conflitos possuem sobre aplicações de STM. 
+\end{itemize}
 
 \section{Estrutura do Texto}
 
