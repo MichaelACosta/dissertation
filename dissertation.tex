@@ -140,47 +140,13 @@ Os algoritmos de STM quando utilizados junto as arquiteturas atuais apresentão 
 
 \section{Motivação}
 
-...
+Memória Transacional (TM) é uma alternativa promissora para a computação paralela. A TM proporciona aos programadores uma maior facilidade ao desenvolver programas paralelos, sem ter que se preocupar com a aquisição e liberação de locks, assim, evitando problemas como \emph{deadlocks}. Infelismente em cenarios com alto paralelismo aplicações que utilizam STM sofrem com um alto número de conflitos. Buscando reduzir o impacto que um alto número de conflitos gera sobre aplicações de STM esta é uma área de pesquisa ativa. Muitos trabalhos atuais buscam minimizar este impacto propondo escalonadores transacionais, no entanto muitos destes focam na redução dos conflitos por meio da redução de threads ativas no sistema.
 
-\section{Objetivos}
+As arquiteturas atuais possuem hierarquias de memória complexas com diferentes latencias para acessos à memória. Muitos trabalhos que buscam otimizar o desempenho de STM por meio da redução de conflitos não consideram a arquitetura utilizada em suas heuristicas, sendo que bibliotecas atuais de STM são desenvolvidas para arquiteturas UMA e não consideram a distribuição de threads de acordo com a localidade de dados para otimizar o custo de acesso à memória encontrados nas arquiteturas NUMA. Um escalonador transacional que tenha conhecimento sobre a arquitetura pode extrair um melhor desempenho utilizando as informações sobre as áreas de memória acessada pelas transações. Portanto o escalonador proposto busca ter conhecimento sobre a arquitetura e os dados acessado pela aplicação, para correlacionalos e extrair o melhor desempenho sem reduzir o paralelismo do sistema.
 
-...
-
-% \begin{table}
-%   \begin{center}
-%     \caption{Nome da Tabela}\label{tabela}
-%     \begin{tabular}{p{4cm}p{5cm}p{6cm}}
-%       \hline
-%       Blabla & Blabla & Blablabla\\
-%       \hline
-%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-%         blablabla blabla blablabla.}\\
-%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-%         blablabla blabla blablabla.}\\
-%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-%         blablabla blabla blablabla.}\\
-%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-%         blablabla blabla blablabla.}\\
-%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-%         blablabla blabla blablabla.}\\
-%       {\small Bla} & {\small Blabla} & {\small\em Bla blabla blablabla blabla
-%         blablabla blabla blablabla.}\\
-%       \hline
-%     \end{tabular}
-%   \end{center}
-% \end{table}
-
-\subsection{Objetivo geral}
+\section{contribuição}
 
 ...
-
-\subsection{Objetivos especificos}
-
-\begin{itemize}
-
-  \item ...; e
-  \item ...
-\end{itemize}
 
 \section{Estrutura do Texto}
 
