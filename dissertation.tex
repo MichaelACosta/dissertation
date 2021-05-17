@@ -839,14 +839,20 @@ A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais c
 
 Para este trabalho foi desenvolvida um escalonador de STM NUMA-Aware, entitulado LTMS, que funciona em três etapas. Para validação o escalonador LTMS foi desenvolvido em linguagem C, e aplicado à biblioteca de STM TinySTM em sua versão 1.0.5, e foram rodados esperimentos com o conjunto de benchmarks STMAP em sua versão 0.9.10.
 
-Os testes foram rodados em uma máquina de arquitetura NUMA com processador Intel Xeon E5-4650 com 96 núcleos e 192 threads e 468 Gb de memória RAM, utilizando com sistema operacional Linux Debian kernel 4.19.0-8-amd64  e gcc 8.3.0.
+Os testes foram rodados em uma máquina de arquitetura NUMA com processador Intel Xeon E5-4650 com 96 núcleos e 192 threads em \emph{hyper threading} e 468 Gb de memória RAM, utilizando com sistema operacional Linux Debian kernel 4.19.0-8-amd64  e gcc 8.3.0.
 
-Como comentado anteriormente o LTMS permite que heurísticas para distribuição de threads e heurísticas para migração de threads sejas desenvolvidas e acopladas a ele de maneira simples para que estudos possam ser realizados, neste trabalho foi desenvolvido duas heurísticas de distribuição e duas heurísticas de migração. Para obter os resultados do LTMS foram rodadas queatro baterias de testes com as seguintes configurações, LTMS com distribuição 1 e migração threshold, LTMS com distribuição 1 e migração latency, LTMS com distribuição 2 e migração threshold, e LTMS com distribuição 2 e migração latency. Para comparar o desenpenho do escalonador LTMS, foi executada uma bateria de teste com a TinySTM |todo{versão da tiny} sem modificações.
+Como comentado anteriormente o LTMS permite que heurísticas para distribuição de threads e heurísticas para migração de threads sejas desenvolvidas e acopladas a ele de maneira simples para que estudos possam ser realizados, neste trabalho foi desenvolvido duas heurísticas de distribuição e duas heurísticas de migração. Para obter os resultados do LTMS foram rodadas quatro baterias de testes com as seguintes configurações, LTMS com distribuição Sequential e migração Threshold, LTMS com distribuição Sequential e migração Latency, LTMS com distribuição Chunks e migração Threshold, e LTMS com distribuição Chunks e migração Latency. Para comparar o desenpenho do escalonador LTMS, foi executada uma bateria de teste com a TinySTM 1.0.5 sem modificações.
 
 Cada bateria de teste consiste em 30 execuções de cada benchmark do conjunto STAMP, para os cenarios de 1, 2, 4, 8, 16, 32, 64, 128, 256, e 512 threads. A seção~\ref{resultados} mostra os resultados obtidos com os experimentos.
 
 \section{Resultados}
 \label{resultados}
+
+Para validação deste trabalho foi avaliado o desempenho da implmentação em arquitetura NUMA. Máquinas NUMA tem a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o gargalo de acesso ao barramento. Sua principal caracteristica é o tempo não uniforme de acesso à memória. Nestes experimentos utilizamos o processador Intel Xeon E5-4650 com 96 núcleos e 192 threads em \emph{hyper threading}, os experimentos rodaram com cenarios de até 512 threads, sendo assim os testes com 256 e 512 threads ultrapassam o limite de threads em \emph{hyper threading} da máquina utilizada.
+
+As figuras~\ref{temp} e~\ref{temp2} apresentam os resultados com tempo de execução em segundos para os benchmarks testados utilizando todas configuraçoes heuriticas para os cenarios de 1 a 512 threads. Temos como base de comparação os resultados obtidos com a TinySTM. Para estes experimentos o LTMS apresentou na maioria dos casos um melhor tempo de execução quando comprado a TinySTM. O melhor ganho de desempenho obtivo foi para o experimento \todo{melhor teste, figura e valor em porcentagem} com ...
+
+O experimento Bayes~\ref{Bayes} apresentou melhor tempo de execução para a TinySTM que o escalonador LSTM, \todo{falar sobre os valores}...
 
 \input{tempo.tex}
 
