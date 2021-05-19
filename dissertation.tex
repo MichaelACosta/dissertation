@@ -652,17 +652,6 @@ Se a quantidade de threads da aplicação for menor que o número de cores dispo
 \label{queue_thread}
 \end{figure}
 
-% O escalonador se encarrega de distribuir inicialmente as threads entre as filas de execução com base em uma heuristica. O escalonador foi desenhado para que diferentes heurísticas possam ser desenvolvidas e acopladas a ele, permitindo testar diferentes formas de distribuição de threads. Neste trabalho foi desenvolvida uma heurística de distribuição de threads entre filas.
-
-% \todo{
-%   i: nota que tu ta misturando as coisas todas. tu tava falando de inicializacao, agora estas falando de coletas de dados e depois tu volta a falar da inicializacao. Acho melhor colocar aquela explicação do comentário F no inicio, depois quebras em seçoes especificas de inicializacao, tempo de execuçao, e migracao
-% }
-% Em tempo de execução o LTMS coleta as informações como, endereços de leitura e escrita mais utilizados, quais threads possuem a mesma afinidade de leitura e escrita, e a quantidade de commits e aborts existentes por thread.
-
-% Caso ocorra um abort em uma transação, essas informações serão utilizadas para identificar qual fila a thread em execução tem maior afinidade caso sejá necessário executar uma migração.
-
-% Para o LTMS decidir se deve migrar ou não uma thread de fila, foram desenvolvidas duas heurísticas que buscam minimizar o overhead do escalonador e aproveitar as características da arquitetura. Estas heurísticas de migrações serão detalhadas na subseção~\ref{migration_heuristic}.
-
 Após a criação das filas de execução, conforme apresentado acima, as threads criadas na aplicação são distribuídas com base em uma heurística de distribuição, o escalonador foi desenhado para que diferentes heurísticas possam ser desenvolvidas e acopladas a ele, permitindo testar diferentes formas de distribuição de threads. Para este trabalho foram implementadas duas heurísticas de distribuição.
 
 A primeira heurística implementada distribui uma thread por fila até a conclusão de todas threads disponíveis. A figura~\ref{queue_one} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
