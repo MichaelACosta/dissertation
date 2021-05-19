@@ -857,15 +857,31 @@ O experimento Kmeans~\ref{Kmeans} apresentou para maioria dos cenários de threa
 
 No experimento Labyrinth~\ref{Labyrinth} o LTMS apresentou para maioria dos cenários um decremento no tempo de execução. O melhor tempo de execução em relação a TinySTM pode ser observado no teste Latency-Sequential para 512 threads, onde é observado uma redução de 54\% do tempo de execução. O pior cenário para o LTMS apresenta um aumento de 29\% que foi observado no teste Latency-Chunks 16 threads.
 
-No experimento Vacation~\ref{Vacation} foi observado uma redução de 81\% do tempo de execução para o teste Latency-Sequential com 512 threads, a maioria dos cenários de threads do Vacation apresentam uma redução no tempo de execução do LTMS quando comparados ao TinySTM, porem, alguns cenários apresentaram um aumento no tempo de execução, o pior cenário possui um aumento de 64\% do tempo e pode ser visualizado no teste Latency-Chunks com 128 threads.
+No experimento Vacation~\ref{Vacation} foi observado uma redução de 81\% do tempo de execução para o teste Latency-Sequential com 512 threads, a maioria dos cenários de threads do Vacation apresentam uma redução no tempo de execução do LTMS quando comparados ao TinySTM, porém, alguns cenários apresentaram um aumento no tempo de execução, o pior cenário possui um aumento de 64\% do tempo e pode ser visualizado no teste Latency-Chunks com 128 threads.
 
-Por fim, o experimento Yada~\ref{Yada} também apresentou para maioria dos testes uma redução do tempo de execução do LTMS em comparação a TinySTM. O LTMS obteve uma redução de até 92\% do tempo de execução para o teste Latency-Chunks com 512 threads. O benchmark também apresentou uma redução do tempo de execução de 70\% para o teste Threshold-Chunks com 16 threads.
+O experimento Yada~\ref{Yada} também apresentou para maioria dos testes uma redução do tempo de execução do LTMS em comparação a TinySTM. O LTMS obteve uma redução de até 92\% do tempo de execução para o teste Latency-Chunks com 512 threads. O benchmark também apresentou uma redução do tempo de execução de 70\% para o teste Threshold-Chunks com 16 threads.
 
-Os resultados apresentam para maioria dos benchmarks um resultado melhor de desempenho utilizando o escalonador proposto neste trabalho. Quando ultrapassado o número de threads hyper threading disponíveis na arquitetura utilizada, os únicos benchmarks que não obtiveram resultados de tempo abaixo da TinySTM foram os benchmarks Bayes e Kmeans... \todo{porque?} ... Os demais benchmarks apresentam uma redução significativa em seu tempo de execução para todos cenários de threads, sendo que demonstram maior expressividade para os cenários acima de 256 threads, aqui representando o cenário superior as threads disponíveis na arquitetura.3
+Os resultados apresentam para maioria dos benchmarks um resultado melhor de desempenho utilizando o escalonador proposto neste trabalho. Quando ultrapassado o número de threads hyper threading disponíveis na arquitetura utilizada, os únicos benchmarks que não obtiveram resultados de tempo abaixo da TinySTM foram os benchmarks Bayes e Kmeans... \todo{porque?} ... Os demais benchmarks apresentam uma redução significativa em seu tempo de execução para todos cenários de threads, sendo que demonstram maior expressividade para os cenários acima de 256 threads, aqui representando o cenário superior as threads disponíveis na arquitetura.
 
 \input{tempo2.tex}
 
+As figuras~\ref{abort} e~\ref{abort2} apresentam os resultados de quantidades de aborts obtidos nos experimentos descritos acima. Tendo como base de comparação a biblioteca TinySTM, o LTMS apresentou para maioria dos benchmarks um desempenho superior, reduzindo no melhor caso até 99\% do número de aborts existentes nas aplicações, esse resultado pode ser observado nos benchmarks Intruder, Kmeans, Vacation e Yada. Os benchmarks Intruder e Yada utilizando Latency-Sequential para 512 threads apresentaram ganho de 99,99\% na redução de aborts. Os benchmarks Kmeans utilizando Threshold-Sequential e Vacations utilizando Latency-Chunks reduziram respectivamente 99,88\% e 99,84\% dos aborts para o cenario de 512 threads.
+
+O experimento Bayes~\ref{abortBayes} com o LTMS apresenta para maioria dos testes um aumento no número de aborts. O teste Latency-Chunks com 4 threads apresentou um aumento de 18\% no número de aborts. Por outro lado, o escalonador obteve para Latency-Sequential com 2 threads uma redução de 34\% na média dos aborts.
+
+No experimento Intruder~\ref{abortIntruder} foi obtido ganho de desempenho para todos cenários de threads e configurações do escalonador. O melhor desempenho pode ser observado para Latency-Sequential com 512 threads, no qual foi obtido 99\% de redução nos aborts. A menor redução nos aborts ocorreu para Threshold-Sequential com 2 threads, onde foi observado a redução de 89\% dos aborts.
+
+O experimento Kmeans~\ref{abortKmeans} assim como Intruder, apresenta redução do número de aborts para todos os cenários e configurações. Podemos observar uma redução de até 99\% para Threshold-Sequential com 512 threads. O pior caso do benchmark Kmeans apresentou uma redução de 71\% dos aborts e pode ser observado no Latency-Sequential com 32 threads.
+
 \input{abort.tex}
+
+No experimento Labyrinth~\ref{abortLabyrinth} apresentou para maioria dos cenários um decremento do número de aborts. O LTMS obteve até 54\% de redução dos aborts, este resultado foi obtido no experimento Latency-Chunks com 512 threads. O LTMS também obteve um aumento de 12\% dos aborts em relação a TinySTM para o teste Threshold-Chunks com 16 threads.
+
+No experimento Vacation~\ref{abortVacation} foi observada a redução do número de aborts para todos os testes executados. O melhor valor obtido no LTMS quando comparado a TinySTM foi observado no Latency-Chunks com 512 threads, onde foi obtido 99\% de redução nos aborts. Para Threshold-Chunks com 32 threads foi observado a menor redução do número de aborts com 27\% de redução em relação a TinySTM.
+
+Por fim, o experimento Yada~\ref{abortYada} também apresentou para todos os testes uma redução expressiva no número de aborts. Onde pode ser observado uma redução de 99\% no teste Latency-Sequential com 512 threads. A menor redução de aborts apresentada no escalonador junto ao benchmark Yada foi de 97\% e ocorreu com a configuração Latency-Chunks com 2 threads.
+
+Os resultados apresentam para maioria dos experimentos uma redução significativa do número de abort quando utilizado o escalonador proposto. Quando ultrapassado o número de threads hyper threading disponíveis na arquitetura utilizada, o único benchmark que não obteve redução de aborts foi o Bayes. Os demais benchmarks ao ultrapassar o número de threads disponíveis na arquitetura apresentam uma redução significativa, chegando até 99\% de redução dos aborts.
 
 \input{abort2.tex}
 
