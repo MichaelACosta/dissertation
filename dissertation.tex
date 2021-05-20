@@ -629,7 +629,7 @@ O LTMS é um escalonador de STM NUMA-Aware que identifica as características da
 Como podemos ver na figura~\ref{ltms_generic} o escalonador LTMS é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base nas threads da aplicação e no número de cores disponíveis. O LTMS fornece uma biblioteca de threads integrada a STM que provê todos os recursos necessários para o desenvolvimento das aplicações, quando uma thread é criada ela fica disponível para o escalonador distribuir ela entre as filas com base em uma na Heurística de distribuição.
 
 \begin{figure}[htbp]
- \centering \includegraphics[scale=.25]{images/ltms_generic}
+\centering \includegraphics[scale=.25]{images/ltms_generic}
 \caption{Fluxo de execução da LTMS}
 \label{ltms_generic}
 \end{figure}
@@ -637,48 +637,47 @@ Como podemos ver na figura~\ref{ltms_generic} o escalonador LTMS é inicializado
 Ao inicializar uma aplicação o número de threads utilizados vai ser passado para o escalonador na chamada de sua biblioteca de threads, assim, o LTMS compara o número de threads da aplicação com a quantidade de cores da máquina, se o número de threads da aplicação for maior que o número de cores o LTMS cria uma fila para cada core, como visto na figura~\ref{queue_core}.
 
 \begin{figure}[htbp]
- \centering
- \includegraphics[scale=.8]{images/Queue_core.png}
- \caption{Criação das filas de execução com base nos cores}
+\centering
+\includegraphics[scale=.8]{images/Queue_core.png}
+\caption{Criação das filas de execução com base nos cores}
 \label{queue_core}
 \end{figure}
 
 Se a quantidade de threads da aplicação for menor que o número de cores disponível na arquitetura, o LTMS cria a mesma quantidade de filas que a quantidade de threads, fixando um core por fila e distribuindo uma thread por fila, como visto na figura~\ref{queue_thread}
 
 \begin{figure}[htbp]
- \centering
- \includegraphics[scale=.8]{images/Queues_thread.png}
+\centering
+\includegraphics[scale=.8]{images/Queues_thread.png}
 \caption{Criação das filas de execução com base nas threads}
 \label{queue_thread}
 \end{figure}
 
 Após a criação das filas de execução, conforme apresentado acima, as threads criadas na aplicação são distribuídas com base em uma heurística de distribuição, o escalonador foi desenhado para que diferentes heurísticas possam ser desenvolvidas e acopladas a ele, permitindo testar diferentes formas de distribuição de threads. Para este trabalho foram implementadas duas heurísticas de distribuição.
 
-A primeira heurística implementada distribui uma thread por fila até a conclusão de todas threads disponíveis. A figura~\ref{queue_one} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
+A primeira heurística implementada, denominada Sequential, distribui uma thread por fila até a conclusão de todas threads disponíveis. A figura~\ref{sequential} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
 
 O escalonador executará a primeira fase de distribuição, colocando uma thread para cada fila existente. Após a primeira fase o escalonador verifica se ainda possui threads a serem distribuídas, caso haja threads o LTMS repete a distribuição em uma segunda fase, até acabarem as threads.
 
 Neste cenário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fica com as threads t1 e t3. Veja que o LTMS alocou a thread t0 em Q0 e depois alocou t1 em Q1, então voltou a execução para alocar t2 em Q0 e t3 em Q1.
 
 \begin{figure}[htbp]
- \centering
- \includegraphics[scale=.6]{images/Queue_one.png}
-\caption{Heurística um de distribuição de threads}
-\label{queue_one}
+\centering
+\includegraphics[scale=.6]{images/Queue_one.png}
+\caption{Heurística Sequential de distribuição de threads}
+\label{sequential}
 \end{figure}
 
-A segunda heurística distribui chunks de threads por fila, sendo o tamanho do chunk determinado pela razão entre a quantidade de threads e a quantidade de filas. No exemplo apresentado na figura~\ref{queue_two} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
+A segunda heurística, denominada Chunks, distribui chunks de threads por fila, sendo o tamanho do chunk determinado pela razão entre a quantidade de threads e a quantidade de filas. No exemplo apresentado na figura~\ref{chunks} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
 
-% Na primeira fase de distribuição o escalonador aloca duas threads por fila, quando acabam as filas o escalonador verifica se há thread disponível para distribuição, se não há mais threads o LTMS encerra a distribuição. Caso haja apenas uma ultima thread para distribuir o escalonador a aloca está na fila em que parou a distribuição.
+Na primeira fase de distribuição o escalonador aloca duas threads, o primeiro chunk, na primeira fila, após isto a segunda fase aloca o próximo chunk na segunda fila. Se existir mais chunks o escalonador segue sua distribuição entre as filas disponíveis. Caso haja um número impar de threads para distribuir o escalonador a agrupa as threads restantes em um chunk que será alocado na fila em que a distribuição parou.
 
-% Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3.% Isto por que o escalonador alocou to e t1 em sequência na fila Q0, para então alocar t2 e t3 na fila Q1.
+Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3. Veja que o primeiro chunk é composto por t0 e t1 e t2 e t3 representam o segundo chunk.
 
-\todo{arrumar}
 \begin{figure}[htbp]
- \centering
- \includegraphics[scale=.8]{images/Queue_two.png}
-\caption{Heurística dois de distribuição de threads}
-\label{queue_two}
+\centering
+\includegraphics[scale=.6]{images/Queue_chunks.png}
+\caption{Heurística Chunks de distribuição de threads}
+\label{chunks}
 \end{figure}
 
 
