@@ -355,15 +355,11 @@ Neste trabalho vai ser utilizada a versão 0.9.10 do STAMP para avaliar e compar
 \chapter{Escalonadores}
 \label{chapter::escalonadores}
 
-O uso de escalonadores provem melhorias nas execuções de programas, pode-se utilizar escalonadores de tarefas para melhorar o desempenho de arquiteturas, como visto no trabalho \cite{Rodolfo:2014}, consegue-se utilizar um escalonador para reduzir a latência de acesso à memória pelo processador em arquiteturas \emph{NUMA}.
+Os algoritmos de escalonamento são responsáveis por garantir a ordem da execução de processos em um sistema operacional. Para programas sequenciais, o escalonador é simples e apenas executa o próximo trabalho da fila. Para programas paralelos o escalonador torna-se complexo, uma vez que, frequentemente há múltiplos trabalhos aguardando sua execução.
 
-Em STM o uso de escalonadores pode reduzir o número de conflitos gerados pelo aumento do paralelismo, como podemos ver em \cite{Nicacio2012} o \emph{LUTS} apresenta heurísticas de detecção de conflitos para que o escalonador de transações evite \emph{aborts} no decorrer de sua execução.
+As arquiteturas paralelas atuais fornecem diferentes barramentos para acesso à memória. Algumas pesquisas utilizam escalonadores para fazer com que programas explorem melhor estas arquiteturas. Estudos como \cite{Rodolfo:2014} e \cite{pasqualin2020online} otimizam a execução de programas por meio da redução da latência de acesso à memória e otimização da coerência de cache.
 
-%\section{Heurísticas}
-
-Escalonadores fornecem diferentes abordagens para cada problema proposto, estas distintas abordagens permitem aos desenvolvedores explorar heurísticas de escalonamento que se adaptam a arquitetura utilizada propiciando uma solução mais eficiente.
-
-Existem muitas heurísticas diferentes para prever conflitos, estas podem servir como base para o escalonamento de transações. Para este trabalho foram estudados algumas das principais heurísticas e suas classificações.
+Um problema atual em programas que utilizam STM está nos aborts originados pelos conflitos de suas transações. Para solucionar este problema, estudos utilizam escalonadores de STM. Estes escalonadores controlam a execução e a quantidade de threads ativas para reduzir o número de aborts e o tempo de execução das aplicações.
 
 O trabalho apresentado em~\cite{disanzo2017} fornece uma categorização dos escalonadores de STM, na qual os algoritmos são classificados de acordo com suas heurísticas.
 
