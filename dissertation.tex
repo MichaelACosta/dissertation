@@ -181,7 +181,7 @@ O trabalho está organizado da seguinte forma. O Capítulo~\ref{chapter::stm} ap
 \chapter{Memórias Transacionais}
 \label{chapter::stm}
 
-Memória Transacional, ou \emph{Transactional Memory}~(TM), é uma classe de mecanismos de sincronização que fornece uma execução atômica e isolada de alterações em um conjunto de dados compartilhados. Estas estão sendo desenvolvidas para que no futuro tornem-se o principal meio de fazer a sincronização em um programa concorrente, substituindo a sincronização baseada em \emph{locks}~\cite{energyawaretm}. As TMs podem ser implementadas em \emph{software} (STM), em \emph{hardware} (HTM) ou ainda em uma versão híbrida de \emph{hardware} e \emph{software}.
+Memória Transacional, ou \emph{Transactional Memory}~(TM), é uma classe de mecanismos de sincronização que fornece uma execução atômica e isolada de alterações em um conjunto de dados compartilhados. Estas estão sendo desenvolvidas como uma alternativa para a sincronização baseada em \emph{locks}~\cite{energyawaretm}. As TMs podem ser implementadas em \emph{software} (STM), em \emph{hardware} (HTM) ou ainda em uma versão híbrida de \emph{hardware} e \emph{software}.
 
 Na programação utilizando STMs, todo o acesso à memória compartilhada é realizado dentro de transações e todas as transações são executadas atomicamente em relação a transações concorrentes.
 
@@ -194,16 +194,16 @@ Transação é uma sequência finita de escritas e leituras na memória executad
 \begin{itemize}
 \item \textbf{Atomicidade}: cada transação faz uma sequência de mudanças provisórias na memória compartilhada. Quando a transação é concluída, pode ocorrer um \emph{commit}, tornando suas mudanças visíveis a outras \emph{threads} instantaneamente, ou pode ocorrer um \emph{abort}, fazendo com que suas alterações sejam descartadas;
 
-\item \textbf{Consistência}: as transações devem garantir que um sistema consistente deve ser mantido consistente. Esta propriedade está relacionada com o conceito de invariância;
+\item \textbf{Consistência}: as transações devem garantir que um sistema consistente deve ser mantido consistente.
 
 \item \textbf{Isolamento}: as transações não interferem nas execuções de outras transações, assim parecendo que elas são executadas serialmente. Uma transação não observa o estado intermediário de outra.
 \end{itemize}
 
-Para garantir essas propriedades, as TMs utilizam mecanismos como o de Versionamento de Dados e Detecção de Conflitos. Estes mecanismos são utilizados pelas transações para garantir a execução das TMs.
+Para garantir essas propriedades, as TMs utilizam mecanismos como o de Versionamento de Dados e Detecção de Conflitos. Estes mecanismos são utilizados pelas transações para garantir a corretude da execução das TMs.
 
 \section{Versionamento de Dados}
 
-O versionamento de dados faz é responsável pelo gerenciamento das versões dos dados. Ele armazena tanto o valor do dado no início de uma transação como também o valor do dado modificado durante a transação, isso para garantir a propriedade de atomicidade~\cite{BaldassinTese2009}.
+O versionamento de dados é responsável pelo gerenciamento das versões dos dados. Ele armazena tanto o valor do dado no início de uma transação como também o valor do dado modificado durante a transação, isso para garantir a propriedade de atomicidade~\cite{BaldassinTese2009}.
 
 \begin{figure}[!htp]
 \centering
@@ -215,7 +215,7 @@ O versionamento de dados faz é responsável pelo gerenciamento das versões dos
 Existem dois tipos de versionamento de dados:
 
 \begin{itemize}
-\item \textbf{Versionamento Adiantado}: como pode ser visto na Figura~\ref{figuraversionamento}~(a), o valor modificado durante a transação é armazenado direto na memória e o valor inicial é armazenado em um \emph{undo log}, para que no caso de cancelamento na transação o valor inicial seja restaurado na memória.
+\item \textbf{Versionamento Adiantado}: como pode ser visto na Figura~\ref{figuraversionamento}~(a), o valor modificado durante a transação é armazenado direto na memória e o valor inicial é armazenado em um \emph{undo log}, para que no caso de cancelamento da transação o valor inicial seja restaurado na memória.
 
 \item \textbf{Versionamento Atrasado}: como pode ser visto na Figura~\ref{figuraversionamento}~(b) neste versionamento o valor modificado durante a transação é armazenado em um \emph{buffer} e o valor inicial é mantido na memória até que aconteça um \emph{commit} na transação, onde o valor armazenado no \emph{buffer} é escrito na memória. Caso aconteça o cancelamento na transação, o valor do \emph{buffer} é descartado.
 \end{itemize}
@@ -252,7 +252,7 @@ O Caso~1, mostra as transações acessando dados diferentes, não ocasionando co
 \end{figure}
 
 
-Para solucionar o problema de qual transação continuará executando, quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
+Para solucionar o problema de qual transação continuará executando quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
 
 \section{TinySTM}
 
@@ -280,7 +280,7 @@ A \emph{tinySTM} apresenta três estratégias de versionamento distintas que pod
 \begin{itemize}
 \item \textbf{Write\_Back\_ETL}: esta estratégia implementa o versionamento atrasado com \emph{encounter-time locking}, isso é, o \emph{lock} é adquirido após ocorrer uma operação de escrita e atualiza o \emph{buffer}. O valor é escrito na memória no momento do \emph{commit} da transação;
 
-\item \textbf{Write\_Back\_CTL}: esta estratégia implementa o versionamento atrasado com \emph{commit-time locking},isto é, ele adquire o \emph{lock} antes de ocorrer o um \emph{commit} e atualizar o \emph{buffer}. Assim como no \emph{Write-Back-ETL} o valor é escrito na memória no momento do \emph{commit} da transação;
+\item \textbf{Write\_Back\_CTL}: esta estratégia implementa o versionamento atrasado com \emph{commit-time locking}, isto é, ele adquire o \emph{lock} antes de ocorrer o um \emph{commit} e atualizar o \emph{buffer}. Assim como no \emph{Write-Back-ETL} o valor é escrito na memória no momento do \emph{commit} da transação;
 
 \item \textbf{Write\_Through}: esta estratégia implementa o versionamento adiantado com \emph{encounter-time locking}, isto é, o valor é escrito direto na memória e mantém um \emph{undo log}, caso ocorra um \emph{abort} na transação é possível restaurar o valor anterior na memória.
 \end{itemize}
@@ -309,9 +309,9 @@ A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, e
 \begin{itemize}
   \item \textbf{CM\_Suicide}: nesta estratégia a transação que detecta o conflito é abortada imediatamente;
 
-  \item \textbf{CM\_Delay}: esta estratégia assemelhasse a \emph{CM\_Suicide}, porém, espera até que a transação que gerou o \emph{abort} tenha liberado o \emph{lock}, então reinicia a transação. Isto porque por intuição a transação a transação que foi abortada irá tentar adquirir o mesmo \emph{lock} novamente, provavelmente falhando em mais de uma tentativa. Está estratégia aumenta as chances de que a transação tenha sucesso sem gerar um grande número de \emph{aborts}, melhorando o tempo de execução do processador;
+  \item \textbf{CM\_Delay}: esta estratégia assemelhasse a \emph{CM\_Suicide}, porém, espera até que a transação que gerou o \emph{abort} tenha liberado o \emph{lock}, então reinicia a transação. Isto porque por intuição a transação que foi abortada irá tentar adquirir o mesmo \emph{lock} novamente, provavelmente falhando em mais de uma tentativa. Está estratégia aumenta as chances de que a transação tenha sucesso sem gerar um grande número de \emph{aborts}, melhorando o tempo de execução do programa;
 
-  \item \textbf{CM\_Backoff}: também parecida com a \emph{CM\_Suicide}, esta estratégia espera um tempo randômico para reiniciar a transação. Este tempo de espera é escolhido ao uniformemente ao acaso em um intervalo cujo tamanho aumenta exponencialmente a cada reinicialização;
+  \item \textbf{CM\_Backoff}: também parecida com a \emph{CM\_Suicide}, esta estratégia espera um tempo randômico para reiniciar a transação. Este tempo de espera é escolhido uniformemente ao acaso em um intervalo cujo tamanho aumenta exponencialmente a cada reinicialização;
 
   \item \textbf{CM\_Modular}: esta estratégia implementa vários gerenciadores de contenção, que são alternados durante a execução. Os gerenciadores utilizados são:
 
@@ -324,7 +324,6 @@ A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, e
 
       \item \textbf{Timestamp}: a transação mais nova é abortada.
    \end{itemize}
-
 \end{itemize}
 
 A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de gerenciamento de contenção.
@@ -338,7 +337,7 @@ A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de ge
 %A versão do STAMP utilizada será a 0.9.10.
 % O conjunto de \emph{benchmarks} STAMP foi escolhido devido a ele implementar vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM além de ser o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM.
 
-O conjunto de \emph{benchmarks} STAMP implementa vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM e é o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM. Os oito benchmarks apresentados são:
+O conjunto de \emph{benchmarks} STAMP implementa vários \emph{benchmarks}, assim, atingindo uma maior área de aplicações das STM e é o conjunto de \emph{benchmark} mais utilizado na pesquisa de STM. Os oito benchmarks disponíveis são:
 
 \begin{itemize}
   \item \textbf{Bayes}: Apresenta uma rede bayesiana de aprendizado;
@@ -352,102 +351,6 @@ O conjunto de \emph{benchmarks} STAMP implementa vários \emph{benchmarks}, assi
 \end{itemize}
 
 Neste trabalho vai ser utilizada a versão 0.9.10 do STAMP para avaliar e comparar a execução da biblioteca de STM TinySTM atual e a utilização do escalonador proposto.
-
-% Os \emph{benchmarks} implementados pelo STAMP são~\cite{STAMP}:
-% \newline
-
-
-% \subsection{Bayes}
-
-% Esta aplicação implementa um algoritmo de aprendizado de redes Bayesianas, que é uma parte importante do aprendizado de máquina. Normalmente, nem as distribuições de probabilidades nem as dependências condicionais entre eles são conhecidas ou podem ser resolvidos por um ser humano, assim redes Bayesianas são frequentemente estudadas com os dados observados. O algoritmo específico implementa uma estratégia de \emph{hill-climbing} ou subida de encosta que usa buscas locais e globais, semelhante à técnica descrita em~\cite{bayesian}. Para estimativas eficientes de distribuição de probabilidade, utiliza-se uma \emph{adtree} ou árvore de decisão a partir de~\cite{Moore97}.
-
-
-% \subsection{Genome}
-
-% Este \emph{benchmark} implementa um programa de sequenciamento de genes que reconstrói a sequência de genes a partir de sequências maiores. O algoritmo usado para o sequenciamento de genes têm  três fases:
-
-% \begin{enumerate}
-%   \item [1.] Remove os segmentos duplicados utilizando uma \emph{hash};
-%   \item [2.] Combina segmentos utilizando o algoritmo de pesquisa de sequência \emph{Rabin-Karp}~\cite{Karp87}; e
-%   \item [3.] Constrói a sequência.
-%   \newline
-% \end{enumerate}
-
-
-% \subsection{Intruder}
-
-% Este \emph{benchmark} simula o Design 5 dos NIDS~(\emph{Network Intrusion Detection System}) descritos por Haagdorens em~\cite{Haagdorens05}. Pacotes de rede são processados paralelamente e passam por três fases: captação, remontagem e detecção. A estrutura de dados principal na fase de captura é uma simples fila, e a fase de remontagem utiliza um dicionário (implementado por uma árvore auto balanceada), que contém a lista de pacotes que pertencem à mesma seção. Ao avaliar seus cinco designs para um NIDS \emph{multithread}, Haagdorens afirma que a complexidade da fase de remontagem fez com que ele utilize a sincronização de grãos grosso nos designs~4 e~5. Assim, embora estes dois modelos tentam explorar níveis mais elevados de simultaneidade, a sincronização aproximada de grão resulta em um pior desempenho.
-
-
-% \subsection{Kmeans}
-
-% Este \emph{benchmark} foi tirado do \emph{NU-MineBench 2.0}~\cite{Pisharath05}. \emph{K-means} é um método baseado em partição~\cite{Bezdek81} e é sem dúvida a técnica de agrupamento mais utilizada. Este algoritmo é comumente usado para partição de itens de dados em subconjuntos relacionados. Cada \emph{thread} processa uma partição dos objetos iterativamente. A versão transacional adiciona uma transação para proteger o update do centro do \emph{cluster} que ocorre durante cada iteração.
-
-
-% \subsection{Labyrinth}
-
-% Dado um labirinto, este \emph{benchmark} encontra os caminhos de menor distância entre os pares de pontos inicial e final. O algoritmo de roteamento utilizado é o algoritmo Lee~\cite{Lee61}.
-
-% Nesse algoritmo, o labirinto é representado como uma grade, em que cada ponto de grade pode conter ligações adjacentes, para os pontos da grade que não estão nas diagonais. O algoritmo busca um caminho mais curto entre os pontos de conexão através da realização de uma busca em largura e marca cada ponto da grade com a sua distância para o início. Esta fase de expansão acabará por chegar ao ponto final, se a conexão for possível. A segunda fase de rastreamento, em seguida, estabelece a ligação, seguindo todo o caminho diminuindo a distância. Este algoritmo é garantido para encontrar o caminho mais curto entre um ponto inicial e final, no entanto, quando vários caminhos são feitos, um caminho pode bloquear outro.
-
-
-% \subsection{SSCA2}
-
-% \emph{Scalable Synthetic Compact Applications 2}~(SSCA2)~\cite{Bader05} é composta por quatro \emph{kernels} que operam em um grande, dirigido e ponderado gráfico. Estes quatro \emph{kernels} gráficos são comumente usados em aplicações que vão desde a biologia computacional até a segurança. STAMP incide sobre um \emph{Kernel}, que constrói uma estrutura de dados eficiente utilizando matrizes de adjacência e matrizes auxiliares.
-
-
-% \subsection{Vacation}
-
-% Este \emph{benchmark} implementa um sistema de reserva de viagens alimentado por um banco de dados não-distribuído. A carga de trabalho é composto por vários segmentos de clientes que interagem com o banco de dados via gerenciador de transações do sistema.
-
-% O banco de dados é composto por quatro tabelas: carros, quartos, voos e clientes. Os três primeiros têm relações com os campos que representam um número único de identificação, quantidade reservada, a quantidade total disponível, e preço. A tabela de clientes acompanha as reservas feitas por cada cliente e o preço total das reservas que eles fizeram. As tabelas são implementados como árvores rubro negras.
-
-
-% \subsection{Yada}
-
-% Este \emph{benchmark} implementa o algoritmo de Ruppert para refinamento de malha~\cite{Ruppert95}. A versão transacional é similar em design ao apresentado em~\cite{Kulkarni06}.
-
-% \subsection{Biblioteca Thread.h}
-
-% O conjunto de \emph{benchmark} STAMP disponibiliza para os \emph{benchmarks} a biblioteca de \emph{threads} \emph{thread.h}. Esta dispõem do mecanismo \emph{pthread} e \emph{thread\_barrier} para criar um \emph{pull} de trabalhos a ser executado.
-
-% A biblioteca dispõem de uma \emph{struct} \emph{thread\_barrier\_t} e disponibiliza as seguintes funções:
-
-% \begin{itemize}
-
-% \item thread\_startup;
-% \item thread\_start;
-% \item thread\_shutdown;
-% \item thread\_barrier\_alloc;
-% \item thread\_barrier\_free;
-% \item thread\_barrier\_init;
-% \item thread\_barrier;
-% \item thread\_getId;
-% \item thread\_getNumThread; e
-% \item thread\_barrier\_wait.
-
-% \end{itemize}
-
-% As funções apresentadas acima manipulam a \emph{struct}, Figura~\ref{fig:struct}, disponível na biblioteca provendo a execução do \emph{pool} de trabalhos.
-
-% \begin{figure}[!ht] 
-%   \centering
-%   \begin{verbatim}
-%                     typedef struct thread_barrier {
-%                         THREAD_MUTEX_T countLock;
-%                         THREAD_COND_T proceedCond;
-%                         THREAD_COND_T proceedAllCond;
-%                         long count;
-%                         long numThread;
-%                     } thread_barrier_t;
-%   \end{verbatim}
-%   \caption{Struct disponível na thread.h do \emph{benchmark STAMP}}
-% \label{fig:struct}
-% \end{figure}
-
-% A função \emph{threadWait} disponível em \emph{thread.c} realiza a sincronização de todas as \emph{threads} disponíveis no \emph{pool} de \emph{thread}. \emph{thread\_startup} recebe como parâmetro o número de \emph{threads} a ser criado e realiza a inicialização do \emph{pool} de \emph{threads}.
-
-% A função \emph{thread\_start} executa as \emph{threads} disponíveis no \emph{pool de thread} utilizando uma chamada de função para \emph{threadWait}. A partir desta função são executadas as tarefas e utilizadas as demais funções. A biblioteca de escalonamento desenvolvida neste trabalho, tem como base as funções básicas citadas acima.
 
 \chapter{Escalonadores}
 \label{chapter::escalonadores}
