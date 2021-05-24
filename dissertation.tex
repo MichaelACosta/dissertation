@@ -529,7 +529,7 @@ O LTMS, diferente de outros trabalhos, é um escalonador que avalia as caracter�
 
 \section{\textbf{Escalonador}}
 
-O LTMS é um escalonador de STM NUMA-Aware que identifica as características da arquitetura e do programa em tempo de execução para extrair o máximo de desempenho da máquina utilizada. O escalonador opera em três estágios, sendo eles, a inicialização do sistema, a coleta de dados em tempo de execução e a migração de threads.
+O LTMS é um escalonador de STM NUMA-Aware que identifica as características da arquitetura e do programa em tempo de execução para extrair um desempenho melhor da máquina utilizada. O escalonador opera em três estágios, sendo eles, a inicialização do sistema, a coleta de dados em tempo de execução e a migração de threads.
 
 \begin{itemize}
  \item Inicialização do sistema: Inicialmente associa filas de execução aos processadores e implementa duas técnicas de distribuição inicial de threads;
@@ -542,7 +542,7 @@ O LTMS é um escalonador de STM NUMA-Aware que identifica as características da
 \subsection{Inicialização do sistema}
 \label{inicializacao}
 
-Como podemos ver na figura~\ref{ltms_generic} o escalonador LTMS é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base nas threads da aplicação e no número de cores disponíveis. O LTMS fornece uma biblioteca de threads integrada a STM que provê todos os recursos necessários para o desenvolvimento das aplicações, quando uma thread é criada ela fica disponível para o escalonador distribuir ela entre as filas com base em uma na Heurística de distribuição.
+Como podemos ver na Figura~\ref{ltms_generic} o escalonador LTMS é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base nas threads da aplicação e no número de cores disponíveis. O LTMS fornece uma biblioteca de threads integrada a STM que provê todos os recursos necessários para o desenvolvimento das aplicações, quando uma thread é criada ela fica disponível para o escalonador distribuir ela entre as filas com base em uma Heurística de distribuição.
 
 \begin{figure}[htbp]
 \centering \includegraphics[scale=.25]{images/ltms_generic}
@@ -550,27 +550,28 @@ Como podemos ver na figura~\ref{ltms_generic} o escalonador LTMS é inicializado
 \label{ltms_generic}
 \end{figure}
 
-Ao inicializar uma aplicação o número de threads utilizados vai ser passado para o escalonador na chamada de sua biblioteca de threads, assim, o LTMS compara o número de threads da aplicação com a quantidade de cores da máquina, se o número de threads da aplicação for maior que o número de cores o LTMS cria uma fila para cada core, como visto na figura~\ref{queue_core}.
+Ao inicializar uma aplicação o número de threads utilizados vai ser passado para o escalonador na chamada de sua biblioteca de threads, assim, o LTMS compara o número de threads da aplicação com a quantidade de cores da máquina, se o número de threads da aplicação for maior que o número de cores o LTMS cria uma fila para cada core, como visto na Figura~\ref{queue_core}.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[scale=.8]{images/Queue_core.png}
+\includegraphics[scale=.65]{images/Queue_core.png}
 \caption{Criação das filas de execução com base nos cores}
 \label{queue_core}
 \end{figure}
 
-Se a quantidade de threads da aplicação for menor que o número de cores disponível na arquitetura, o LTMS cria a mesma quantidade de filas que a quantidade de threads, fixando um core por fila e distribuindo uma thread por fila, como visto na figura~\ref{queue_thread}
+Se a quantidade de threads da aplicação for menor que o número de cores disponível na arquitetura, o LTMS cria a mesma quantidade de filas que a quantidade de threads, fixando um core por fila e distribuindo uma thread por fila.
+% como visto na figura~\ref{queue_thread}
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[scale=.8]{images/Queues_thread.png}
-\caption{Criação das filas de execução com base nas threads}
-\label{queue_thread}
-\end{figure}
+% \begin{figure}[htbp]
+% \centering
+% \includegraphics[scale=.8]{images/Queues_thread.png}
+% \caption{Criação das filas de execução com base nas threads}
+% \label{queue_thread}
+% \end{figure}
 
 Após a criação das filas de execução, conforme apresentado acima, as threads criadas na aplicação são distribuídas com base em uma heurística de distribuição, o escalonador foi desenhado para que diferentes heurísticas possam ser desenvolvidas e acopladas a ele, permitindo testar diferentes formas de distribuição de threads. Para este trabalho foram implementadas duas heurísticas de distribuição.
 
-A primeira heurística implementada, denominada Sequential, distribui uma thread por fila até a conclusão de todas threads disponíveis. A figura~\ref{sequential} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
+A primeira heurística implementada, denominada Sequential, distribui uma thread por fila até a conclusão de todas threads disponíveis. A Figura~\ref{sequential} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
 
 O escalonador executará a primeira fase de distribuição, colocando uma thread para cada fila existente. Após a primeira fase o escalonador verifica se ainda possui threads a serem distribuídas, caso haja threads o LTMS repete a distribuição em uma segunda fase, até acabarem as threads.
 
@@ -583,7 +584,7 @@ Neste cenário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fic
 \label{sequential}
 \end{figure}
 
-A segunda heurística, denominada Chunks, distribui chunks de threads por fila, sendo o tamanho do chunk determinado pela razão entre a quantidade de threads e a quantidade de filas. No exemplo apresentado na figura~\ref{chunks} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
+A segunda heurística, denominada Chunks, distribui chunks de threads por fila, sendo o tamanho do chunk determinado pela razão entre a quantidade de threads e a quantidade de filas. No exemplo apresentado na Figura~\ref{chunks} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
 
 Na primeira fase de distribuição o escalonador aloca duas threads, o primeiro chunk, na primeira fila, após isto a segunda fase aloca o próximo chunk na segunda fila. Se existir mais chunks o escalonador segue sua distribuição entre as filas disponíveis. Caso haja um número impar de threads para distribuir o escalonador a agrupa as threads restantes em um chunk que será alocado na fila em que a distribuição parou.
 
@@ -604,22 +605,29 @@ Durante a execução da aplicação o escalonador se encarrega de coletar dados 
 
 Os dados coletados sobre os acessos à memória fornecem insumos para duas matrizes, uma matriz de comunicação e uma matriz de endereços. Estas matrizes serão utilizadas nas heurísticas de migração para definir o grau de relação entre as filas de execução para reduzir os conflitos após uma migração de threads entre as filas.
 
-A matriz de comunicação fornece insumos sobre a quantidade de vezes que duas threads acessam o mesmo endereçamento de memória. Os valores da matriz de comunicação se dão pelos somatórios dos acessos ao mesmo endereçamento de memória entre dois threads, sendo os identificadores dos threads as posições da matriz. Sendo assim se a thread com id 0 lê ou escreve 1000 vezes no mesmo endereço que a thread de id 1, o valor da matriz de comunicação na posição \emph{matrixComm[0][1]} será 1000.
+A matriz de comunicação fornece insumos sobre a quantidade eventos de comunicação entre dois threads, onde cada posição da matriz representa a quantidade de comunicação entre pares de threads. Quando dois threads acessam o mesmo endereço, é gerado o evento, e a matriz guarda a quantidade de enventos de comunicação que foram gerados.
 
-Para evitar overhead a coleta de dados da matriz de comunicação ocorre por amostragem, neste trabalho utilizamos 1 a cada 100 acessos por thread para acionar o contador, esta mesma abordagem foi apresentada nos trabalhos~\cite{pasqualin2020online} e~\cite{pasqualin2020thread}. O LTMS permite que o valor da amostragem seja configurado, caso o desenvolvedor queira que todos os dados de acesso à memória sejam considerados.
+Para evitar overhead a coleta de dados da matriz de comunicação ocorre por amostragem, neste trabalho utilizamos 1 a cada 100 acessos por thread para acionar o contador, esta abordagem é baseada nos experimentos apresentados nos trabalhos~\cite{pasqualin2020online} e~\cite{pasqualin2020thread}. 
 
-A matriz de endereços por sua vez armazena a informação de quais endereços iguais foram acessados mais vezes pelas threads. Os valores da matriz de endereços são os endereços de memória acessados mais vezes entre dois threads, e assim como na matriz de comunicação os identificadores dos threads são as posições da matriz. Assim, se a thread com id 0 e a thread de id 1 possuem mais acesse em comum com o endereço 0xbff6f36c, o valor da matriz de endereços na posição \emph{matrixAddress[0][1]} será 0xbff6f36c.
+% Matriz de endereços: como tu calcula o endereço mais acessado pelas duas threads? Acho que não tem como pois a matriz de comunicação não guarda todas as threads. Eu não entendi muito bem essa história da fila de endereços que é ordenada.
 
-Para montar a matriz de endereços foi utilizado o mesmo sistema de amostragem apresentado anteriormente, no momento do armazenamento o endereço avaliado é armazenado em uma fila que é ordenada pela quantidade de acessos que o endereço recebeu, o endereço com maior número de acessos é armazenado na matriz de comunicação.
+A matriz de endereços por sua vez armazena a informação de quais endereços foram acessados pelas threads. Quando duas threds acessam o mesmo endereço de memória, um evento é disparado armazenando o número de acesso por endereço na matriz. Para entender qual é o endereço mais acessado cada posição da matriz utiliza um array que possui uma estrutura de chave e valor. Esta estrutura utiliza como chave o endereço de memória acessado e o valor a quantidade de acessos que este endereço recebeu.
+
+% O evento disparado pelo acesso em comum utiliza este array para verificar e armazenar na matriz o endereço com maior valor.
+
+% Os valores da matriz de endereços são os endereços de memória acessados mais vezes entre dois threads, e assim como na matriz de comunicação os identificadores dos threads são as posições da matriz. 
+% Assim, se a thread com id 0 e a thread de id 1 possuem mais acesse em comum com o endereço 0xbff6f36c, o valor da matriz de endereços na posição \emph{matrixAddress[0][1]} será 0xbff6f36c.
+
+% Para montar a matriz de endereços foi utilizado o mesmo sistema de amostragem apresentado anteriormente, no momento do armazenamento o endereço avaliado é armazenado em uma fila que é ordenada pela quantidade de acessos que o endereço recebeu, o endereço com maior número de acessos é armazenado na matriz de comunicação.
 
 O LTMS também fica encarregado de coletar dados sobre o comportamento das transações. Durante sua execução uma thread pode ter n transações que geram aborts e commits, o escalonador mantém em cada thread um contador para os commits e um para os aborts. Esse contador mantém o histórico de commits e aborts de uma thread que será utilizado para identificar o índice de contenção da thread.
 
 \subsection{Migração de Threads}
 \label{migracao}
 
-O LTMS fornece um sistema de migração de threads entre as filas existentes, esse sistema entra em ação após a ocorrência de um abort e busca agrupar as threads conflitantes com intuito de serializadas para evitar conflitos futuros. O sistema de migração é dividido em duas etapas, a identificação da fila para a qual o thread será migrado e a heurística de migração que define se a migração irá acontecer.
+O LTMS fornece um sistema de migração de threads entre as filas existentes, esse sistema entra em ação após a ocorrência de um abort e busca agrupar as threads conflitantes com intuito de serializadas para evitar conflitos futuros. O sistema de migração é dividido em duas etapas, a identificação da fila para qual o thread será migrado e a heurística de migração que define se a migração irá acontecer.
 
-A figura~\ref(migration) ilustra a função de migração denominada~\emph(migrateThread), esta função é executada após a ocorrência de um abort, a função~\emph{findBestQueue} identifica a fila para qual podemos efetuar a migração e a função~\emph{okToMigrate} utiliza uma heurística que determinar se devemos migrar a thread atual. Caso a thread deva ser migrada, a thread é adicionada à fila de execução para qual desejasse migra-la. Caso a thread não deva ser migrada, a função retorna para operação de abort e segue a execução utilizando o gerenciador de contenção.
+A Figura~\ref{migration} ilustra a função de migração denominada~\emph(migrateThread), esta função é executada após a ocorrência de um abort, a função~\emph{findBestQueue} identifica a fila para qual podemos efetuar a migração e a função~\emph{okToMigrate} utiliza uma heurística que determina se devemos migrar a thread atual. Caso a thread deva ser migrada, a thread é adicionada à fila de execução para qual desejasse migra-la. Caso a thread não deva ser migrada, a função retorna para operação de abort e segue a execução utilizando o gerenciador de contenção.
 
 \begin{figure}[htbp]
  \centering
@@ -633,14 +641,18 @@ A figura~\ref(migration) ilustra a função de migração denominada~\emph(migra
  \label{migration}
 \end{figure}
 
+\todo{arrumar}
+% A: fala como sao usadas as matrizes para determinar a fila
 A etapa de identificação das threads conflitantes busca entender a aplicação e a arquitetura para definir para qual fila a thread que gerou o abort deve ser migrada, para isso a função~\emph{findBestQueue} recebe o identificador da thread atual e consulta na matriz de comunicação qual a thread em execução possui mais acessos em comum à memória, após identificar a thread a função retorna a fila na qual a thread pertence. Após identificar a fila com maior afinidade, o LTMS utiliza uma das heurísticas para decidir se deve migrar a thread ou não.
 
-A etapa de heurística de migração avalia se a thread que gerou o abort está apta a ser migrada, o LTMS permite que diferentes heurísticas de migração sejam desenvolvidas e acopladas a ele.  Para este trabalho foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Estas heurísticas foram denominadas \emph{threshold} e \emph{latency} e são apresentadas nas figuras~\ref{threshold} e~\ref{latency}.
+A etapa de heurística de migração avalia se a thread que gerou o abort está apta a ser migrada, o LTMS permite que diferentes heurísticas de migração sejam desenvolvidas e acopladas a ele.  Para este trabalho foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Estas heurísticas foram denominadas \emph{threshold} e \emph{latency} e são apresentadas nas Figuras~\ref{threshold} e~\ref{latency}.
 
-A primeira heurística, denominada threshold, avalia o nível de contenção apresentado pela thread em tempo de execução, esse nível de contenção é medido pela razão entre os aborts e commits realizados pela thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na figura\ref{threshold}.
+A primeira heurística, denominada threshold, avalia o nível de contenção apresentado pela thread em tempo de execução, esse nível de contenção é medido pela razão entre os aborts e commits realizados pela thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na Figura\ref{threshold}.
 
-A função \emph{thresholdHeuristic} apresentadas na figura~\ref{threshold} calcula o índice de contenção dado pela razão dos aborts e commits realizados pela thread e avalia se o índice de contenção é maior que um valor limiar. Se o índice de contenção for maior que o limiar a função permite a migração da thread, se o valor do índice de contenção ficar abaixo do limiar a thread não deve ser migrada.
+A função \emph{thresholdHeuristic} apresentadas na Figura~\ref{threshold} calcula o índice de contenção dado pela razão dos aborts e commits realizados pela thread e avalia se o índice de contenção é maior que um valor limiar. Se o índice de contenção for maior que o limiar a função permite a migração da thread, se o valor do índice de contenção ficar abaixo do limiar a thread não deve ser migrada.
 
+\todo{arrumar}
+% B: qual o valor do threashold é usado? de onde ele veio?
 O limiar denominado~\emph{threshold} é uma constante definida pelo desenvolvedor que indica o nível máximo de contenção aceito pela aplicação, um valor baixo para o limiar gera mais migrações que proporciona maior serialização do sistema reduzindo assim os aborts e aumentando tempo de execução, enquanto um limiar muito alto mantém o paralelismo mas aumenta o número de aborts.
 
 \begin{figure}[htbp]
@@ -654,7 +666,7 @@ O limiar denominado~\emph{threshold} é uma constante definida pelo desenvolvedo
  \label{threshold}
 \end{figure}
 
-A segunda heurística de migração, denominada \emph{latency}, avalia a latência de acesso a memória entres os nodos da filas envolvidas na migração e o endereço de memória mais acessado pela thread. Para realizar uma migração utilizando esta heurística o LTMS executa a função denominada~\emph{latencyHeuristic} apresentada na figura\ref{latency}.
+A segunda heurística de migração, denominada \emph{latency}, avalia a latência de acesso à memória entre os nodos da filas envolvidas na migração e o endereço de memória mais acessado pela thread. Para realizar uma migração utilizando esta heurística o LTMS executa a função denominada~\emph{latencyHeuristic} apresentada na Figura\ref{latency}.
 
 A função \emph{latencyHeuristic} busca na matriz de endereços qual o endereço de memória em comum é mais acessado pelas filas. A função também consulta quais os nodos NUMA a fila atual e a fila que está sendo avaliada pertencem. Com as informações sobre os nodos NUMA e o endereço de memória mais acessado, é avaliada as latências de acesso das duas filas para o endereço de memória, se a fila atual possui uma latência de acesso maior que a fila para a qual pretendemos migrar a thread o escalonador efetua a migração, caso a latência seja menor ou igual a thread mantém sua execução na fila atual.
 
@@ -678,16 +690,17 @@ Migrando a thread para uma fila com latência menor que a atual, o LTMS busca re
 
 \section{Conclusão}
 
-Como visto na seção anterior o LTMS é um escalonador NUMA-Aware de tres etapas, a primeira se encarrega de inicializar a aplicação criando filas de execução e distribuindo as threads entre estas filas, a segunda etapa coleta dados sobre a arquitetura e a aplicação em tempo de execução para otimizar a aplicação por meio da serialização de threads conflitantes, a terceira etapa se encarrega de avaliar se uma thread que abortou deve ser serializada, a serialização ocorre por meio da migração da thread que realizou o abort para uma fila que possua as mesmas características de acesso à memória.
+Como visto na seção anterior o LTMS é um escalonador NUMA-Aware de três etapas, a primeira se encarrega de inicializar a aplicação criando filas de execução e distribuindo as threads entre estas filas, a segunda etapa coleta dados sobre a arquitetura e a aplicação em tempo de execução para otimizar a aplicação por meio da serialização das threads conflitantes, a terceira etapa se encarrega de avaliar se uma thread que abortou deve ser serializada, a serialização ocorre por meio da migração da thread que realizou o abort para uma fila que possua as mesmas características de acesso à memória.
 
 O escalonador permite a criação de diferentes heurísticas para avaliar seu comportamento de distribuição de threads na fase inicial e na migração de threads na ocorrência de aborts. Estas heurísticas podem ser criadas e acopladas ao LTMS para melhorar o fluxo de execução das aplicações e facilitar estudos futuros.
 
-O LTMS é um escalonador reativo que realiza a fase de migração de threads a partir da ocorrência de um abort, como podemos ter mais de uma transação por thread os dados coletados para o sistema de migração são avaliados por threads, isto permite a comparação entre as características dos acessos à memória e o índice de contenção gerado por cada thread. Assim como o LTMS o Shirink~\cite{shirink2009} avalia as informações em tempo de execução com base nas threads, porém este não avalia as características de acesso à memória.
+O LTMS é um escalonador reativo que realiza a fase de migração de threads a partir da ocorrência de um abort, os dados coletados para o sistema de migração são avaliados por threads, isto permite a comparação entre as características dos acessos à memória e o índice de contenção gerado por cada thread. Assim como o LTMS o Shirink~\cite{shirink2009} avalia as informações em tempo de execução com base nas threads, porém este não avalia as características de acesso à memória.
 
 Algoritmos como LUTS~\cite{Nicacio2012} utilizam a migração para reduzir o índice de contenção, porém este algoritmo realiza a migração para uma única fila, serializando a aplicação sem considerar as características de acesso à memória. Outros algoritmos, como o ATS~\cite{ats2008} e o Shirink~\cite{shirink2009}, realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas utiliza totalmente o recurso disponível na arquitetura.
 
 A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais características do LTMS e os escalonadores apresentados neste trabalho, a tabela busca entender as diferenças que o escalonador fornece para aplicações paralelas que utilizam STM.
 
+\todo{arrumar}
 \begin{table}[]
  \footnotesize
  \centering
@@ -749,9 +762,9 @@ Cada bateria de teste consiste em 30 execuções de cada benchmark do conjunto S
 
 Para validação deste trabalho foi avaliado o desempenho da implementação em arquitetura NUMA. Máquinas NUMA têm a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o gargalo de acesso ao barramento. Sua principal característica é o tempo não uniforme de acesso à memória. Nestes experimentos utilizamos o processador Intel Xeon E5-4650 com 96 núcleos e 192 threads em \emph{hyper threading}, os experimentos rodaram com cenários de até 512 threads, sendo assim os testes com 256 e 512 threads ultrapassam o limite de threads em \emph{hyper threading} da máquina utilizada.
 
-As figuras~\ref{temp} e~\ref{temp2} apresentam os resultados com tempo de execução em segundos para os benchmarks testados utilizando todas configurações heurísticas para os cenários de 1 a 512 threads. Temos como base de comparação os resultados obtidos com a TinySTM. Para estes experimentos o LTMS apresentou na maioria dos casos um melhor tempo de execução quando comparado a TinySTM. O melhor ganho de desempenho obtido foi para o experimento Intruder de configuração Latency-Sequential com 512 threads que obteve 96\% de redução em seu tempo de execução.
+As Figuras~\ref{temp} e~\ref{temp2} apresentam os resultados com tempo de execução em segundos para os benchmarks testados utilizando todas configurações heurísticas para os cenários de 1 a 512 threads. Temos como base de comparação os resultados obtidos com a TinySTM. Para estes experimentos o LTMS apresentou na maioria dos casos um melhor tempo de execução quando comparado a TinySTM. O melhor ganho de desempenho obtido foi para o experimento Intruder de configuração Latency-Sequential com 512 threads que obteve 96\% de redução em seu tempo de execução.
 
-O experimento Bayes~\ref{Bayes} possui um comportamento não determinístico e não é considerado adequado para comparação do tempo de execução~\cite{Ruan:2014}. Entretanto este também é apresentado neste trabalho, onde mostra melhor tempo de execução para a TinySTM que o escalonador LSTM na maioria dos cenários de threads. O teste com 4 threads com a configuração Threshold-Sequential apresentou o pior resultado obtendo 164\% de tempo acima da TinySTM. O LTMS também apresentou algumas reduções no tempo de execução quando comparado a TinySTM, o teste Threshold-Chunks obteve uma redução de 46\% no tempo de execução.
+O experimento Bayes~\ref{Bayes} possui um comportamento não determinístico e não é considerado adequado para comparação do tempo de execução~\cite{Ruan:2014}. Entretanto este também é apresentado neste trabalho, onde mostra melhor tempo de execução para a TinySTM que o escalonador LTMS na maioria dos cenários de threads. O teste com 4 threads com a configuração Threshold-Sequential apresentou o pior resultado obtendo 164\% de tempo acima da TinySTM. O LTMS também apresentou algumas reduções no tempo de execução quando comparado a TinySTM, o teste Threshold-Chunks obteve uma redução de 46\% no tempo de execução.
 
 No experimento Intruder~\ref{Intruder} o LTMS apresentou melhor tempo de execução para todos os cenários a partir de 2 threads, obtendo uma redução de até 96\% do tempo de execução que ocorreu em Latency-Sequential com 512 threads, e o menor ganho de desempenho foi de 23\% no teste Threshold-Chunks para 4 threads. Todos os resultados do Intruder para uma thread apresentaram menor tempo de execução, obtendo no pior cenário, Threshold-Chunks, um aumento de 24\%.
 
