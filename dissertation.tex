@@ -131,10 +131,12 @@
 
 %lista de abreviaturas e siglas
 \begin{listofabbrv}{ABNT}%coloque aqui a maior sigla para ajustar a distância
-        \item[TM] Memórias Transacionais
-        \item[STM] Memórias Transacionais em Software
-        \item[NUMA] Non-Uniform Memory Access
-        \item[UMA] Uniform Memory Access
+  \item[TM] Memórias Transacionais
+  \item[STM] Memórias Transacionais em Software
+  \item[NUMA] Non-Uniform Memory Access
+  \item[UMA] Uniform Memory Access
+  \item[LTMS] Lups Transactional Memory Schedule
+  \item[STAMP]
 \end{listofabbrv}
 
 %Sumario
@@ -148,35 +150,34 @@ A arquitetura paralela mais simples é baseada em um único barramento de acesso
 
 Como alternativa a arquitetura UMA temos a arquitetura NUMA (\emph{Non-Uniform Memory Access}), que estão se tornando dominantes em servidores~\cite{Calciu:2017}. A NUMA possui vários nodos, sendo que cada nodo é composto por um ou mais processadores e módulos de memória. O acesso à memória dentro de um nó é chamado acesso local e cada nó possui seu próprio barramento com sua latência. Como as aplicações possuem acesso a toda memória, esta arquitetura permite que o processador de um nodo acesse o módulo de memória pertencente a outro nodo, esse acesso é denominado acesso remoto, e a latência do acesso remoto é maior que a latência de acesso local. Com isto, a distribuição da carga de trabalho se torna importante no desempenho das aplicações.
 
-Para os programas extraírem o máximo de desempenho das arquiteturas paralelas, o código deve explorar o poder computacional oferecido pelas unidades de processamento, porém, a programação paralela está longe de ser uma atividade fácil. O acesso à memória compartilhada é um dos cuidados que programadores devem tomar ao desenvolver programas paralelos, para isso, as linguagens fornecem mecanismos de sincronização de threads como locks. Porém, este modelo de programação não é intuitivo e é propenso a erros como \emph{deadlocks}.
+Para os programas extraírem o máximo de desempenho das arquiteturas paralelas, o código deve explorar o poder computacional oferecido pelas unidades de processamento, porém, a programação paralela está longe de ser uma atividade fácil. O acesso à memória compartilhada é um dos cuidados que programadores devem tomar ao desenvolver programas paralelos, para isso, as linguagens fornecem mecanismos de sincronização de \emph{threads} como \emph{locks}. Porém, este modelo de programação não é intuitivo e é propenso a erros como \emph{deadlocks}.
 
 
-Uma alternativa para substituir o uso de locks na programação paralela é a Memória Transacional (TM), este é um mecanismo de sincronização que realiza execuções atômicas e isoladas de partes compartilhadas de código. Na programação utilizando Software Transactional Memory (STM), o acesso à memória compartilhada é realizada dentro de uma transação executada atomicamente. A programação com STM permite que o programador não se preocupe com as aquisições e liberações de locks, o desenvolvedor deve apenas delimitar as seções críticas, o que facilita sua programação. Esta dissertação concentrou os estudos no uso de STM e seus escalonadores.
+Uma alternativa para substituir o uso de \emph{locks} na programação paralela é a Memória Transacional (TM), este é um mecanismo de sincronização que realiza execuções atômicas e isoladas de partes compartilhadas de código. Na programação utilizando Software Transactional Memory (STM), o acesso à memória compartilhada é realizada dentro de uma transação executada atomicamente. A programação com STM permite que o programador não se preocupe com as aquisições e liberações de \emph{locks}, o desenvolvedor deve apenas delimitar as seções críticas, o que facilita sua programação. Esta dissertação concentrou os estudos no uso de STM e seus escalonadores.
 
-Os algoritmos de STM quando utilizados junto às arquiteturas atuais apresentam um aumento no número de contenção, o que gera conflitos e aborts. Para buscar solucionar e reduzir estes conflitos, muitos trabalhos concentram-se em desenvolver escalonadores que limitam o número de threads ativos ou serializam a execução de threads agrupadas em uma única fila de execução. Um dos grandes desafios é o desenvolvimento de um escalonador transacional que avalie a arquitetura utilizada para proporcionar uma melhor distribuição das threads, explorando o paralelismo oferecido pela máquina.
-
+Os algoritmos de STM quando utilizados junto às arquiteturas atuais apresentam um aumento no número de contenção ocosionado pelo aumento do paralelismo, este aumento de contenção gera conflitos e aborts. Buscando solucionar e reduzir estes conflitos, muitos trabalhos concentram-se em desenvolver escalonadores que limitam o número de \emph{threads} ativos ou serializam a execução de \emph{threads} agrupadas em uma única fila de execução. Um dos grandes desafios é o desenvolvimento de um escalonador transacional que avalie a arquitetura utilizada para proporcionar uma melhor distribuição das \emph{threads}, explorando o paralelismo oferecido pela máquina.
 
 \section{Motivação}
 
-Memória Transacional (TM) é uma alternativa promissora para a computação paralela. A TM proporciona aos programadores uma maior facilidade ao desenvolver programas paralelos, sem ter que se preocupar com a aquisição e liberação de locks, assim, evitando problemas como \emph{deadlocks}. Infelizmente em cenários com alto paralelismo aplicações que utilizam STM sofrem com um alto número de conflitos. Buscar reduzir o impacto que um alto número de conflitos gera sobre aplicações de STM é uma área de pesquisa ativa. Muitos trabalhos atuais tentam minimizar este impacto propondo escalonadores transacionais, no entanto muitos destes focam na redução dos conflitos por meio da redução de threads ativas no sistema.
+Memória Transacional (TM) é uma alternativa promissora para a computação paralela. A TM proporciona aos programadores uma maior facilidade ao desenvolver programas paralelos, sem ter que se preocupar com a aquisição e liberação de locks, assim, evitando problemas como \emph{deadlocks}. Infelizmente em cenários com alto paralelismo aplicações que utilizam STM sofrem com um alto número de conflitos. Buscar reduzir o impacto que um alto número de conflitos gera sobre aplicações de STM é uma área de pesquisa ativa. Muitos trabalhos tentam minimizar este impacto propondo escalonadores transacionais, no entanto muitos destes focam na redução dos conflitos por meio da redução de threads ativas no sistema.
 
-As arquiteturas atuais possuem hierarquias de memória complexas com diferentes latências para acessos à memória. Muitos trabalhos que buscam otimizar o desempenho de STM por meio da redução de conflitos não consideram a arquitetura utilizada em suas heurísticas, sendo que bibliotecas atuais de STM são desenvolvidas para arquiteturas UMA e não consideram a distribuição de threads de acordo com a localidade de dados para otimizar o custo de acesso à memória encontrados nas arquiteturas NUMA. Um escalonador transacional que tenha conhecimento sobre a arquitetura pode extrair um melhor desempenho utilizando as informações sobre as áreas de memória acessadas pelas transações. Portanto o escalonador proposto busca ter conhecimento sobre a arquitetura e os dados acessados pela aplicação, para relacioná-los e extrair um bom desempenho sem reduzir o paralelismo do sistema.
+As arquiteturas atuais possuem hierarquias de memória complexas com diferentes latências para acessos à memória. Muitos trabalhos que buscam otimizar o desempenho de STM por meio da redução de conflitos não consideram a arquitetura utilizada em suas heurísticas, sendo que bibliotecas atuais de STM não consideram a distribuição de threads de acordo com a localidade de dados para otimizar o custo de acesso à memória encontrados nas arquiteturas NUMA. Um escalonador transacional que tenha conhecimento sobre a arquitetura pode extrair um melhor desempenho utilizando as informações sobre as áreas de memória acessadas pelas transações. Portanto o escalonador proposto busca ter conhecimento sobre a arquitetura e os dados acessados pela aplicação, para relacioná-los e extrair um bom desempenho sem reduzir o paralelismo do sistema.
 
 \section{Contribuição}
 
-O principal objetivo desta dissertação é prejetar e desenvolver um escalonador de STM NUMA-Aware. O escalonador desenvolvido foi intitulado Lups Transactional Memory Schedule~\emph{(LTMS)}. O LTMS é ativado no início das aplicações de STM e portanto foi dividido em três etapas, onde este contribui com diferentes mecanismos para inicialização da aplicação, coleta de dados e migração de threads conflitantes. A etapa de inicialização busca criar filas de acordo com a aplicação e arquitetura, distribuindo as threads inicialmente para o sistema. A etapa de coleta de dados, entende a arquitetura utilizada, e em tempo de execução coleta as informações sobre os dados acessados pelas threads e transações. A etapa de migração é ativada apenas na ocorrência de conflitos nas transações e busca por meio dos dados obtidos previamente redistribuir a thread conflitante de forma a otimizar sua execução no futuro. Ao contrário de trabalhos anteriores, o LTMS busca reduzir o número de conflitos das aplicações sem reduzir o número de threads ativas na aplicação. Também considera as características da arquitetura utilizada e os acessos à memória em tempo de execução para não onerar a aplicação com um custo maior de latência, para fornecer estas características esta dissertação traz as seguintes contribuições:
+O principal objetivo desta dissertação é projetar e desenvolver um escalonador de STM NUMA-Aware. O escalonador proposto foi intitulado Lups Transactional Memory Schedule~\emph{(LTMS)}. O LTMS é ativado no início das aplicações de STM e portanto foi dividido em três etapas, onde este contribui com diferentes mecanismos para inicialização da aplicação, coleta de dados e migração de \emph{threads} conflitantes. A etapa de inicialização busca criar filas de acordo com a aplicação e arquitetura, distribuindo as \emph{threads} inicialmente para o sistema. A etapa de coleta de dadosé sensivel a arquitetura utilizada, e em tempo de execução coleta as informações sobre os dados acessados pelas \emph{threads} e transações. A etapa de migração é ativada apenas na ocorrência de conflitos nas transações e busca por meio dos dados obtidos previamente redistribuir a thread conflitante de forma a otimizar sua execução no futuro reduzindo o número de conflitos das aplicações sem reduzir o número de \emph{threads} ativas na aplicação. Também considera as características da arquitetura utilizada e os acessos à memória em tempo de execução para não onerar a aplicação com um custo maior de latência, para fornecer estas características esta dissertação traz as seguintes contribuições:
 
 \begin{itemize}
  \item Um mecanismo para leitura da arquitetura e criação de filas com conhecimento sobre os nodos NUMA utilizados, onde cada fila utilizará um único núcleo disponível da arquitetura;
- \item Duas diferentes heurísticas de distribuição inicial de threads e aplicados para melhorar o estudo e compreender o impacto da distribuição inicial de threads em aplicações paralelas;
- \item  Um mecanismo que em tempo de execução coleta informações sobre as threads e armazena os endereços de memória mais utilizados por cada thread, para então mensurar com base nos nodos NUMA utilizados os diferentes custo de acesso à memória; e
- \item Um mecanismo de migração de threads entre as filas de execução, que permite a serialização de threads conflitantes e não reduz o paralelismo da aplicação; e
+ \item Duas diferentes heurísticas de distribuição inicial de \emph{threads} e aplicados para melhorar o estudo e compreender o impacto da distribuição inicial de \emph{threads} em aplicações paralelas;
+ \item  Um mecanismo que em tempo de execução coleta informações sobre as \emph{threads} e armazena os endereços de memória mais utilizados por cada thread, para então mensurar com base nos nodos NUMA utilizados os diferentes custo de acesso à memória;
+ \item Um mecanismo de migração de \emph{threads} entre as filas de execução, que permite a serialização de \emph{threads} conflitantes e não reduz o paralelismo da aplicação; e
  \item Duas heurísticas de migração adicionadas ao escalonador para estudar e compreender o impacto que a redução da latência e o alto índice de conflitos possuem sobre aplicações de STM.
 \end{itemize}
 
 \section{Estrutura do Texto}
 
-O trabalho está organizado da seguinte forma. O Capítulo~\ref{chapter::stm} apresenta o conceito de Memória Transacional e suas características, a biblioteca TinySTM e conjunto de benchmarks STAMP utilizados neste trabalho. No Capítulo~\ref{chapter::escalonadores} abordamos os trabalhos relacionados, às suas características e classificações. O Capítulo~\ref{chapter::ltms} explica a implementação realizada no escalonador LTMS proposto para esta dissertação. No Capítulo~\ref{chapter::experimentos} é apresentada a metodologia e os resultados obtidos nos testes. Por fim, o Capítulo~\ref{chapter::conclusao} apresenta as considerações finais e trabalhos futuros.
+O trabalho está organizado da seguinte forma. O Capítulo~\ref{chapter::stm} apresenta o conceito de Memória Transacional e suas características, a biblioteca TinySTM e conjunto de \emph{benchmarks} STAMP utilizados neste trabalho. No Capítulo~\ref{chapter::escalonadores} abordamos os trabalhos relacionados, às suas características e classificações. O Capítulo~\ref{chapter::ltms} explica o escalonador proposto para esta dissertação. No Capítulo~\ref{chapter::experimentos} é apresentada a metodologia e os resultados obtidos nos testes. Por fim, o Capítulo~\ref{chapter::conclusao} apresenta as considerações finais e trabalhos futuros.
 
 \chapter{Memórias Transacionais}
 \label{chapter::stm}
@@ -215,9 +216,9 @@ O versionamento de dados é responsável pelo gerenciamento das versões dos dad
 Existem dois tipos de versionamento de dados:
 
 \begin{itemize}
-\item \textbf{Versionamento Adiantado}: como pode ser visto na Figura~\ref{figuraversionamento}~(a), o valor modificado durante a transação é armazenado direto na memória e o valor inicial é armazenado em um \emph{undo log}, para que no caso de cancelamento da transação o valor inicial seja restaurado na memória.
+\item \textbf{Versionamento Adiantado}: como pode ser visto na Figura~\ref{figuraversionamento}~(a), o valor modificado durante a transação é armazenado direto na memória e o valor inicial é armazenado em um \emph{undo log}, para que no caso de \emph{abort} da transação o valor inicial seja restaurado na memória.
 
-\item \textbf{Versionamento Atrasado}: como pode ser visto na Figura~\ref{figuraversionamento}~(b) neste versionamento o valor modificado durante a transação é armazenado em um \emph{buffer} e o valor inicial é mantido na memória até que aconteça um \emph{commit} na transação, onde o valor armazenado no \emph{buffer} é escrito na memória. Caso aconteça o cancelamento na transação, o valor do \emph{buffer} é descartado.
+\item \textbf{Versionamento Atrasado}: como pode ser visto na Figura~\ref{figuraversionamento}~(b) neste versionamento o valor modificado durante a transação é armazenado em um \emph{buffer} e o valor inicial é mantido na memória até que aconteça um \emph{commit} na transação, onde o valor armazenado no \emph{buffer} é escrito na memória. Caso aconteça o \emph{abort} na transação, o valor do \emph{buffer} é descartado.
 \end{itemize}
 
 \section{Detecção de Conflito}
@@ -227,7 +228,7 @@ Mecanismos de detecção de conflitos verificam a existência de operações con
 Da mesma forma que o versionamento de dados, a detecção de conflito também pode ser de dois tipos:
 
 \begin{itemize}
-\item \textbf{Detecção de Conflitos Adiantado}: ocorrem no momento em que duas transações acessam um mesmo dado e uma delas faz uma operação de escrita. Essa operação de escrita é detectada e então uma transação é abortada. Neste tipo de detecção pode ocorrer um problema chamado de \emph{livelock}, quando duas transações ficam cancelando-se, desta forma, a execução do programa não progride. A Figura~\ref{figuradeteccaoadiantado} mostra como é feita a detecção de conflitos adiantado.
+\item \textbf{Detecção de Conflitos Adiantado}: ocorrem no momento em que duas transações acessam um mesmo dado e uma delas faz uma operação de escrita. Essa operação de escrita é detectada e então uma transação é abortada. Neste tipo de detecção pode ocorrer um problema chamado de \emph{livelock}, quando duas transações geram aborts, desta forma, a execução do programa não progride. A Figura~\ref{figuradeteccaoadiantado} mostra como é feita a detecção de conflitos adiantado.
 
 O Caso~1, mostra a execução sem conflitos, onde as duas transações são executadas sem problemas. Já o Caso~2, mostra o que acontece quando ocorre um conflito, onde T1 lê A e logo depois T2 escreve em A, então o conflito é detectado e T1 é abortada, após ser efetivada T2, a transação T1 consegue ler A sem problema de conflito. Por fim, o Caso~3 mostra a situação de \emph{livelock}, onde as duas transações tentam ler e escrever em A, assim as duas acabam sempre se abortando.
 
@@ -239,9 +240,9 @@ O Caso~1, mostra a execução sem conflitos, onde as duas transações são exec
 \end{figure}
 
 
-\item \textbf{Detecção de Conflitos Atrasado}: Este tipo de detecção de conflito ocorre no final da transação.  Antes da transação ser efetuada, é verificado se ocorreu um conflito. Caso tenha ocorrido, a transação é cancelada, se não é efetivada. Para transações muito grandes não é recomendado este tipo de detecção, pois uma transação grande pode ser abortada várias vezes por transações pequenas, assim gastando tempo de processamento desnecessário, este problema se chama \emph{starvation}. A Figura~\ref{figuradeteccaoatrasado} mostra como é feita a detecção de conflitos atrasados.
+\item \textbf{Detecção de Conflitos Atrasado}: Este tipo de detecção de conflito ocorre no final da transação.  Antes da transação ser efetuada, é verificado se ocorreu um conflito. Caso tenha ocorrido, a transação é abortada, se não é efetivada. Para transações muito grandes não é recomendado este tipo de detecção, pois uma transação grande pode ser abortada várias vezes por transações pequenas, assim gastando tempo de processamento desnecessário, este problema se chama \emph{starvation}. A Figura~\ref{figuradeteccaoatrasado} mostra como é feita a detecção de conflitos atrasados.
 
-O Caso~1, mostra as transações acessando dados diferentes, não ocasionando conflitos. No Caso~2, T2 lê A que é escrita por T1. A T2 só nota o conflito quando T1 é efetivado. Logo depois de notar o conflito, T2 é abortada. No Caso~3 não ocorre nenhum conflito, pois T1 lê A antes de T2 escrever. O Caso~4 mostra a situação em que, após ser cancelada, T1 volta a executar.
+O Caso~1, mostra as transações acessando dados diferentes, não ocasionando conflitos. No Caso~2, T2 lê A que é escrita por T1. A T2 só nota o conflito quando T1 é efetivado. Logo depois de notar o conflito, T2 é abortada. No Caso~3 não ocorre nenhum conflito, pois T1 lê A antes de T2 escrever. O Caso~4 mostra a situação em que, após ser abortada, T1 volta a executar.
 \end{itemize}
 
 \begin{figure}[!htp]
@@ -256,7 +257,7 @@ Para solucionar o problema de qual transação continuará executando quando oco
 
 \section{TinySTM}
 
-A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C e C++. Seu algoritmo é baseado em outros algoritmos de STM como o TL2~(\emph{Transactional Locking} 2)~\cite{tl2}. Ela é uma biblioteca utilizada para escrever aplicativos que usam memórias transacionais para sincronização, em substituição aos tradicionais \emph{locks}.
+A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C e C++. Ela é uma biblioteca utilizada para escrever aplicativos que usam memórias transacionais para sincronização, em substituição aos tradicionais \emph{locks}.
 
 \subsection{Sincronização e Versionamento}
 
@@ -280,7 +281,7 @@ A \emph{tinySTM} apresenta três estratégias de versionamento distintas que pod
 \begin{itemize}
 \item \textbf{Write\_Back\_ETL}: esta estratégia implementa o versionamento atrasado com \emph{encounter-time locking}, isso é, o \emph{lock} é adquirido após ocorrer uma operação de escrita e atualiza o \emph{buffer}. O valor é escrito na memória no momento do \emph{commit} da transação;
 
-\item \textbf{Write\_Back\_CTL}: esta estratégia implementa o versionamento atrasado com \emph{commit-time locking}, isto é, ele adquire o \emph{lock} antes de ocorrer o um \emph{commit} e atualizar o \emph{buffer}. Assim como no \emph{Write-Back-ETL} o valor é escrito na memória no momento do \emph{commit} da transação;
+\item \textbf{Write\_Back\_CTL}: esta estratégia implementa o versionamento atrasado com \emph{commit-time locking}, isto é, ele adquire o \emph{lock} antes de ocorrer um \emph{commit} e atualizar o \emph{buffer}. Assim como no \emph{Write-Back-ETL} o valor é escrito na memória no momento do \emph{commit} da transação;
 
 \item \textbf{Write\_Through}: esta estratégia implementa o versionamento adiantado com \emph{encounter-time locking}, isto é, o valor é escrito direto na memória e mantém um \emph{undo log}, caso ocorra um \emph{abort} na transação é possível restaurar o valor anterior na memória.
 \end{itemize}
@@ -309,7 +310,7 @@ A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, e
 \begin{itemize}
   \item \textbf{CM\_Suicide}: nesta estratégia a transação que detecta o conflito é abortada imediatamente;
 
-  \item \textbf{CM\_Delay}: esta estratégia assemelhasse a \emph{CM\_Suicide}, porém, espera até que a transação que gerou o \emph{abort} tenha liberado o \emph{lock}, então reinicia a transação. Isto porque por intuição a transação que foi abortada irá tentar adquirir o mesmo \emph{lock} novamente, provavelmente falhando em mais de uma tentativa. Está estratégia aumenta as chances de que a transação tenha sucesso sem gerar um grande número de \emph{aborts}, melhorando o tempo de execução do programa;
+  \item \textbf{CM\_Delay}: esta estratégia assemelhasse a \emph{CM\_Suicide}, porém, espera-se até que a transação que gerou o \emph{abort} tenha liberado o \emph{lock}, então reinicia a transação. Isto porque por intuição a transação que foi abortada irá tentar adquirir o mesmo \emph{lock} novamente, provavelmente falhando em mais de uma tentativa. Esta estratégia aumenta as chances de que a transação tenha sucesso sem gerar um grande número de \emph{aborts}, melhorando o tempo de execução do programa;
 
   \item \textbf{CM\_Backoff}: também parecida com a \emph{CM\_Suicide}, esta estratégia espera um tempo randômico para reiniciar a transação. Este tempo de espera é escolhido uniformemente ao acaso em um intervalo cujo tamanho aumenta exponencialmente a cada reinicialização;
 
@@ -438,7 +439,7 @@ Para isto, cada thread é representado internamente por um Registro de Contexto 
 
 Assim, o LUTS dispara um RCE por núcleo, e utiliza a fila para não disparar mais RCEs que núcleos disponíveis. Cada REC disparado é convertido em uma thread de sistema que executa um conjunto de transações.
 
-Na tentativa de evitar conflitos, o LUTS apresenta uma forma dinâmica para solucioná-los, considerando transações curtas e transações longas. Para definir o tamanho da transação é utilizada a contagem de ciclos da mesma, onde a partir de 100 mil ciclos temos uma transação longa.
+Na tentativa de evitar conflitos, o LUTS apresenta uma forma dinâmica para solucioná-los, considerando transações curtas e transações longas. Para definir o tamanho da transação é utilizada a contagem de ciclos da mesma, onde a partir de 100 mil ciclos é caracterizada uma transação longa.
 
 Para transações curtas, a heurística utilizada é similar a do ATS, o escalonador calcula a intensidade de conflito da transação e serializa esta quando o cálculo ultrapassa um limiar. Porém o LUTS escolhe outra transação para substituir a atual.
 
@@ -454,11 +455,11 @@ Quando uma transação realiza um commit ou abort o escalonador se encarrega de 
 
 Para evitar percorrer a conflictTable no início de cada transação o LUTS percorre a bestTx e seleciona qual transação deve executar. Quando a conflictTable é atualizada o escalonador atualiza a bestTx.
 
-\section{Shirink}
+\section{Shrink}
 
-\emph{Shirink}~\cite{shirink2009} apresenta um escalonador que busca minimizar a ocorrência de aborts com base nos conjuntos de leituras e escritas ocorridos em cada thread.
+\emph{Shrink}~\cite{shrink2009} apresenta um escalonador que busca minimizar a ocorrência de aborts com base nos conjuntos de leituras e escritas ocorridos em cada thread.
 
-O escalonador é baseado em predição e usa como heurística os acessos à memória das transações executadas anteriormente. Para evitar overhead em sua execução o Shirink avalia os acessos apenas se existir uma alta contenção no sistema.
+O escalonador é baseado em predição e usa como heurística os acessos à memória das transações executadas anteriormente. Para evitar \emph{overhead} em sua execução o Shrink avalia os acessos apenas se existir uma alta contenção no sistema.
 
 No início de cada transação o escalonador avalia se existe a relação entre commit e abort é superior a um limiar predefinido, se esse valor for superior ao limiar o escalonador considera que o sistema possui uma alta contenção e ativa a heurística para serializar as transações em execução.
 
@@ -480,7 +481,7 @@ Se uma transação efetua um abort o escalonador marca esta transação como Ver
 
 Caso haja conflito entre a transação e alguma VIT, o commit é adiado por um tempo pré-determinado. Assim, o escalonador tenta garantir que as VITs não abortem novamente. Caso não haja conflito o commit é realizado.
 
-Nas operações atômicas curtas a heurística evita a validação com base na intersecção para não adicionar overhead desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde é utilizada uma métrica de decisão para serializar as transações.
+Nas operações atômicas curtas a heurística evita a validação com base na intersecção para não adicionar \emph{overhead} desnecessário. Sendo assim, ela apresenta uma ideia similar a do ATS, onde é utilizada uma métrica de decisão para serializar as transações.
 
 Para definir quando uma transação será serializada, o escalonador utiliza um valor calculado em tempo de execução denominado Tempo Perdido (TP). Cada operação atômica possui seu próprio TP, que é calculado com base em um valor pré-definido e a quantidade de reexecução da transação e seu TP anterior.
 
@@ -492,42 +493,40 @@ Uma operação atômica é considerada longa quando o tamanho médio do seu conj
 
 \section{STMap}
 
-O \emph{STMap}~\cite{pasqualin2020online} utiliza o mecanismo de sharing-aware mapping para aplicações STMs. Onde esse mecanismo fornece dados sobre a aplicação e arquitetura permitindo executar as threads concorrentes no mesmo nodo NUMA para otimizar a execução da aplicação.
+O \emph{STMap}~\cite{pasqualin2020online} utiliza o mecanismo de sharing-aware thread mapping para aplicações STMs. Esse mecanismo usa informações sobre quais threads estão acessando os mesmos dados compartilhados e tenta mapear de forma que as threads fiquem próximas na arquitetura onde eka está sendo executada.
 
-Em tempo de execução o STMap coleta dados sobre os comportamentos compartilhados entre as threads, esses dados são usados para calcular um mapeamento otimizado de threads para núcleos e migra as threads em execução.
+Em tempo de execução o STMap coleta dados sobre os acessos compartilhados entre as threads, esses dados são usados para calcular um mapeamento que tenta deixar estas threads próximas na arquitetura para compartilhar cache, visto que acessam um mesmo dado compartilhado.
 
 A coleta de dados é realizada em tempo de execução quando ocorre uma escrita ou leitura dentro de uma transação, esse endereço de leitura ou escrita é comparado com os endereços utilizados pelas outras transações. Se esse endereço é usado por outra transação o STMap incrementa uma matriz de comunicação com essas informações.
 
-A matriz de comunicação possui como tamanho o mesmo número de threads em execução. Supondo que a transação t1 executada pela thread T1 manipule o mesmo endereço que a transação t2 da thread T2, a transação t1 descobre o ID da thread T1 e da thread T2 e incrementa o valor da matriz de comunicação nas posições respectivas aos IDs.
+A matriz de comunicação possui como tamanho o mesmo número de threads em execução. Supondo que a transação tx executada pela thread T1 manipule o mesmo endereço que a transação ty da thread T2, a transação tx descobre o ID da thread T1 e da thread T2 e incrementa o valor da matriz de comunicação nas posições respectivas aos IDs.
 
 Essa matriz é utilizada para caracterizar as transações e mapear a arquitetura em relação às threads, assim sendo possível agrupar as threads por nodos de processamento para otimizar a execução e aproveitar ao máximo a coerência de cache.
 
-\chapter{LTMS - Lups Transactional Memory Scheduler}
-\label{chapter::ltms}
-
-Memórias transacionais fornecem um nível maior de abstração para o desenvolvimento de programas paralelos, e conforme visto no capítulo anterior, existem vários trabalhos que focam em desenvolver escalonadores que compreendem a aplicação para extrair melhor desempenho.
-
-Porém, os escalonadores atuais não consideram as diferenças entre as arquiteturas paralelas existentes. O escalonador LTMS, proposto neste trabalho, se propõe a avaliar a aplicação e a arquitetura em tempo de execução para tirar máximo proveito do paralelismo existente.
-
-As duas principais arquiteturas paralelas que serão abordadas na proxima seção são, arquiteturas UMA e arquiteturas NUMA. Os escalonadores atuais assim como as bibliotecas de STM são pensados para arquiteturas UMA não considerando as diferenças quando executadas em NUMA.
-
-O LTMS foi desenhado para acompanhar toda execução de uma aplicação que utiliza STM. Sendo assim, inicialmente ele prove filas de execução e implementa heurísticas de distribuição de threads entre as filas no início da aplicação. Além disso, para entender a arquitetura são coletados os endereços de escrita e leitura, e os números de aborts e commits das threads e transações em tempo de execução, estes dados são utilizados nas heurísticas que definem quando uma thread deve ser migrada para reduzir latência de acesso a memória ou reduzir a contenção gerada na aplicação.
-
-\section{\textbf{Motivação}}
+\section{Discussão}
 
 Máquinas \emph{NUMA} têm a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o gargalo de acesso ao barramento. Sua arquitetura é feita para que os processadores não utilizem o mesmo barramento de acesso à memória como é feito em arquiteturas \emph{UMA}.
 
 As arquiteturas \emph{NUMA} possuem múltiplos núcleos dispostos em conjuntos de processadores (Nodos), a memória é fisicamente composta por vários bancos de memória, podendo estar cada um deles vinculados a um Nodo e a um espaço de endereçamento compartilhado. Quando o processador acessa a memória que está vinculada a si, diz-se que houve um acesso local. Se o acesso for à memória de outro processador, diz-se que ocorreu um acesso remoto. Os acessos remotos são mais lentos que os acessos locais, uma vez que é necessário passar pela rede de interconexão para que se consiga chegar ao dado localizado na memória remota~\cite{Rodolfo:2014}.
 
-Os escalonadores de STM atuais buscam reduzir o número de conflitos para reduzir a quantidade de reexecução das transações. Para isto estes escalonadores implementam filas de execução e migração de threads que tornam serial a execução das transações conflitantes, como nos trabalhos apresentados em~\cite{shirink2009},~\cite{Nicacio2012}, e~\cite{rito2015}.
+Os escalonadores de STM atuais buscam reduzir o número de conflitos para reduzir a quantidade de reexecução das transações. Para isto estes escalonadores implementam filas de execução e migração de threads que tornam serial a execução das transações conflitantes, como nos trabalhos apresentados em~\cite{shrink2009},~\cite{Nicacio2012}, e~\cite{rito2015}.
 
 Algoritmos NUMA-Aware avaliam as diferentes características da arquitetura que a aplicação está executando. Possuindo conhecimento das diferentes latências de acesso à memória, esses algoritmos podem extrair o máximo de recurso da máquina. Assim, alguns algoritmos NUMA-Aware avaliam os conjuntos de leitura e escrita das aplicações para decidir qual é o melhor nodo de execução para a thread, ou quando deve ser migrado a página de memória. Outros utilizam uma matriz de comunicação para fazer um mapeamento de threads e assim otimizar sua execução, como é feito em~\cite{pasqualin2020thread}.
 
-Os escalonadores de STM atuais não consideram a arquitetura e seu custo de acesso à memória para serializar as execuções. Alguns escalonadores de STM avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos, como é visto em~\cite{shirink2009}.
+Os escalonadores de STM atuais não consideram a arquitetura e seu custo de acesso à memória para serializar as execuções. Alguns escalonadores de STM avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos, como é visto em~\cite{shrink2009}.
 
 O LTMS, diferente de outros trabalhos, é um escalonador que avalia as características da arquitetura, e em tempo de execução monta uma matriz de comunicação com base nas leituras e escritas realizadas pelas threads. Está matriz de comunicação é utilizada para avaliar o custo de acesso à memória e migrar as threads em execução entre as filas, buscando diminuir os números de conflitos por meio da serialização das transações e otimizar a execução aproveitando a melhor distribuição das tarefas na arquitetura NUMA, reduzindo assim a latência de acesso à memória.
 
-\section{\textbf{Escalonador}}
+\chapter{LTMS - Lups Transactional Memory Scheduler}
+\label{chapter::ltms}
+
+Memórias transacionais fornecem um nível maior de abstração para o desenvolvimento de programas paralelos, e conforme descrito no capítulo~\ref{chapter::escalonadores}, existem vários trabalhos que focam em desenvolver escalonadores que compreendem a aplicação para extrair melhor desempenho.
+
+Porém, os escalonadores atuais não consideram as diferenças entre as arquiteturas paralelas existentes. O escalonador LTMS, proposto neste trabalho, se propõe a avaliar a aplicação e a arquitetura em tempo de execução para tirar máximo proveito do paralelismo existente.
+
+O LTMS foi desenhado para acompanhar toda execução de uma aplicação que utiliza STM. Sendo assim, inicialmente ele provê filas de execução e implementa heurísticas de distribuição de threads entre as filas no início da aplicação. Além disso, para entender a aplicação são coletados os endereços de escrita e leitura, e os números de aborts e commits das threads e transações em tempo de execução, estes dados são utilizados nas heurísticas que definem quando uma thread deve ser migrada para reduzir latência de acesso a memória ou reduzir a contenção gerada na aplicação.
+
+\section{Escalonador}
 
 O LTMS é um escalonador de STM NUMA-Aware que identifica as características da arquitetura e do programa em tempo de execução para extrair um desempenho melhor da máquina utilizada. O escalonador opera em três estágios, sendo eles, a inicialização do sistema, a coleta de dados em tempo de execução e a migração de threads.
 
@@ -537,12 +536,10 @@ O LTMS é um escalonador de STM NUMA-Aware que identifica as características da
  \item Migração de Threads: Quando transações abortam, utiliza heurísticas baseadas nos dados coletados, para decidir se as threads devem ser migradas para outras filas.
 \end{itemize}
 
-% O LTMS foi desenvolvido de forma a permitir que novos módulos com diferentes heurísticas sejam acoplados a ele, permitindo explorar diferentes alternativas para heurísticas de distribuição de threads ou migração de threads.
-
 \subsection{Inicialização do sistema}
 \label{inicializacao}
 
-Como podemos ver na Figura~\ref{ltms_generic} o escalonador LTMS é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base nas threads da aplicação e no número de cores disponíveis. O LTMS fornece uma biblioteca de threads integrada a STM que provê todos os recursos necessários para o desenvolvimento das aplicações, quando uma thread é criada ela fica disponível para o escalonador distribuir ela entre as filas com base em uma Heurística de distribuição.
+Como é possivel visualizar na Figura~\ref{ltms_generic} o escalonador LTMS é inicializado junto com a aplicação, o escalonador é responsável por ler as característica da arquitetura e criar filas de execução com base nas threads da aplicação e no número de \emph{cores} disponíveis. O LTMS fornece uma biblioteca de threads integrada a STM que provê todos os recursos necessários para o desenvolvimento das aplicações, quando uma thread é criada ela fica disponível para o escalonador distribuir ela entre as filas com base em uma Heurística de distribuição.
 
 \begin{figure}[htbp]
 \centering \includegraphics[scale=.25]{images/ltms_generic}
@@ -550,12 +547,12 @@ Como podemos ver na Figura~\ref{ltms_generic} o escalonador LTMS é inicializado
 \label{ltms_generic}
 \end{figure}
 
-Ao inicializar uma aplicação o número de threads utilizados vai ser passado para o escalonador na chamada de sua biblioteca de threads, assim, o LTMS compara o número de threads da aplicação com a quantidade de cores da máquina, se o número de threads da aplicação for maior que o número de cores o LTMS cria uma fila para cada core, como visto na Figura~\ref{queue_core}.
+Ao inicializar uma aplicação o número de threads utilizados vai ser passado para o escalonador na chamada de sua biblioteca de threads, assim, o LTMS compara o número de threads da aplicação com a quantidade de \emph{cores} da máquina, se o número de threads da aplicação for maior que o número de \emph{cores} o LTMS cria uma fila para cada core, como visto na Figura~\ref{queue_core}.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[scale=.65]{images/Queue_core.png}
-\caption{Criação das filas de execução com base nos cores}
+\caption{Criação das filas de execução com base nos \emph{cores}}
 \label{queue_core}
 \end{figure}
 
@@ -569,13 +566,13 @@ Se a quantidade de threads da aplicação for menor que o número de cores dispo
 % \label{queue_thread}
 % \end{figure}
 
-Após a criação das filas de execução, conforme apresentado acima, as threads criadas na aplicação são distribuídas com base em uma heurística de distribuição, o escalonador foi desenhado para que diferentes heurísticas possam ser desenvolvidas e acopladas a ele, permitindo testar diferentes formas de distribuição de threads. Para este trabalho foram implementadas duas heurísticas de distribuição.
+Após a criação das filas de execução, conforme descrito, as threads criadas na aplicação são distribuídas com base em uma heurística de distribuição, o escalonador foi desenhado para que diferentes heurísticas possam ser desenvolvidas e acopladas a ele, permitindo testar diferentes formas de distribuição de threads. Para este trabalho foram implementadas duas heurísticas de distribuição.
 
 A primeira heurística implementada, denominada Sequential, distribui uma thread por fila até a conclusão de todas threads disponíveis. A Figura~\ref{sequential} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
 
 O escalonador executará a primeira fase de distribuição, colocando uma thread para cada fila existente. Após a primeira fase o escalonador verifica se ainda possui threads a serem distribuídas, caso haja threads o LTMS repete a distribuição em uma segunda fase, até acabarem as threads.
 
-Neste cenário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fica com as threads t1 e t3. Veja que o LTMS alocou a thread t0 em Q0 e depois alocou t1 em Q1, então voltou a execução para alocar t2 em Q0 e t3 em Q1.
+Neste cenário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fica com as threads t1 e t3. Importante destacar que o LTMS alocou a thread t0 em Q0 e depois alocou t1 em Q1, então voltou a execução para alocar t2 em Q0 e t3 em Q1.
 
 \begin{figure}[htbp]
 \centering
@@ -584,11 +581,11 @@ Neste cenário a Fila intitulada Q0 fica com as threads t0 e t2, e a fila Q1 fic
 \label{sequential}
 \end{figure}
 
-A segunda heurística, denominada Chunks, distribui chunks de threads por fila, sendo o tamanho do chunk determinado pela razão entre a quantidade de threads e a quantidade de filas. No exemplo apresentado na Figura~\ref{chunks} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
+A segunda heurística, denominada Chunks, distribui conjuntos de threads por fila, sendo o tamanho do conjunto é determinado pela razão entre a quantidade de threads e a quantidade de filas. No exemplo apresentado na Figura~\ref{chunks} temos o mesmo cenário de filas, cores e threads apresentados anteriormente.
 
 Na primeira fase de distribuição o escalonador aloca duas threads, o primeiro chunk, na primeira fila, após isto a segunda fase aloca o próximo chunk na segunda fila. Se existir mais chunks o escalonador segue sua distribuição entre as filas disponíveis. Caso haja um número impar de threads para distribuir o escalonador a agrupa as threads restantes em um chunk que será alocado na fila em que a distribuição parou.
 
-Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3. Veja que o primeiro chunk é composto por t0 e t1 e t2 e t3 representam o segundo chunk.
+Neste cenário o LTMS aloca na fila Q0 as threads t0 e t1, e na fila Q1 as threads t2 e t3. Importante notar que o primeiro chunk é composto por t0 e t1 e t2 e t3 representam o segundo chunk.
 
 \begin{figure}[htbp]
 \centering
@@ -607,10 +604,11 @@ Os dados coletados sobre os acessos à memória fornecem insumos para duas matri
 
 A matriz de comunicação fornece insumos sobre a quantidade eventos de comunicação entre dois threads, onde cada posição da matriz representa a quantidade de comunicação entre pares de threads. Quando dois threads acessam o mesmo endereço, é gerado o evento, e a matriz guarda a quantidade de enventos de comunicação que foram gerados.
 
-Para evitar overhead a coleta de dados da matriz de comunicação ocorre por amostragem, neste trabalho utilizamos 1 a cada 100 acessos por thread para acionar o contador, esta abordagem é baseada nos experimentos apresentados nos trabalhos~\cite{pasqualin2020online} e~\cite{pasqualin2020thread}. 
+Para evitar \emph{overhead} a coleta de dados da matriz de comunicação ocorre por amostragem, neste trabalho utilizamos 1 a cada 100 acessos por thread para acionar o contador, esta abordagem é baseada nos experimentos apresentados nos trabalhos~\cite{pasqualin2020online}. 
 
 % Matriz de endereços: como tu calcula o endereço mais acessado pelas duas threads? Acho que não tem como pois a matriz de comunicação não guarda todas as threads. Eu não entendi muito bem essa história da fila de endereços que é ordenada.
 
+\todo{um flowchart fig25 pg79 do douglas}
 A matriz de endereços por sua vez armazena a informação de quais endereços foram acessados pelas threads. Quando duas threds acessam o mesmo endereço de memória, um evento é disparado armazenando o número de acesso por endereço na matriz. Para entender qual é o endereço mais acessado cada posição da matriz utiliza um array que possui uma estrutura de chave e valor. Esta estrutura utiliza como chave o endereço de memória acessado e o valor a quantidade de acessos que este endereço recebeu.
 
 % O evento disparado pelo acesso em comum utiliza este array para verificar e armazenar na matriz o endereço com maior valor.
@@ -690,13 +688,13 @@ Migrando a thread para uma fila com latência menor que a atual, o LTMS busca re
 
 \section{Conclusão}
 
-Como visto na seção anterior o LTMS é um escalonador NUMA-Aware de três etapas, a primeira se encarrega de inicializar a aplicação criando filas de execução e distribuindo as threads entre estas filas, a segunda etapa coleta dados sobre a arquitetura e a aplicação em tempo de execução para otimizar a aplicação por meio da serialização das threads conflitantes, a terceira etapa se encarrega de avaliar se uma thread que abortou deve ser serializada, a serialização ocorre por meio da migração da thread que realizou o abort para uma fila que possua as mesmas características de acesso à memória.
+Como visto neste capítulo o LTMS é um escalonador NUMA-Aware de três etapas, a primeira se encarrega de inicializar a aplicação criando filas de execução e distribuindo as threads entre estas filas, a segunda etapa coleta dados sobre a arquitetura e a aplicação em tempo de execução para otimizar a aplicação por meio da serialização das threads conflitantes, a terceira etapa se encarrega de avaliar se uma thread que abortou deve ser serializada, a serialização ocorre por meio da migração da thread que realizou o abort para uma fila que possua as mesmas características de acesso à memória.
 
 O escalonador permite a criação de diferentes heurísticas para avaliar seu comportamento de distribuição de threads na fase inicial e na migração de threads na ocorrência de aborts. Estas heurísticas podem ser criadas e acopladas ao LTMS para melhorar o fluxo de execução das aplicações e facilitar estudos futuros.
 
-O LTMS é um escalonador reativo que realiza a fase de migração de threads a partir da ocorrência de um abort, os dados coletados para o sistema de migração são avaliados por threads, isto permite a comparação entre as características dos acessos à memória e o índice de contenção gerado por cada thread. Assim como o LTMS o Shirink~\cite{shirink2009} avalia as informações em tempo de execução com base nas threads, porém este não avalia as características de acesso à memória.
+O LTMS é um escalonador reativo que realiza a fase de migração de threads a partir da ocorrência de um abort, os dados coletados para o sistema de migração são avaliados por threads, isto permite a comparação entre as características dos acessos à memória e o índice de contenção gerado por cada thread. Assim como o LTMS o Shrink~\cite{shrink2009} avalia as informações em tempo de execução com base nas threads, porém este não avalia as características de acesso à memória.
 
-Algoritmos como LUTS~\cite{Nicacio2012} utilizam a migração para reduzir o índice de contenção, porém este algoritmo realiza a migração para uma única fila, serializando a aplicação sem considerar as características de acesso à memória. Outros algoritmos, como o ATS~\cite{ats2008} e o Shirink~\cite{shirink2009}, realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas utiliza totalmente o recurso disponível na arquitetura.
+Algoritmos como LUTS~\cite{Nicacio2012} utilizam a migração para reduzir o índice de contenção, porém este algoritmo realiza a migração para uma única fila, serializando a aplicação sem considerar as características de acesso à memória. Outros algoritmos, como o ATS~\cite{ats2008} e o Shrink~\cite{shrink2009}, realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas utiliza totalmente o recurso disponível na arquitetura.
 
 A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais características do LTMS e os escalonadores apresentados neste trabalho, a tabela busca entender as diferenças que o escalonador fornece para aplicações paralelas que utilizam STM.
 
@@ -712,7 +710,7 @@ A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais c
  \begin{tabular}{l|l|l|l|l|l|l}
  \hline
  Escalonadores & LTMS & ATS & Shrink & LUTS & ProVIT & STMap \\ \hline %escalonadores
- Distribuição inicial de threads & Sim & Não & Não & Não & Não & Sim \\
+ Distribuição inicial de threads & Sim & Não & Não & Não & Não & Não \\
  Coleta de dados por threads & Sim & Não & Sim & Sim & Sim & Sim \\
  Migração entre filas & Sim & Não & Não & Sim & Não & Não \\
  Avalia a arquitetura  & Sim & Não & Não & Não & Não & Sim \\
@@ -752,12 +750,15 @@ A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais c
 \chapter{Experimentos}
 \label{chapter::experimentos}
 
+\todo{tem uma seção sobre maquina e uma sobre os parametros?}
 Para este trabalho foi desenvolvido um escalonador de STM NUMA-Aware, intitulado LTMS, que funciona em três etapas. Para validação, o escalonador LTMS foi desenvolvido em linguagem C, e aplicado à biblioteca de STM TinySTM em sua versão 1.0.5, e foram rodados experimentos com o conjunto de benchmarks STMAP em sua versão 0.9.10.
 
+\todo{descrever nodos numa... pg112 douglas e característica do xeon}
 Os testes foram rodados em uma máquina de arquitetura NUMA com processador Intel Xeon E5-4650 com 96 núcleos e 192 threads em \emph{hyper threading} e 468 Gb de memória RAM, utilizando com sistema operacional Linux Debian kernel 4.19.0-8-amd64  e gcc 8.3.0.
 
 Como comentado anteriormente o LTMS permite que heurísticas para distribuição de threads e heurísticas para migração de threads sejam desenvolvidas e acopladas a ele de maneira simples para que estudos possam ser realizados, neste trabalho foi desenvolvido duas heurísticas de distribuição e duas heurísticas de migração. Para obter os resultados do LTMS foram rodadas quatro baterias de testes com as seguintes configurações, LTMS com distribuição Sequential e migração Threshold, LTMS com distribuição Sequential e migração Latency, LTMS com distribuição Chunks e migração Threshold, e LTMS com distribuição Chunks e migração Latency. Para comparar o desempenho do escalonador LTMS, foi executada uma bateria de teste com a TinySTM 1.0.5 sem modificações.
 
+\todo{tabela com os inputs dos benchmarks}
 Cada bateria de teste consiste em 30 execuções de cada benchmark do conjunto STAMP, para os cenários de 1, 2, 4, 8, 16, 32, 64, 128, 256, e 512 threads. A seção~\ref{resultados} mostra os resultados obtidos com os experimentos.
 
 \section{Resultados}
@@ -765,9 +766,13 @@ Cada bateria de teste consiste em 30 execuções de cada benchmark do conjunto S
 
 Para validação deste trabalho foi avaliado o desempenho da implementação em arquitetura NUMA. Máquinas NUMA têm a vantagem de agregar maior paralelismo ao adicionar mais processadores sem aumentar o gargalo de acesso ao barramento. Sua principal característica é o tempo não uniforme de acesso à memória. Nestes experimentos utilizamos o processador Intel Xeon E5-4650 com 96 núcleos e 192 threads em \emph{hyper threading}, os experimentos rodaram com cenários de até 512 threads, sendo assim os testes com 256 e 512 threads ultrapassam o limite de threads em \emph{hyper threading} da máquina utilizada.
 
+\subsection{Tempo de execução}
+
 As Figuras~\ref{temp} e~\ref{temp2} apresentam os resultados com tempo de execução em segundos para os benchmarks testados utilizando todas configurações heurísticas para os cenários de 1 a 512 threads. Temos como base de comparação os resultados obtidos com a TinySTM. Para estes experimentos o LTMS apresentou na maioria dos casos um melhor tempo de execução quando comparado a TinySTM. O melhor ganho de desempenho obtido foi para o experimento Intruder de configuração Latency-Sequential com 512 threads que obteve 96\% de redução em seu tempo de execução.
 
-O experimento Bayes~\ref{Bayes} possui um comportamento não determinístico e não é considerado adequado para comparação do tempo de execução~\cite{Ruan:2014}. Entretanto este também é apresentado neste trabalho, onde mostra melhor tempo de execução para a TinySTM que o escalonador LTMS na maioria dos cenários de threads. O teste com 4 threads com a configuração Threshold-Sequential apresentou o pior resultado obtendo 164\% de tempo acima da TinySTM. O LTMS também apresentou algumas reduções no tempo de execução quando comparado a TinySTM, o teste Threshold-Chunks obteve uma redução de 46\% no tempo de execução.
+O experimento Bayes~\ref{Bayes} possui um comportamento não determinístico e não é considerado adequado para comparação do tempo de execução~\cite{Ruan:2014}.
+
+% Entretanto este também é apresentado neste trabalho, onde mostra melhor tempo de execução para a TinySTM que o escalonador LTMS na maioria dos cenários de threads. O teste com 4 threads com a configuração Threshold-Sequential apresentou o pior resultado obtendo 164\% de tempo acima da TinySTM. O LTMS também apresentou algumas reduções no tempo de execução quando comparado a TinySTM, o teste Threshold-Chunks obteve uma redução de 46\% no tempo de execução.
 
 No experimento Intruder~\ref{Intruder} o LTMS apresentou melhor tempo de execução para todos os cenários a partir de 2 threads, obtendo uma redução de até 96\% do tempo de execução que ocorreu em Latency-Sequential com 512 threads, e o menor ganho de desempenho foi de 23\% no teste Threshold-Chunks para 4 threads. Todos os resultados do Intruder para uma thread apresentaram menor tempo de execução, obtendo no pior cenário, Threshold-Chunks, um aumento de 24\%.
 
@@ -789,9 +794,12 @@ Os demais benchmarks apresentam uma redução significativa em seu tempo de exec
 
 \input{tempo2.tex}
 
+
+\subsection{Quantidade de Aborts}
+
 As figuras~\ref{abort} e~\ref{abort2} apresentam os resultados de quantidades de aborts obtidos nos experimentos descritos acima. Tendo como base de comparação a biblioteca TinySTM, o LTMS apresentou para maioria dos benchmarks um desempenho superior, reduzindo no melhor caso até 99\% do número de aborts existentes nas aplicações, esse resultado pode ser observado nos benchmarks Intruder, Kmeans, Vacation e Yada. Os benchmarks Intruder e Yada utilizando Latency-Sequential para 512 threads apresentaram ganho de 99,99\% na redução de aborts. Os benchmarks Kmeans utilizando Threshold-Sequential e Vacations utilizando Latency-Chunks reduziram respectivamente 99,88\% e 99,84\% dos aborts para o cenário de 512 threads.
 
-O experimento Bayes~\ref{abortBayes} com o LTMS apresenta para maioria dos testes um aumento no número de aborts. O teste Latency-Chunks com 4 threads apresentou um aumento de 18\% no número de aborts. Por outro lado, o escalonador obteve para Latency-Sequential com 2 threads uma redução de 34\% na média dos aborts.
+% O experimento Bayes~\ref{abortBayes} com o LTMS apresenta para maioria dos testes um aumento no número de aborts. O teste Latency-Chunks com 4 threads apresentou um aumento de 18\% no número de aborts. Por outro lado, o escalonador obteve para Latency-Sequential com 2 threads uma redução de 34\% na média dos aborts.
 
 No experimento Intruder~\ref{abortIntruder} foi obtido ganho de desempenho para todos cenários de threads e configurações do escalonador. O melhor desempenho pode ser observado para Latency-Sequential com 512 threads, no qual foi obtido 99\% de redução nos aborts. A menor redução nos aborts ocorreu para Threshold-Sequential com 2 threads, onde foi observado a redução de 89\% dos aborts.
 
@@ -818,15 +826,15 @@ Memória transacional (TM) fornece uma abstração para sincronização de threa
 
 O entendimento da arquitetura utilizada, threads e dados é importante para o desempenho, melhorando a localidade e reduzindo a latência dos acessos à memória. As aplicações que utilizam STM oferecem oportunidades interessantes para entendimento da arquitetura e aplicação, pois em tempo de execução o STM fornece informações precisas sobre as áreas de memória que são compartilhadas entre threads, seus respectivos endereços e a intensidade com que cada endereço é acessado pelas threads. A partir do mapeamento destas informações este trabalho desenvolveu um escalonador NUMA-Aware que permite a migração de threads entre as filas de execução.
 
-A principal contribuição desta dissertação é um escalonador de STM, entitulado~\emph{LTMS} e apresentado em~\ref{chapter::ltms}, que adquira conhecimento sobre a arquitetura utilizada e sua aplicação, este conhecimento é gerado em tempo de execução por meio da coleta de dados das threads e suas transações. Este escalonador fornece um mecanismo de distribuição inicial de threads, criação de filas, e migração de threads conflitantes entre as filas existentes. Este mecanismo busca otimizar o desempenho de aplicações paralelas, reduzindo conflitos repetidos por meio da migração de threads agrupandoas as threads conflitantes na mesma fila. Para o desenvolvimento deste escalonador foram apresentadas três etapas que têm como contribuições individuais do trabalho.
+A principal contribuição desta dissertação é um escalonador de STM, entitulado~\emph{LTMS} e apresentado no capítulo~\ref{chapter::ltms}, que adquira conhecimento sobre a arquitetura utilizada e sua aplicação, este conhecimento é gerado em tempo de execução por meio da coleta de dados das threads e suas transações. Este escalonador fornece um mecanismo de distribuição inicial de threads, criação de filas, e migração de threads conflitantes entre as filas existentes. Este mecanismo busca otimizar o desempenho de aplicações paralelas, reduzindo conflitos repetidos por meio da migração de threads agrupando as threads conflitantes na mesma fila. Para o desenvolvimento deste escalonador foram apresentadas três etapas que têm como contribuições individuais do trabalho.
 
-A etapa de inicialização contribui com um sistema de filas individuais para os núcleos, apresentado em~\ref{inicializacao}, na qual para executar a distribuição das threads entre estas filas podemos utilizar diferentes heurísticas para estudos, este trabalho apresentou duas heurísticas de distribuições. Estas heurísticas buscam distribuir inicialmente estas threads entre as filas disponíveis para entender o comportamento do número inicial de conflitos existentes na aplicação e comportamento do acesso à memória.
+A etapa de inicialização contribui com um sistema de filas individuais para os \emph{cores}, apresentado na sessão~\ref{inicializacao}, na qual para executar a distribuição das threads entre estas filas podemos utilizar diferentes heurísticas para estudos, este trabalho apresentou duas heurísticas de distribuições. Estas heurísticas buscam distribuir inicialmente estas threads entre as filas disponíveis para entender o comportamento do número inicial de conflitos existentes na aplicação e comportamento do acesso à memória.
 
-Em tempo de execução o escalonador contribui com um mecanismo para coleta de dados da STM, apresentado em~\ref{coleta}, onde são montados duas matrizes uma de comunicação e uma de endereços. A matriz de comunicação fornece insumos sobre a quantidade de acessos aos endereços em comum entre threads. A matriz de endereços apresenta o endereço em comum mais acessado entre duas threads. Além destas matrizes, são coletadas informações sobre a latência de acesso à memória entre os nodos disponíveis na arquitetura e a quantidade de abortes e commits que ocorreram em cada thread. Estas informações são insumos para compreender a arquitetura e a aplicação e são fundamentais para tomada de decisão na etapa de migração de threads do escalonador.
+Em tempo de execução o escalonador contribui com um mecanismo para coleta de dados da STM, apresentado na sessão~\ref{coleta}, onde são montados duas matrizes uma de comunicação e uma de endereços. A matriz de comunicação fornece insumos sobre a quantidade de acessos aos endereços em comum entre threads. A matriz de endereços apresenta o endereço em comum mais acessado entre duas threads. Além destas matrizes, são coletadas informações sobre a latência de acesso à memória entre os nodos disponíveis na arquitetura e a quantidade de abortes e commits que ocorreram em cada thread. Estas informações são insumos para compreender a arquitetura e a aplicação e são fundamentais para tomada de decisão na etapa de migração de threads do escalonador.
 
-A última contribuição deste trabalho está em um sistema de migração de threads, apresentado em~\ref{migracao}, que é ativado apenas após a ocorrência de um abort da aplicação. O escalonador identifica a thread que gerou o abort, e com base nas informações previamente coletadas decide identifica para qual fila deve migrar está thread. O escalonador tem como base migrar a thread para uma fila na qual exista uma thread com maior número de acessos em comum à memória. Para tomada de decisão, se uma thread deve ou não ser migrada, é possível utilizar diferentes heurísticas para estudo, nesta dissertação foram utilizadas duas heurísticas. A primeira baseia se na relação entre abort e commit, quando esta relação fica acima de um valor pré definido temos um indicativo de uma aplicação com alto índice de conflitos e o escalonador efetua a migração com intuito de reduzir os conflitos na aplicação, para identificar o valor limiar utilizado neste trabalho foram executados testes onde chegamos ao limiar de 0.8, que indica que com 80\% de abortes a thread deve ser migrada. A segunda heurística utiliza o custo da latência no acesso à memória como parâmetro para efetuar a migração, onde se a fila atual que o thread executa possuir latência maior que a fila para qual desejamos migrar o escalonador efetua a migração, está heurística busca reduzir o custo de latencia gasto na aplicação.
+A última contribuição deste trabalho está em um sistema de migração de threads, apresentado na sessão~\ref{migracao}, que é ativado apenas após a ocorrência de um abort da aplicação. O escalonador identifica a thread que gerou o abort, e com base nas informações previamente coletadas identifica para qual fila deve migrar está thread. O escalonador tem como base migrar a thread para uma fila na qual exista uma thread com maior número de acessos em comum à memória. Para tomada de decisão, se uma thread deve ou não ser migrada, é possível utilizar diferentes heurísticas para estudo, nesta dissertação foram utilizadas duas heurísticas. A primeira baseia se na relação entre abort e commit, quando esta relação fica acima de um valor pré definido temos um indicativo de uma aplicação com alto índice de conflitos e o escalonador efetua a migração com intuito de reduzir os conflitos na aplicação, para identificar o valor limiar utilizado neste trabalho foram executados testes onde chegamos ao limiar de 0.8, que indica que com 80\% de abortes a thread deve ser migrada. A segunda heurística utiliza o custo da latência no acesso à memória como parâmetro para efetuar a migração, onde se a fila atual que o thread executa possuir latência maior que a fila para qual desejamos migrar o escalonador efetua a migração, está heurística busca reduzir o custo de latencia gasto na aplicação.
 
-O escalonador foi desenvolvido sobre a biblioteca de STM TinySTM, e foram executados testes junto do conjunto de benchmarks STMAP, os experimentos foram rodados com o escalonador com ambas configurações de heurísticas desenvolvidas, como apresentado em~\ref{chapter::experimentos}, e comparados com a biblioteca original de TinySTM. Concluímos que as aplicações utilizando LTMS apresentam para maioria dos cenários e configurações uma redução no tempo de execução e número de aborts. Sendo que o LTMS quando comparado a TinySTM obteve uma redução de até 96\% do tempo de execução e 99\% do número de aborts com benchmark Intruder utilizando configuração Latency-Sequential.
+O escalonador foi desenvolvido sobre a biblioteca de STM TinySTM, e foram executados testes junto do conjunto de benchmarks STMAP, os experimentos foram rodados com o escalonador com ambas configurações de heurísticas desenvolvidas, como apresentado no capítulo~\ref{chapter::experimentos}, e comparados com a biblioteca original de TinySTM. Concluímos que as aplicações utilizando LTMS apresentam para maioria dos cenários e configurações uma redução no tempo de execução e número de aborts. Sendo que o LTMS quando comparado a TinySTM obteve uma redução de até 96\% do tempo de execução e 99\% do número de aborts com benchmark Intruder utilizando configuração Latency-Sequential.
 
 \section{\textbf{Trabalhos futuros}}
 
