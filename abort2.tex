@@ -4,6 +4,7 @@
         \label{abortLabyrinth}
         \begin{tikzpicture}[scale=0.55, baseline]
         \begin{axis}[
+            ymode=log,
             width=1.5 \linewidth,
             height=0.8 \linewidth,
             %media de tempo intruder
@@ -11,6 +12,7 @@
             %enlargelimits=0.10,
             legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
             ylabel=Aborts,
+            xlabel=Threads,
             symbolic x coords={1, 2, 4, 8, 16, 32, 64, 128, 256, 512},
             xtick=data,
             ymin=0,
@@ -51,6 +53,7 @@
             %enlargelimits=0.10,
             legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
             ylabel=Aborts,
+            xlabel=Threads,
             symbolic x coords={1, 2, 4, 8, 16, 32, 64, 128, 256, 512},
             xtick=data,
             ymin=0,
@@ -91,6 +94,7 @@
             %enlargelimits=0.10,
             legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
             ylabel=Aborts,
+            xlabel=Threads,
             symbolic x coords={1, 2, 4, 8, 16, 32, 64, 128, 256, 512},
             xtick=data,
             ymin=0,
