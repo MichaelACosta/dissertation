@@ -817,7 +817,13 @@ Os resultados apresentam para maioria dos experimentos uma redução significati
 
 \input{abort2.tex}
 
+\section{Discussão}
+
 Para maioria dos benchmarks o tempo de execução e número de aborts obtiveram melhor desempenho utilizando o LTMS, estes resultados possuem em seu melhor cenário uma redução de 96\% do tempo de execução e 99\% do número de aborts. Porém, alguns benchmarks obtiveram resultados piores com o LTMS em diferentes configurações quando comparados a TinySTM. Isto mostra a importância de entendermos a aplicação. Ter um escalonador capaz de entender melhor as características da aplicação e conhecer a arquitetura pode como vimos na maioria dos benchmarks obter resultados expressivos.
+
+O LSTM apresentou seus melhores resultados com o benchmark Intruder. O Intruder possui uma alta contenção e suas transações possuem um tempo médio de execução. Os resultados do Intruder apresentaram redução no tempo de execução e no número de aborts para todos os cenários de threads. Estas características ajudam a prover um melhor mapeamento da aplicação onde o escalonador utiliza melhor o recurso de migração das threads.
+
+O benchmark Kmeans apresentou um melhor tempo de execução até 128 threads, e teve um aumento no tempo de execução com 256 e 512 threads. Porém, este benchmark obteve uma redução no número de aborts para todos os cenários de threads. O Kmeans possui como característica uma baixa contenção e possui um tempo curto na duração da transação, outra característica da aplicação é que ela possui uma quantidade pequena de endereços, ou seja, todos os acessos são feitos em poucos endereços. Esta característica fez com que o LSTM realizasse mais migrações reduzindo o número de aborts e aumentando o tempo de execução. Para aplicações com estas características é importante manter o número de threads limitado às características da aplicação.
 
 \chapter{Conclusão}
 \label{chapter::conclusao}
