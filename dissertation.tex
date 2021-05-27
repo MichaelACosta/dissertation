@@ -437,7 +437,7 @@ A primeira heurística é denominada Básica e busca executar de forma serial as
 
 Para isto, cada thread é representado internamente por um Registro de Contexto em Execução (RCE), cada RCE encapsula uma thread. No início da execução o escalonador cria uma fila de RCEs para serem executados no futuro.
 
-Assim, o LUTS dispara um RCE por núcleo, e utiliza a fila para não disparar mais RCEs que núcleos disponíveis. Cada REC disparado é convertido em uma thread de sistema que executa um conjunto de transações.
+Assim, o LUTS dispara um RCE por núcleo, e utiliza a fila para não disparar mais RCEs que núcleos disponíveis. Cada RCE disparado é convertido em uma thread de sistema que executa um conjunto de transações.
 
 Na tentativa de evitar conflitos, o LUTS apresenta uma forma dinâmica para solucioná-los, considerando transações curtas e transações longas. Para definir o tamanho da transação é utilizada a contagem de ciclos da mesma, onde a partir de 100 mil ciclos é caracterizada uma transação longa.
 
@@ -516,6 +516,25 @@ Algoritmos NUMA-Aware avaliam as diferentes características da arquitetura que 
 Os escalonadores de STM atuais não consideram a arquitetura e seu custo de acesso à memória para serializar as execuções. Alguns escalonadores de STM avaliam os conjuntos de leitura e escrita apenas com interesse em reduzir o número de conflitos, como é visto em~\cite{shrink2009}.
 
 O LTMS, diferente de outros trabalhos, é um escalonador que avalia as características da arquitetura, e em tempo de execução monta uma matriz de comunicação com base nas leituras e escritas realizadas pelas threads. Está matriz de comunicação é utilizada para avaliar o custo de acesso à memória e migrar as threads em execução entre as filas, buscando diminuir os números de conflitos por meio da serialização das transações e otimizar a execução aproveitando a melhor distribuição das tarefas na arquitetura NUMA, reduzindo assim a latência de acesso à memória.
+
+A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais características do LTMS e os escalonadores apresentados neste trabalho, a tabela busca entender as diferenças que o escalonador fornece para aplicações paralelas que utilizam STM.
+
+\begin{table}[]
+ \footnotesize
+ \centering
+ \caption{Comparativo entre os escalonadores apresentados}
+ \label{tab:compare_ltms}
+ \begin{tabular}{l|l|l|l|l|l|l|l}
+ \hline
+  Escalonadores                     & LTMS    & ATS      & Shrink   & LUTS  & ProVIT  & STMap     & CAR-STM \\ \hline %escalonadores
+  Distribuição inicial de threads   & Sim     & Não      & Não      & Sim   & Não     & Não       & Não \\
+  Coleta de dados por threads       & Sim     & Não      & Sim      & Não   & Não     & Sim       & Não \\
+  Migração entre filas              & Sim     & Não      & Não      & Não   & Não     & Não       & Sim \\
+  Avalia a arquitetura              & Sim     & Não      & Não      & Não   & Não     & Sim       & Não \\
+  Técnica de escalonamento          & Reativo & Feedback & Predição & Mista & Mista   & Predição  & Reativo  \\
+ \hline
+ \end{tabular}
+\end{table}
 
 \chapter{LTMS - Lups Transactional Memory Scheduler}
 \label{chapter::ltms}
@@ -608,7 +627,7 @@ Para evitar \emph{overhead} a coleta de dados da matriz de comunicação ocorre 
 
 % Matriz de endereços: como tu calcula o endereço mais acessado pelas duas threads? Acho que não tem como pois a matriz de comunicação não guarda todas as threads. Eu não entendi muito bem essa história da fila de endereços que é ordenada.
 
-\todo{um flowchart fig25 pg79 do douglas}
+% \todo{um flowchart fig25 pg79 do douglas}
 A matriz de endereços por sua vez armazena a informação de quais endereços foram acessados pelas threads. Quando duas threds acessam o mesmo endereço de memória, um evento é disparado armazenando o número de acesso por endereço na matriz. Para entender qual é o endereço mais acessado cada posição da matriz utiliza um array que possui uma estrutura de chave e valor. Esta estrutura utiliza como chave o endereço de memória acessado e o valor a quantidade de acessos que este endereço recebeu.
 
 % O evento disparado pelo acesso em comum utiliza este array para verificar e armazenar na matriz o endereço com maior valor.
@@ -639,7 +658,7 @@ A Figura~\ref{migration} ilustra a função de migração denominada~\emph(migra
  \label{migration}
 \end{figure}
 
-\todo{arrumar}
+% \todo{arrumar}
 % A: fala como sao usadas as matrizes para determinar a fila
 A etapa de identificação das threads conflitantes busca entender a aplicação e a arquitetura para definir para qual fila a thread que gerou o abort deve ser migrada, para isso a função~\emph{findBestQueue} recebe o identificador da thread atual e consulta na matriz de comunicação qual a thread em execução possui mais acessos em comum à memória, após identificar a thread a função retorna a fila na qual a thread pertence. Após identificar a fila com maior afinidade, o LTMS utiliza uma das heurísticas para decidir se deve migrar a thread ou não.
 
@@ -649,9 +668,7 @@ A primeira heurística, denominada threshold, avalia o nível de contenção apr
 
 A função \emph{thresholdHeuristic} apresentadas na Figura~\ref{threshold} calcula o índice de contenção dado pela razão dos aborts e commits realizados pela thread e avalia se o índice de contenção é maior que um valor limiar. Se o índice de contenção for maior que o limiar a função permite a migração da thread, se o valor do índice de contenção ficar abaixo do limiar a thread não deve ser migrada.
 
-\todo{arrumar}
-% B: qual o valor do threashold é usado? de onde ele veio?
-O limiar denominado~\emph{threshold} é uma constante definida pelo desenvolvedor que indica o nível máximo de contenção aceito pela aplicação, um valor baixo para o limiar gera mais migrações que proporciona maior serialização do sistema reduzindo assim os aborts e aumentando tempo de execução, enquanto um limiar muito alto mantém o paralelismo mas aumenta o número de aborts.
+O limiar denominado~\emph{threshold} é uma constante definida pelo desenvolvedor que indica o nível máximo de contenção aceito pela aplicação, um valor baixo para o limiar gera mais migrações que proporciona maior serialização do sistema reduzindo assim os aborts e aumentando tempo de execução, enquanto um limiar muito alto mantém o paralelismo mas aumenta o número de aborts. Para está dissertação foram executados testes para entender o comportamento do LTMS utilizando diferentes valores no threashold. O valor de threashold que apresentou o melhor desempenho com os benchmarks testados foi o valor de 0,8. Este valor indica que quando a thread possuir um indice de contenção de 80\% o LTMS deve efetuar a migração desta thread.
 
 \begin{figure}[htbp]
  \centering
@@ -696,29 +713,6 @@ O LTMS é um escalonador reativo que realiza a fase de migração de threads a p
 
 Algoritmos como LUTS~\cite{Nicacio2012} utilizam a migração para reduzir o índice de contenção, porém este algoritmo realiza a migração para uma única fila, serializando a aplicação sem considerar as características de acesso à memória. Outros algoritmos, como o ATS~\cite{ats2008} e o Shrink~\cite{shrink2009}, realizam a serialização sem efetuar uma migração, apenas controlando o número de threads ativos na aplicação o que reduz a contenção mas utiliza totalmente o recurso disponível na arquitetura.
 
-A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais características do LTMS e os escalonadores apresentados neste trabalho, a tabela busca entender as diferenças que o escalonador fornece para aplicações paralelas que utilizam STM.
-
-\todo{arrumar}
-% Olhando a tabela, nenhum dos escalonadores usa filas de threads para cada core?
-% Tem que ter um parágrafo comentando cada um dos escalonadores em relação ao teu.
-% É importante falar do STMap aqui!!! tem muitas coisas em comum. Qual as diferenças?
-\begin{table}[]
- \footnotesize
- \centering
- \caption{Comparativo entre os escalonadores apresentados}
- \label{tab:compare_ltms}
- \begin{tabular}{l|l|l|l|l|l|l}
- \hline
- Escalonadores & LTMS & ATS & Shrink & LUTS & ProVIT & STMap \\ \hline %escalonadores
- Distribuição inicial de threads & Sim & Não & Não & Não & Não & Não \\
- Coleta de dados por threads & Sim & Não & Sim & Sim & Sim & Sim \\
- Migração entre filas & Sim & Não & Não & Sim & Não & Não \\
- Avalia a arquitetura  & Sim & Não & Não & Não & Não & Sim \\
- Técnica de escalonamento & Reativo & Feedback & Predição & Mista & Mista & Predição \\
- \hline
- \end{tabular}
-\end{table}
-
 % \section{\textbf{Aplicação}}
 
 % O LTMS é um escalonador de STM que inicializa sua execução junto com a aplicação e fornece todo suporte a memórias transacionais. A figura~\ref{LTMS1} apresenta o fluxo de execução de uma aplicação utilizando o LTMS.
@@ -750,7 +744,7 @@ A tabela~\ref{tab:compare_ltms} apresenta uma comparação entre as principais c
 \chapter{Experimentos}
 \label{chapter::experimentos}
 
-\todo{tem uma seção sobre maquina e uma sobre os parametros?}
+% \todo{tem uma seção sobre maquina e uma sobre os parametros?}
 Para este trabalho foi desenvolvido um escalonador de STM NUMA-Aware, intitulado LTMS, que funciona em três etapas. Para validação, o escalonador LTMS foi desenvolvido em linguagem C, e aplicado à biblioteca de STM TinySTM em sua versão 1.0.5, e foram rodados experimentos com o conjunto de benchmarks STMAP em sua versão 0.9.10.
 
 \todo{descrever nodos numa... pg112 douglas e característica do xeon}
@@ -758,7 +752,7 @@ Os testes foram rodados em uma máquina de arquitetura NUMA com processador Inte
 
 Como comentado anteriormente o LTMS permite que heurísticas para distribuição de threads e heurísticas para migração de threads sejam desenvolvidas e acopladas a ele para que estudos possam ser realizados, neste trabalho foram desenvolvidas duas heurísticas de distribuição e duas heurísticas de migração. Para obter os resultados do LTMS foram rodadas quatro baterias de testes com as seguintes configurações, LTMS com distribuição Sequential e migração Threshold, LTMS com distribuição Sequential e migração Latency, LTMS com distribuição Chunks e migração Threshold, e LTMS com distribuição Chunks e migração Latency. Para comparar o desempenho do escalonador LTMS, foi executada uma bateria de teste com a TinySTM 1.0.5 sem modificações.
 
-\todo{tabela com os inputs dos benchmarks}
+% \todo{tabela com os inputs dos benchmarks}
 Cada bateria de teste consiste em 30 execuções de cada benchmark do conjunto STAMP, para os cenários de 1, 2, 4, 8, 16, 32, 64, 128, 256, e 512 threads. A seção~\ref{resultados} mostra os resultados obtidos com os experimentos.
 
 \section{Resultados}
@@ -795,7 +789,7 @@ Os demais benchmarks apresentam uma redução significativa em seu tempo de exec
 \input{tempo2.tex}
 
 
-\subsection{Quantidade de Aborts}
+\subsection{Aborts}
 
 As figuras~\ref{abort} e~\ref{abort2} apresentam os resultados de quantidades de aborts obtidos nos experimentos descritos neste capítulo, estes gráficos estão em escala logarítmica. Tendo como base de comparação a biblioteca TinySTM, o LTMS apresentou para maioria dos benchmarks um resultado superior, reduzindo no melhor caso até 99\% do número de aborts existentes nas aplicações, esse resultado pode ser observado nos benchmarks Intruder, Kmeans, Vacation e Yada. Os benchmarks Intruder e Yada utilizando Latency-Sequential para 512 threads apresentaram ganho de 99,99\% na redução de aborts. Os benchmarks Kmeans utilizando Threshold-Sequential e Vacations utilizando Latency-Chunks reduziram respectivamente 99,88\% e 99,84\% dos aborts para o cenário de 512 threads.
 
