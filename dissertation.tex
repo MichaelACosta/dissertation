@@ -782,11 +782,11 @@ O benchmark Kmeans apresenta baixo índice de contenção e gasta pouco tempo de
 
 \input{tempo.tex}
 
-No experimento Labyrinth~\ref{Labyrinth} o LTMS apresentou para maioria dos cenários um decremento no tempo de execução. O melhor tempo de execução em relação a TinySTM pode ser observado no teste Latency-Sequential para 512 threads, onde é observado uma redução de 54\% do tempo de execução. O pior cenário para o LTMS apresenta um aumento de 29\% que foi observado no teste Latency-Chunks 16 threads.
+No experimento Labyrinth~\ref{Labyrinth} o LTMS apresentou para maioria dos cenários um decremento no tempo de execução. O melhor tempo de execução em relação a TinySTM pode ser observado no teste Latency-Sequential para 512 threads, onde é observado uma redução de 54\% do tempo de execução. O pior cenário para o LTMS apresenta um aumento de 29\% que foi observado no teste Latency-Chunks 16 threads. Esta aplicação possui alta contenção e o tempo dentro da transação é longo. O Labyrinth também possui como característica o acesso a um grande número de endereços distintos.
 
-No experimento Vacation~\ref{Vacation} foi observado uma redução de 81\% do tempo de execução para o teste Latency-Sequential com 512 threads, a maioria dos cenários de threads do Vacation apresentam uma redução no tempo de execução do LTMS quando comparados ao TinySTM, porém, alguns cenários apresentaram um aumento no tempo de execução, o pior cenário possui um aumento de 64\% do tempo e pode ser visualizado no teste Latency-Chunks com 128 threads.
+No experimento Vacation~\ref{Vacation} foi observado uma redução de 81\% do tempo de execução para o teste Latency-Sequential com 512 threads, a maioria dos cenários de threads do Vacation apresentam uma redução no tempo de execução do LTMS quando comparados ao TinySTM, porém, alguns cenários apresentaram um aumento no tempo de execução, o pior cenário possui um aumento de 64\% do tempo e pode ser visualizado no teste Latency-Chunks com 128 threads. Esta aplicação possui contenção média e o tempo dentro da transação é longo.
 
-O experimento Yada~\ref{Yada} também apresentou para maioria dos testes uma redução do tempo de execução do LTMS em comparação a TinySTM. O LTMS obteve uma redução de até 92\% do tempo de execução para o teste Latency-Chunks com 512 threads. O benchmark também apresentou uma redução do tempo de execução de 70\% para o teste Threshold-Chunks com 16 threads.
+O benchmark Yada~\ref{Yada} possui contenção média e o tempo dentro da transação é longo. Outra característica do benchmark está em seu acesso a uma quantidade média de endereços distintos. Seu exeperimento também apresentou para maioria dos testes uma redução do tempo de execução do LTMS em comparação a TinySTM. O LTMS obteve uma redução de até 92\% do tempo de execução para o teste Latency-Chunks com 512 threads. O benchmark também apresentou uma redução do tempo de execução de 70\% para o teste Threshold-Chunks com 16 threads.
 
 Os resultados apresentam para maioria dos benchmarks um resultado melhor de desempenho utilizando o escalonador proposto neste trabalho. Quando ultrapassado o número de threads hyper threading disponíveis na arquitetura utilizada, os únicos benchmarks que não obtiveram resultados de tempo abaixo da TinySTM foram os benchmarks Bayes e Kmeans. Para o benchmark Bayes, a sua ordem de commits no início da execução afeta seu tempo de execução final~\cite{Ruan:2014}, o que torna seu comportamento não determinístico e dificulta a sua avaliação.
 
@@ -806,6 +806,11 @@ As figuras~\ref{abort} e~\ref{abort2} apresentam os resultados de quantidades de
 No experimento Intruder~\ref{abortIntruder} foi obtido ganho de desempenho para todos cenários de threads e configurações do escalonador. O melhor resultado pode ser observado para Latency-Sequential com 512 threads, no qual foi obtido 99\% de redução nos aborts. A menor redução nos aborts ocorreu para Threshold-Sequential com 2 threads, onde foi observado a redução de 89\% dos aborts.
 
 O experimento Kmeans~\ref{abortKmeans} assim como Intruder, apresenta redução do número de aborts para todos os cenários e configurações. Podemos observar uma redução de até 99\% para Threshold-Sequential com 512 threads. O pior caso do benchmark Kmeans apresentou uma redução de 71\% dos aborts e pode ser observado no Latency-Sequential com 32 threads.
+
+Os experimentos Labyrinth, Vacation e Yada apresentaram resultados melhores com o LTMS para maioria dos cenários de threads. Estes benchmarks possuem em comum um alto tempo de execução dentro das transações.
+%Porem apresentam algumas caracteristicas distintas que influenciaram os resultados. Vacation e Yada possuem contenção média e resultados parecidos, 
+
+As heurísticas obtiveram resultados parecidos nos testes executados. Sendo que a heurística de migração Threshold apresenta um desempenho pior que a heurística Latency para aplicações com contenção média e quantidade média de endereços distintos acessados, como foi apresentado no experimento Yada.
 
 \input{abort.tex}
 
