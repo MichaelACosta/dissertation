@@ -130,14 +130,22 @@
 \listoftables
 
 %lista de abreviaturas e siglas
-\todo{aqui}
 \begin{listofabbrv}{ABNT}%coloque aqui a maior sigla para ajustar a distância
-  \item[TM] Memórias Transacionais
-  \item[STM] Memórias Transacionais em Software
-  \item[NUMA] Non-Uniform Memory Access
-  \item[UMA] Uniform Memory Access
+  \item[ATS] Adaptive Transaction Scheduling
+  \item[CAR-STM] Collision Avoidance and Resolution
+  \item[CI] Contention Intensity
+  \item[HTM] Memória Transacional em Hardware 
   \item[LTMS] Lups Transactional Memory Schedule
-  \item[STAMP]
+  \item[LUTS] Light-Weight User-Level Transaction Scheduler
+  \item[NUMA] Non-Uniform Memory Access
+  \item[RCE] Registro de Contexto em Execução
+  \item[STAMP] Stanford Transactional Applications for Multi-Processing
+  \item[STM] Memória Transacional em Software
+  \item[STMap] Sharing-Aware Thread Mapping
+  \item[TM] Memória Transacional
+  \item[TP] Tempo Perdido
+  \item[UMA] Uniform Memory Access
+  \item[VIT] Very Important Transaction
 \end{listofabbrv}
 
 %Sumario
@@ -187,7 +195,7 @@ As principais contribuições desta dissertação são:
 
 O trabalho está organizado da seguinte forma. O Capítulo~\ref{chapter::stm} apresenta o conceito de Memória Transacional e suas características, a biblioteca TinySTM e o conjunto de \emph{benchmarks} STAMP, utilizados neste trabalho. No Capítulo~\ref{chapter::escalonadores} abordamos os trabalhos relacionados, às suas características e classificações. O Capítulo~\ref{chapter::ltms} explica o escalonador proposto nesta dissertação. No Capítulo~\ref{chapter::experimentos} é apresentada a metodologia e os resultados obtidos nos testes. Por fim, o Capítulo~\ref{chapter::conclusao} apresenta as considerações finais e trabalhos futuros.
 
-\chapter{Memórias Transacionais}
+\chapter{Memória Transacional}
 \label{chapter::stm}
 
 Memória Transacional, ou \emph{Transactional Memory}~(TM), é uma classe de mecanismos de sincronização que fornece uma execução atômica e isolada de alterações em um conjunto de dados compartilhados. Estas estão sendo desenvolvidas como uma alternativa para a sincronização baseada em \emph{locks}~\cite{energyawaretm}. As TMs podem ser implementadas em \emph{software} (STM), em \emph{hardware} (HTM) ou ainda em uma versão híbrida de \emph{hardware} e \emph{software}.
@@ -259,7 +267,6 @@ O Caso~1, mostra as transações acessando dados diferentes, não ocasionando co
 \caption{Detecção de conflitos em modo atrasado. Fonte:~\cite{rigotm}}
 \label{figuradeteccaoatrasado}
 \end{figure}
-
 
 Para solucionar o problema de qual transação continuará executando quando ocorre um conflito, é utilizado um gerenciador de contenção~\cite{TM2010}. O gerenciador de contenção é o responsável por decidir quando e qual transação vai ser abortada, isso para garantir que a execução do programa prossiga sem problemas.
 
@@ -340,7 +347,6 @@ A \emph{TinySTM} utiliza a \emph{CM\_Suicide} como sua estratégia padrão de ge
 \section{STAMP}
 \label{section:stamp}
 
-
 \emph{Stanford Transactional Applications for Multi-Processing}~\cite{STAMP} é um conjunto de \emph{benchmarks} criado para pesquisa de memórias transacionais, composto por oito \emph{benchmarks}. Apesar de desenvolvido para a STM~TL2, com algumas modificações disponíveis, pode ser usado no \emph{TinySTM}.
 
 %A versão do STAMP utilizada será a 0.9.10.
@@ -389,7 +395,6 @@ Está categorização é dividida em algoritmos Baseados em Heurística e algori
      \item Modelo Misto: Mistura as classificações acima para otimizar a heurística.
  \end{itemize}
 \end{itemize}
-
 
 % \section{Categorias}
 
