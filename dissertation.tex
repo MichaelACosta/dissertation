@@ -219,7 +219,7 @@ Para garantir essas propriedades, as TMs utilizam mecanismos como o de Versionam
 
 \section{Versionamento de Dados}
 
-O versionamento de dados é responsável pelo gerenciamento das versões dos dados. Ele armazena tanto o valor do dado no início de uma transação como também o valor do dado modificado durante a transação, isso para garantir a propriedade de atomicidade~\cite{BaldassinTese2009}.
+O versionamento de dados é responsável pelo gerenciamento das versões dos dados. Este mecanismo armazena tanto o valor do dado no início de uma transação como também o valor do dado modificado durante a transação, isso para garantir a propriedade de atomicidade~\cite{BaldassinTese2009}.
 
 \begin{figure}[!htp]
 \centering
@@ -275,7 +275,7 @@ A \emph{TinySTM}~\cite{TINY} é uma implementação de STM para as linguagens C 
 
 \subsection{Sincronização e Versionamento}
 
-Na \emph{TinySTM} a sincronização é feita a partir de um \emph{array} de \emph{locks} compartilhado que gerencia o acesso concorrente à memória. Cada \emph{lock} é do tamanho de um endereço da arquitetura~\cite{TINY}, e bloqueia vários endereços de memória. O mapeamento é feito por meio de uma função \emph{hash}. A Figura~\ref{figurasincronisacaotinystm} apresenta as estruturas de dados utilizadas nesta implementação.
+Na \emph{TinySTM} a sincronização interna das transações é feita a partir de um \emph{array} de \emph{locks} compartilhado que gerencia o acesso concorrente à memória. Cada \emph{lock} é do tamanho de um endereço da arquitetura~\cite{TINY}, e bloqueia vários endereços de memória. O mapeamento é feito por meio de uma função \emph{hash}. A Figura~\ref{figurasincronisacaotinystm} apresenta as estruturas de dados utilizadas nesta implementação.
 
 \begin{figure}[!htp]
 \centering
@@ -288,7 +288,7 @@ O bit menos significativo é utilizado para indicar se o \emph{lock} está em us
 
 Se o bit menos significativo indica que o \emph{lock} está em uso, então nos bits restantes é armazenado um endereço que identifica a transação que está utilizando o dado~(isso utilizando o versionamento adiantado), ou uma entrada no \emph{write set} da transação que está utilizando o dado~(isso utilizando o versionamento atrasado). Em ambos os casos os endereços apontam para uma estrutura que é \emph{word-aligned} e seu bit menos significativo é sempre zero, por isso, o bit menos significativo pode ser utilizado como bit de bloqueio.
 
-Quando utilizado o versionamento atrasado, o endereço armazenado no \emph{lock} permite uma operação rápida para localizar as posições de memória atualizadas abrangidas pelo \emph{lock}, no caso de serem acessados novamente pela mesma transação. Em contraste, a TL2 deve verificar o acesso à memória se a transação atual ainda não escreveu neste endereço, o que pode ser caro quando \emph{write sets} são grandes. A leitura depois da escrita não é um problema quando é utilizado o versionamento adiantado porque a memória sempre contém o último valor escrito na memória pela transação ativa.
+Quando utilizado o versionamento atrasado, o endereço armazenado no \emph{lock} permite uma operação rápida para localizar as posições de memória atualizadas abrangidas pelo \emph{lock}, no caso de serem acessados novamente pela mesma transação. Em contraste, a TL2~\cite{tl2} deve verificar o acesso à memória se a transação atual ainda não escreveu neste endereço, o que pode ser caro quando \emph{write sets} são grandes. A leitura depois da escrita não é um problema quando é utilizado o versionamento adiantado porque a memória sempre contém o último valor escrito na memória pela transação ativa.
 
 A \emph{tinySTM} apresenta três estratégias de versionamento distintas que podem ser utilizadas, sendo que duas utilizam versionamento atrasado~(write-back) e uma utiliza versionamento adiantado~(write-through), estas são:
 
@@ -306,7 +306,7 @@ A \emph{TinySTM} utiliza \emph{Write\_Back\_ETL} como sua estratégia de version
 
 Quando ocorre uma escrita em um local da memória, a transação primeiro identifica o \emph{lock} correspondente ao endereço de memória e lê o valor. Se o \emph{lock} está em uso a transação verifica se é a proprietária do \emph{lock} utilizando o endereço armazenado nos restantes bits de entrada. Caso a transação seja a proprietária então ela simplesmente escreve o novo valor e retorna. Caso contrário, a transação pode esperar por algum tempo ou abortar imediatamente. A \emph{TinySTM} utiliza a última opção como padrão em sua implementação.
 
-Se o \emph{lock} não está em uso, a transação tenta adquiri-lo para escrever o novo valor na entrada utilizando uma operação atômica \emph{compare-and-swap}. A falha indica que outra transação adquiriu o \emph{lock} nesse meio tempo, então a transação é reiniciada.
+Se o \emph{lock} não está em uso, a transação tenta adquiri-lo para escrever o novo valor utilizando uma operação atômica \emph{compare-and-swap}. A falha indica que outra transação adquiriu o \emph{lock} nesse meio tempo, então a transação é reiniciada.
 
 
 \subsection{Leituras}
@@ -324,7 +324,7 @@ A \emph{TinySTM} implementa quatro estratégias de gerenciador de contenção, e
 \begin{itemize}
   \item \textbf{CM\_Suicide}: nesta estratégia a transação que detecta o conflito é abortada imediatamente;
 
-  \item \textbf{CM\_Delay}: esta estratégia assemelhasse a \emph{CM\_Suicide}, porém, espera-se até que a transação que gerou o \emph{abort} tenha liberado o \emph{lock}, então reinicia a transação. Isto porque por intuição a transação que foi abortada irá tentar adquirir o mesmo \emph{lock} novamente, provavelmente falhando em mais de uma tentativa. Esta estratégia aumenta as chances de que a transação tenha sucesso sem gerar um grande número de \emph{aborts}, melhorando o tempo de execução do programa;
+  \item \textbf{CM\_Delay}: esta estratégia assemelhasse a \emph{CM\_Suicide}, porém, espera-se até que a transação que gerou o \emph{abort} tenha liberado o \emph{lock} correspondente ao endereço de memória, então reinicia a transação. Isto porque por intuição a transação que foi abortada irá tentar adquirir o mesmo \emph{lock} novamente, provavelmente falhando em mais de uma tentativa. Esta estratégia aumenta as chances de que a transação tenha sucesso sem gerar um grande número de \emph{aborts}, melhorando o tempo de execução do programa;
 
   \item \textbf{CM\_Backoff}: também parecida com a \emph{CM\_Suicide}, esta estratégia espera um tempo randômico para reiniciar a transação. Este tempo de espera é escolhido uniformemente ao acaso em um intervalo cujo tamanho aumenta exponencialmente a cada reinicialização;
 
@@ -359,12 +359,12 @@ O conjunto de \emph{benchmarks} STAMP implementa vários \emph{benchmarks}, assi
   \item \textbf{Intruder}: Simula o Design 5 do \emph{Network Intrusion Detection System}~(NIDS)~\cite{Haagdorens05};
   \item \textbf{Kmeans}:  \emph{K-means} é um algoritmo comumente usado para partição de itens de dados em subconjuntos relacionados;
   \item \textbf{Labyrinth}: Implementa um algoritmo que descobre o menor caminho entre um ponto inicial e um ponto final;
-  \item \textbf{SSCA2}: É composto por quatro \emph{kernels} que operam em um grande, dirigido e ponderado gráfico;
+  \item \textbf{SSCA2}: É composto por quatro \emph{kernels}~\cite{Bader05} gráficos dirigidos e ponderados. Estes gráficos são usados em aplicações de biologia computacional;
   \item \textbf{Vacation}: Implementa um sistema de reserva de viagens alimentado por um banco de dados não-distribuído; e
   \item \textbf{Yada}: Implementa o algoritmo de Ruppert~\cite{Ruppert95} para refinamento de malha.
 \end{itemize}
 
-Neste trabalho vai ser utilizada a versão 0.9.10 do STAMP para avaliar e comparar a execução da biblioteca de STM TinySTM atual e a utilização do escalonador proposto.
+Neste trabalho é utilizada a versão 0.9.10 do STAMP para avaliar e comparar a execução da biblioteca de STM TinySTM atual e a utilização do escalonador proposto.
 
 \chapter{Escalonadores}
 \label{chapter::escalonadores}
