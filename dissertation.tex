@@ -634,16 +634,7 @@ A matriz de comunicação fornece insumos sobre a quantidade eventos de comunica
 Para evitar \emph{overhead} a coleta de dados da matriz de comunicação ocorre por amostragem, neste trabalho utilizamos 1 a cada 100 acessos por thread para acionar o contador, esta abordagem é baseada nos experimentos apresentados nos trabalhos~\cite{pasqualin2020online}. 
 
 % \todo{um flowchart fig25 pg79 do douglas}
-
-% É uma matriz de endereços, mas o que tem nas linhas e colunas?
-% É igual a matriz de comunicação?
-% Esse array de estrutura chave valor é uma tabela hash?
-% Se é, então usa o termo tabela hash.
-
-\todo{aqui}
-A matriz de endereços por sua vez armazena a informação de quais endereços foram acessados pelas threads. Quando duas threds acessam o mesmo endereço de memória, um evento é disparado armazenando o número de acesso por endereço na matriz. 
-
-Para entender qual é o endereço mais acessado é utilizada uma tabela hash que possui uma estrutura de chave e valor. Esta estrutura utiliza como chave o endereço de memória acessado e como valor, a quantidade de acessos que este endereço recebeu.
+A matriz de endereços por sua vez, possui para cada posição uma tabela hash que contem uma estrutura de chave e valor. Esta estrutura utiliza como chave o endereço de memória acessado e como valor, a quantidade de acessos que este endereço recebeu.Quando duas threds acessam o mesmo endereço de memória, um evento é disparado, este evento busca na tabela hash a chave com endereço que foi acessado e incrementa o valor de acessos que este endereço recebeu.
 
 % O evento disparado pelo acesso em comum utiliza este array para verificar e armazenar na matriz o endereço com maior valor.
 
@@ -673,12 +664,7 @@ A Figura~\ref{migration} ilustra a função de migração denominada~\emph{migra
  \label{migration}
 \end{figure}
 
-\todo{arrumar}
-% Nota que no teu algoritmo, primeiro tu ve se deve migrar e, caso deva migrar, tu escolhe uma fila. Nos dois parágrafos de texto tu inverte essa ordem, primeiro escolhendo a fila e depois decidindo se deve migrar (o que é estranho.)
-% A: fala como sao usadas as matrizes para determinar a fila
-A etapa de identificação das threads conflitantes busca entender a aplicação e a arquitetura para definir para qual fila a thread que gerou o abort deve ser migrada. Para isso a função~\emph{findBestQueue} recebe o identificador da thread atual e consulta na matriz de comunicação qual a outra thread em execução que possui mais acessos em comum à memória. Após identificar a outra thread, a função retorna a fila na qual a thread pertence. Após identificar a fila com maior afinidade, o LTMS utiliza uma das heurísticas para decidir se deve migrar a thread abortada ou não.
-
-A etapa de heurística de migração avalia se a thread que gerou o abort está apta a ser migrada. O LTMS permite que diferentes heurísticas de migração sejam desenvolvidas e acopladas a ele.  Para este trabalho foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Estas heurísticas foram denominadas \emph{threshold} e \emph{latency} e são apresentadas nas Figuras~\ref{threshold} e~\ref{latency}.
+A etapa de heurística de migração, representada na função~\emph{okToMigrate} e apresentada na Figura~\ref{migration}, avalia se a thread que gerou o abort está apta a ser migrada. O LTMS permite que diferentes heurísticas de migração sejam desenvolvidas e acopladas a ele.  Para este trabalho foram desenvolvidas duas heurísticas de migração, que avaliam os dados coletados para tomar a decisão de migrar a thread. Estas heurísticas foram denominadas \emph{threshold} e \emph{latency} e são apresentadas nas Figuras~\ref{threshold} e~\ref{latency}.
 
 A primeira heurística, denominada threshold, avalia o nível de contenção apresentado pela thread em tempo de execução, esse nível de contenção é medido pela razão entre os aborts e commits realizados pela thread, onde um resultado alto indica uma maior contenção ocasionada pelos aborts. Para realizar uma migração utilizando esta heurística o LTMS executa a função apresentada na Figura\ref{threshold}.
 
@@ -718,6 +704,8 @@ Migrando a thread para uma fila com latência menor que a atual, o LTMS busca re
  \caption{Heurística de migração latency}
 \label{latency}
 \end{figure}
+
+Após utilizar uma das heurísticas para decidir se deve migrar a thread abortada ou não, o LTMS identifica as threads conflitantes. A etapa de identificação das threads conflitantes busca entender a aplicação e a arquitetura para definir para qual fila a thread que gerou o abort deve ser migrada. Para isso a função~\emph{findBestQueue} apresentada na Figura~\ref{migration} recebe o identificador da thread atual e consulta na matriz de comunicação qual a outra thread em execução que possui mais acessos em comum à memória. Após identificar a outra thread, a função retorna a fila na qual a thread pertence.
 
 \section{Conclusão}
 
