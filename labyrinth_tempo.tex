@@ -1,0 +1,42 @@
+\begin{figure}[!ht]
+    \centering
+        \begin{tikzpicture}[scale=0.55, baseline]
+            \begin{axis}[
+                width=1.5 \linewidth,
+                height=0.8 \linewidth,
+                %media de tempo intruder
+                ybar=3pt,
+                %enlargelimits=0.10,
+                legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+                ylabel=Tempo(s),
+            xlabel=Threads,
+                symbolic x coords={1, 2, 4, 8, 16, 32, 64, 128, 256, 512},
+                xtick=data,
+                ymin=0,
+                ymax=600,
+                bar width=7pt,
+                % nodes near coords,
+                nodes near coords align={vertical},
+            ]
+            \addplot+[error bars,y dir=both, y explicit] coordinates {
+                (1,543.12)+-(1,0.14) (2,307.12)+-(2,3.77) (4,177.18)+-(4,3.79) (8,86.06)+-(8,0.82) (16,50.63)+-(16,0.60) (32,35.89)+-(32,0.53) (64,26.45)+-(64,0.63) (128,25.83)+-(128,0.64) (256,41.98)+-(256,1.85) (512,57.32)+-(512,2.08) 
+            };
+            \addplot+[error bars,y dir=both, y explicit] coordinates {
+                (1,553.57)+-(1,0.26) (2,287.70)+-(2,0.17) (4,165.86)+-(4,0.67) (8,94.13)+-(8,1.50) (16,65.04)+-(16,2.20) (32,37.22)+-(32,1.17) (64,25.60)+-(64,1.00) (128,25.49)+-(128,1.49) (256,26.10)+-(256,1.15) (512,25.80)+-(512,0.75)
+            };
+            \addplot+[error bars,y dir=both, y explicit] coordinates {
+                (1,553.49)+-(1,0.21)(2,287.57)+-(2,0.25)(4,165.74)+-(4,0.99)(8,93.35)+-(8,1.29)(16,65.67)+-(16,6.11)(32,38.25)+-(32,1.76)(64,29.61)+-(64,0.77)(128,26.85)+-(128,2.24)(256,25.63)+-(256,0.42)(512,27.96)+-(512,1.35)
+            };
+            \addplot+[error bars,y dir=both, y explicit] coordinates {
+                (1,553.89)+-(1,0.08) (2,287.30)+-(2,0.32) (4,164.88)+-(4,0.69) (8,93.33)+-(8,0.76) (16,55.06)+-(16,0.46) (32,35.27)+-(32,0.97) (64,26.35)+-(64,1.17) (128,26.33)+-(128,1.74) (256,26.96)+-(256,1.43) (512,29.70)+-(512,2.27) 
+            };
+            \addplot+[error bars,y dir=both, y explicit] coordinates {
+                (1,553.38)+-(1,0.02) (2,287.58)+-(2,0.22) (4,164.99)+-(4,0.38) (8,93.83)+-(8,0.15) (16,55.92)+-(16,0.76) (32,35.17)+-(32,0.71) (64,26.79)+-(64,0.74) (128,25.67)+-(128,0.66) (256,27.99)+-(256,1.60) (512,28.01)+-(512,0.74)
+            };
+        \legend {Tiny, Latency-Sequential, Latency-Chunks, Threshold-Sequential, Threshold-Chunks}
+        \end{axis}
+        \end{tikzpicture}
+    \caption{Tempo de execução em segundos do benchmark Labyrinth variando o número de \emph{threads}.}
+    \label{labyrinth_tempo}
+
+\end{figure}

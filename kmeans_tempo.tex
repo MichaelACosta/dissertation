@@ -1,0 +1,43 @@
+\begin{figure}[!ht]
+    \centering
+        \begin{tikzpicture}[scale=0.55, baseline]
+        \begin{axis}[
+            width=1.5 \linewidth,
+            height=0.8 \linewidth,
+            %media de tempo intruder
+            ybar=3pt,
+            %enlargelimits=0.10,
+            legend style={at={(0.5,-0.15)}, anchor=north, legend columns=-1},
+            ylabel=Tempo(s),
+            xlabel=Threads,
+            symbolic x coords={1, 2, 4, 8, 16, 32, 64, 128, 256, 512},
+            xtick=data,
+            ymin=0,
+            ymax=150,
+            bar width=7pt,
+            % nodes near coords,
+            nodes near coords align={vertical},
+        ]
+        \addplot+[error bars,y dir=both, y explicit] coordinates {
+            (1,13.32)+-(1,0.05) (2,18.64)+-(2,1.86) (4,15.33)+-(4,2.68) (8,14.72)+-(8,2.44) (16,12.06)+-(16,0.95) (32,18.24)+-(32,5.19) (64,20.20)+-(64,7.21) (128,32.16)+-(128,15.30) (256,40.54)+-(256,4.28) (512,81.86)+-(512,19.67) 
+        };
+        \addplot+[error bars,y dir=both, y explicit] coordinates {
+            (1,13.36)+-(1,0.05) (2,8.25)+-(2,1.41) (4,5.05)+-(4,0.53) (8,3.49)+-(8,0.45) (16,8.10)+-(16,1.15) (32,25.81)+-(32,4.77) (64,14.01)+-(64,1.61) (128,19.77)+-(128,3.11) (256,34.76)+-(256,10.90) (512,105.07)+-(512,0.66)
+        };
+        \addplot+[error bars,y dir=both, y explicit] coordinates {
+            (1,13.39)+-(1,0.03) (2,8.05)+-(2,1.09) (4,5.13)+-(4,0.64) (8,3.37)+-(8,0.57) (16,7.62)+-(16,1.79) (32,13.01)+-(32,3.05) (64,21.35)+-(64,3.62) (128,21.05)+-(128,7.45) (256,57.98)+-(256,27.06) (512,103.22)+-(512,3.24)
+        };
+        \addplot+[error bars,y dir=both, y explicit] coordinates {
+            (1,13.70)+-(1,0.00) (2,8.08)+-(2,0.39) (4,6.03)+-(4,1.01) (8,2.85)+-(8,0.20) (16,7.92)+-(16,1.01) (32,14.57)+-(32,1.81) (64,19.24)+-(64,2.21) (128,18.49)+-(128,0.48) (256,52.31)+-(256,2.27) (512,111.88)+-(512,4.66) 
+        };
+        \addplot+[error bars,y dir=both, y explicit] coordinates {
+            (1,13.73)+-(1,0.00) (2,13.72)+-(2,0.00) (4,14.49)+-(4,0.02) (8,8.98)+-(8,3.78) (16,15.66)+-(16,2.82) (32,12.59)+-(32,0.01) (64,16.86)+-(64,1.83) (128,21.99)+-(128,1.45) (256,24.41)+-(256,0.44) (512,119.27)+-(512,3.89)
+        };
+        \legend {Tiny, Latency-Sequential, Latency-Chunks, Threshold-Sequential, Threshold-Chunks}
+        \end{axis}
+        \end{tikzpicture}
+    
+    \caption{Tempo de execução em segundos do benchmark Kmeans variando o número de \emph{threads}.}
+    \label{kmeans_tempo}
+
+\end{figure}
