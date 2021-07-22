@@ -587,13 +587,6 @@ Como é possível visualizar na Figura~\ref{ltms_generic} o escalonador LTMS é 
 
 Ao inicializar uma aplicação o número de threads utilizados é passado para o escalonador na chamada de sua biblioteca de threads, assim, o LTMS compara o número de threads da aplicação com a quantidade de \emph{cores} da máquina, se o número de threads da aplicação for maior que o número de \emph{cores} o LTMS cria uma fila para cada core, como visto na Figura~\ref{queue_core}.
 
-\begin{figure}[htbp]
-\centering
-\includegraphics[scale=.65]{images/Queue_core.png}
-\caption{Criação das filas de execução com base nos \emph{cores}}
-\label{queue_core}
-\end{figure}
-
 Se a quantidade de threads da aplicação for menor que o número de cores disponível na arquitetura, o LTMS cria a mesma quantidade de filas que a quantidade de threads, fixando um core por fila e distribuindo uma thread por fila.
 % como visto na figura~\ref{queue_thread}
 
@@ -605,6 +598,13 @@ Se a quantidade de threads da aplicação for menor que o número de cores dispo
 % \end{figure}
 
 Após a criação das filas de execução, conforme descrito, as threads criadas na aplicação são distribuídas com base em uma estratégia de distribuição cíclica. O escalonador foi desenhado para que a distribuição seja baseada em chunks, onde o tamanho de um chunk seja o número de threads disposto para cada fila, o LTMS permite ao desenvolvedor definir o tamanho do chunk para testar diferentes distribuições de threads. Para este trabalho foram utilizados dois tamanhos de chunks junto à estratégia de distribuição.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[scale=.65]{images/Queue_core.png}
+\caption{Criação das filas de execução com base nos \emph{cores}}
+\label{queue_core}
+\end{figure}
 
 A primeira estratégia implementada, denominada Sequential, possui o tamanho de chunk um, assim distribuindo uma thread por fila até a conclusão de todas threads disponíveis. A Figura~\ref{sequential} traz como exemplo 4 threads e 2 cores, neste caso serão criadas uma fila para cada core.
 
